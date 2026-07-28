@@ -724,6 +724,7 @@ function filterStudentList(){
 function renderSidebar(){
   const q = (document.getElementById('searchInput')?.value || '').trim();
   const cards = buildStudentCardsHTML(state.students.filter(s=> s.name.includes(q)));
+  const dangerCount = state.students.filter(s=> computeFatigueMetrics(s).riskLevel==='danger').length;
 
   return `
     <div class="sidebar ${state.mobileSidebarOpen?'open':''}">
@@ -738,13 +739,14 @@ function renderSidebar(){
         </div>
       </div>
       <button class="add-btn" onclick="openAddStudentModal()">+ 학생 등록</button>
-      <button class="add-btn" style="background:var(--surface-2); border:1px solid var(--lime); color:var(--lime); margin-top:-6px;" onclick="openTeamView()">🏠 팀 전체 현황</button>
+      <button class="add-btn" style="background:var(--surface-2); border:1px solid var(--lime); color:var(--lime); margin-top:-6px; position:relative;" onclick="openTeamView()">🏠 팀 전체 현황${dangerCount>0?` <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:var(--accent); color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">위험 ${dangerCount}</span>`:''}</button>
       <button class="add-btn" style="background:var(--lime); color:#0d1a03; margin-top:-6px; margin-bottom:12px;" onclick="openBulkEntry()">📋 오늘 일괄 입력</button>
       <input class="student-search" id="searchInput" placeholder="학생 이름 검색" value="${q}" oninput="filterStudentList()">
       <div class="student-list">${cards}</div>
       <div class="sidebar-footer">
         <button class="ghost-btn" onclick="exportData()">내보내기</button>
         <button class="ghost-btn" onclick="document.getElementById('importFile').click()">불러오기</button>
+        <button class="ghost-btn" onclick="exportCSV()">CSV</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
       </div>
     </div>`;
@@ -1023,6 +1025,8 @@ function renderTeamOverview(){
     if(f && f.sessionTypes) f.sessionTypes.forEach(t=> sessionCounts[t] = (sessionCounts[t]||0)+1);
   });
 
+  const allTeamEvents = [...new Set(state.students.flatMap(s=>s.events))];
+
   const priorityRows = priorityList.map(r=>`
     <div class="insight-box ${r.m.riskLevel==='danger'?'flag':''}" style="cursor:pointer;" onclick="selectStudent('${r.s.id}')">
       <b>${r.s.name}</b> (${r.s.grade||''}) — ${r.m.riskLabel}${r.todayEntry? ` · 오늘 피로도 ${r.todayEntry.score}/10`:' · 오늘 미입력'}
@@ -1074,6 +1078,26 @@ function renderTeamOverview(){
       <div class="insight-list">${priorityRows}</div>
 
       <div class="lane-divider"></div>
+      <div class="section-title">오늘 미입력 학생</div>
+      <div class="card">
+        <div class="stat-note" style="margin-bottom:10px;">단톡방 등에 바로 공유할 수 있는 문구를 만들어 클립보드에 복사합니다.</div>
+        <div id="missingListPreview" class="stat-note" style="margin-bottom:12px; color:var(--text); font-size:13px; line-height:1.6;"></div>
+        <button class="ghost-btn" style="padding:9px 16px;" onclick="copyMissingList()">📋 미입력 학생 명단 복사하기</button>
+      </div>
+
+      <div class="lane-divider"></div>
+      <div class="section-title">종목별 팀 순위</div>
+      <div class="card">
+        <div class="field" style="margin-bottom:12px; max-width:260px;">
+          <label>종목 선택</label>
+          <select id="teamRankEvent" onchange="renderTeamRankList()">
+            ${allTeamEvents.map(ev=>`<option value="${ev}">${ev}</option>`).join('') || '<option value="">등록된 종목 없음</option>'}
+          </select>
+        </div>
+        <div id="teamRankList"></div>
+      </div>
+
+      <div class="lane-divider"></div>
       <div class="section-title">팀 평균 피로도 추이 (최근 14일)</div>
       <div class="card"><div class="chart-wrap"><canvas id="teamTrendChart"></canvas></div></div>
 
@@ -1111,6 +1135,47 @@ function drawTeamChart(){
         plugins:{legend:{display:false}} }
     });
   }catch(err){ console.warn('팀 추이 그래프 오류:', err.message); }
+}
+
+function getMissingTodayNames(){
+  const today = todayStr();
+  return state.students.filter(s=> !s.fatigue.some(f=>f.date===today)).map(s=>s.name);
+}
+function updateMissingListPreview(){
+  const el = document.getElementById('missingListPreview');
+  if(!el) return;
+  const names = getMissingTodayNames();
+  el.textContent = names.length ? `오늘 미입력: ${names.join(', ')} (총 ${names.length}명)` : '오늘은 전원 입력을 완료했어요! 🎉';
+}
+function copyMissingList(){
+  const names = getMissingTodayNames();
+  const text = names.length ? `오늘 미입력: ${names.join(', ')} (총 ${names.length}명)` : '오늘은 전원 입력을 완료했어요!';
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=> showToast('복사했어요! 단톡방에 붙여넣기 하세요')).catch(()=> showToast('복사에 실패했습니다'));
+  }else{
+    showToast('이 브라우저에서는 자동 복사가 지원되지 않아요');
+  }
+}
+
+function renderTeamRankList(){
+  const el = document.getElementById('teamRankList');
+  const sel = document.getElementById('teamRankEvent');
+  if(!el || !sel || !sel.value){ if(el) el.innerHTML = `<div class="empty-mini">등록된 종목이 없습니다</div>`; return; }
+  const ev = sel.value;
+  const lower = LOWER_IS_BETTER.includes(ev);
+  const ranked = state.students
+    .filter(s=> s.events.includes(ev) && (s.records[ev]||[]).length)
+    .map(s=>{
+      const recs = s.records[ev].slice().sort((a,b)=>a.date.localeCompare(b.date));
+      return { name:s.name, value: recs[recs.length-1].value };
+    })
+    .sort((a,b)=> lower ? a.value-b.value : b.value-a.value);
+
+  el.innerHTML = ranked.length ? `
+    <table>
+      <thead><tr><th>순위</th><th>이름</th><th>기록</th></tr></thead>
+      <tbody>${ranked.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td class="mono">${r.value} ${EVENT_UNIT[ev]?.split(' ')[0]||''}</td></tr>`).join('')}</tbody>
+    </table>` : `<div class="empty-mini">이 종목의 기록이 있는 학생이 없습니다</div>`;
 }
 
 /* ============ 학생 전용 화면 ============
@@ -1177,7 +1242,8 @@ function renderStudentPicker(){
         </div>
         <span class="rubric-hint" onclick="logout()" style="justify-self:end;">로그아웃</span>
       </div>
-      <div class="stat-note" style="text-align:center; margin-bottom:16px;">누구인가요? 이름을 선택해주세요.</div>
+      <div class="stat-note" style="text-align:center; margin-bottom:10px;">누구인가요? 이름을 선택해주세요.</div>
+      <div class="stat-note" style="text-align:center; margin-bottom:16px; font-size:11px; opacity:0.8;">🔒 입력하신 기록은 코치님만 확인하며, 훈련·컨디션 관리 목적으로만 사용됩니다.</div>
       <input class="student-search" id="studentPickSearch" placeholder="이름 검색" value="${q}" oninput="filterStudentPickList()" style="margin-bottom:14px;">
       <div class="student-pick-list">${cards}</div>
     </div>`;
@@ -1987,7 +2053,7 @@ function rerender(){
     </div>` + renderSidebar() + (state.teamViewOpen ? renderTeamOverview() : state.bulkEntryOpen ? renderBulkEntry() : renderMain())
     + renderBottomNav();
   destroyCharts();
-  if(state.teamViewOpen) drawTeamChart();
+  if(state.teamViewOpen){ drawTeamChart(); updateMissingListPreview(); renderTeamRankList(); }
   else if(!state.bulkEntryOpen) drawCharts();
   document.getElementById('sidebarBackdrop')?.classList.toggle('show', state.mobileSidebarOpen);
 }
@@ -2319,6 +2385,36 @@ function exportData(){
   a.click();
   URL.revokeObjectURL(url);
   showToast('데이터를 내보냈습니다');
+}
+function csvEscape(val){
+  const s = String(val==null? '' : val);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+}
+function exportCSV(){
+  const cutoff = daysAgo(30);
+  const header = ['이름','학년','목표','재활이력','최근30일 평균 피로도','최근30일 평균 수면','위험도','종목별 최신기록'];
+  const rows = state.students.map(s=>{
+    const recent = s.fatigue.filter(f=>f.date>=cutoff);
+    const avgScore = recent.length ? (recent.reduce((a,b)=>a+Number(b.score),0)/recent.length).toFixed(1) : '';
+    const sleepVals = recent.map(f=>Number(f.sleep)).filter(v=>!isNaN(v));
+    const avgSleep = sleepVals.length ? (sleepVals.reduce((a,b)=>a+b,0)/sleepVals.length).toFixed(1) : '';
+    const m = computeFatigueMetrics(s);
+    const eventsSummary = s.events.map(ev=>{
+      const recs = s.records[ev]||[];
+      if(!recs.length) return `${ev}:-`;
+      const latest = recs.slice().sort((a,b)=>a.date.localeCompare(b.date)).pop();
+      return `${ev}:${latest.value}`;
+    }).join(', ');
+    return [s.name, s.grade||'', s.target||'', s.rehabHistory?'있음':'없음', avgScore, avgSleep, m.riskLabel, eventsSummary];
+  });
+  const csvLines = [header, ...rows].map(r=> r.map(csvEscape).join(',')).join('\r\n');
+  const blob = new Blob(['\uFEFF'+csvLines], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `physical-log-summary-${todayStr()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV 파일을 내보냈습니다 (엑셀로 열 수 있어요)');
 }
 function importData(e){
   const file = e.target.files[0];
