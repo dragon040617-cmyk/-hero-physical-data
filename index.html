@@ -272,7 +272,7 @@
   }
   .login-card{ background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:32px 28px; width:360px; max-width:100%; }
 
-  .student-self-wrap{ max-width:720px; margin:0 auto; padding:32px 24px calc(24px + env(safe-area-inset-bottom)); }
+  .student-self-wrap{ max-width:720px; margin:0 auto; padding:32px 24px calc(24px + env(safe-area-inset-bottom)); padding-top:calc(32px + env(safe-area-inset-top)); }
   .student-pick-list{ display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; }
   .student-pick-card{
     display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px;
@@ -283,8 +283,13 @@
   .student-pick-name{ font-weight:800; font-size:15px; }
   .student-pick-card:active{ border-color:var(--lime); }
 
+  .student-header{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:20px; }
+  .student-header .who{ display:flex; align-items:center; gap:12px; min-width:0; }
+  .student-header .who-name{ font-family:'Bebas Neue',sans-serif; font-size:26px; margin:0; letter-spacing:0.02em; overflow-wrap:anywhere; }
+  .student-actions{ display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-shrink:0; padding-top:4px; }
+
   @media (max-width:700px){
-    .student-self-wrap{ max-width:520px; padding:24px 16px calc(24px + env(safe-area-inset-bottom)); }
+    .student-self-wrap{ max-width:520px; padding:24px 16px calc(24px + env(safe-area-inset-bottom)); padding-top:calc(20px + env(safe-area-inset-top)); }
     .student-pick-list{ display:flex; flex-direction:column; gap:10px; }
     .student-pick-card{ flex-direction:row; align-items:center; text-align:left; gap:12px; padding:14px 16px; }
     .student-pick-info{ align-items:flex-start; }
@@ -1128,7 +1133,7 @@ function renderStudentPicker(){
   const q = (document.getElementById('studentPickSearch')?.value || '').trim();
   const list = state.students.filter(s=>s.name.includes(q));
   const cards = list.map(s=>`
-    <button class="student-pick-card" onclick="pickStudentSelf('${s.id}')">
+    <button class="student-pick-card" onclick="attemptSelectStudent('${s.id}')">
       <div class="student-avatar">${s.name[0]}</div>
       <div class="student-pick-info">
         <div class="student-pick-name">${s.name}</div>
@@ -1151,7 +1156,71 @@ function renderStudentPicker(){
       <div class="student-pick-list">${cards}</div>
     </div>`;
 }
-function pickStudentSelf(id){ state.studentSelfId = id; rerender(); }
+function attemptSelectStudent(id){
+  const s = getStudent(id);
+  if(!s) return;
+  if(s.selfPin){
+    openPinModal(id, 'enter');
+  }else{
+    openPinModal(id, 'setup');
+  }
+}
+function openPinModal(id, mode){
+  const s = getStudent(id);
+  if(!s) return;
+  const title = mode==='setup' ? '비밀번호(4자리) 설정' : '비밀번호 입력';
+  const desc = mode==='setup'
+    ? '다른 사람이 대신 입력하지 못하도록, 나만 아는 숫자 4자리를 정해주세요.'
+    : '본인 확인을 위해 비밀번호 4자리를 입력해주세요.';
+  openModal(`
+    <div class="modal">
+      <h3>${title}</h3>
+      <div class="stat-note" style="margin-bottom:14px;">${s.name} · ${desc}</div>
+      <form onsubmit="${mode==='setup'?`submitSetPin(event,'${id}')`:`submitCheckPin(event,'${id}')`}">
+        <div class="field" style="margin-bottom:10px;">
+          <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" name="pin" id="pinInput" placeholder="••••" required
+            style="text-align:center; font-size:22px; letter-spacing:8px; font-family:'JetBrains Mono',monospace;">
+        </div>
+        <div id="pinError" style="color:var(--accent); font-size:12px; margin-bottom:10px; display:none;"></div>
+        <div class="modal-actions">
+          <button type="button" class="cancel" onclick="closeModal()">취소</button>
+          <button type="submit" class="confirm">${mode==='setup'?'설정':'확인'}</button>
+        </div>
+      </form>
+      ${mode==='enter' ? `<div class="stat-note" style="margin-top:12px; text-align:center;">비밀번호를 잊었다면 코치님께 초기화를 요청하세요.</div>` : ''}
+    </div>`);
+  setTimeout(()=> document.getElementById('pinInput')?.focus(), 50);
+}
+function submitSetPin(e, id){
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const pin = (f.get('pin')||'').trim();
+  if(!/^[0-9]{4}$/.test(pin)){
+    const err=document.getElementById('pinError'); if(err){ err.textContent='숫자 4자리를 입력해주세요.'; err.style.display='block'; }
+    return;
+  }
+  const s = getStudent(id);
+  s.selfPin = pin;
+  closeModal();
+  state.studentSelfId = id;
+  showToast('비밀번호가 설정되었어요');
+  saveStudent(s);
+  rerender();
+}
+function submitCheckPin(e, id){
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const pin = (f.get('pin')||'').trim();
+  const s = getStudent(id);
+  if(pin !== s.selfPin){
+    const err=document.getElementById('pinError'); if(err){ err.textContent='비밀번호가 일치하지 않습니다.'; err.style.display='block'; }
+    const inp=document.getElementById('pinInput'); if(inp){ inp.value=''; inp.focus(); }
+    return;
+  }
+  closeModal();
+  state.studentSelfId = id;
+  rerender();
+}
 function switchStudentSelf(){ state.studentSelfId = null; rerender(); }
 
 function renderStudentHome(s){
@@ -1160,12 +1229,12 @@ function renderStudentHome(s){
 
   return `
     <div class="student-self-wrap">
-      <div class="topbar" style="margin-bottom:14px;">
-        <div class="heading">
+      <div class="student-header">
+        <div class="who">
           <div class="avatar-lg">${s.name[0]}</div>
-          <div><h2 style="font-size:26px;">${s.name}</h2><div class="tagline">${s.grade||''}</div></div>
+          <div><h2 class="who-name">${s.name}</h2><div class="tagline">${s.grade||''}</div></div>
         </div>
-        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+        <div class="student-actions">
           <span class="rubric-hint" onclick="switchStudentSelf()">다른 사람으로 전환</span>
           <span class="rubric-hint" onclick="logout()">로그아웃</span>
         </div>
@@ -2072,12 +2141,28 @@ function openEditStudentModal(sid){
             <option value="true" ${s.rehabHistory?'selected':''}>있음 (타이트한 기준 적용)</option>
           </select>
         </div>
+        <div class="field">
+          <label>학생 앱 비밀번호(PIN)</label>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <span class="stat-note">${s.selfPin? '설정됨 (4자리)' : '아직 설정 안 함'}</span>
+            ${s.selfPin? `<button type="button" class="ghost-btn" style="flex:0 0 auto; padding:7px 12px;" onclick="resetStudentPin('${sid}')">초기화</button>` : ''}
+          </div>
+        </div>
         <div class="modal-actions">
           <button type="button" class="cancel" onclick="closeModal()">취소</button>
           <button type="submit" class="confirm">저장</button>
         </div>
       </form>
     </div>`);
+}
+function resetStudentPin(sid){
+  const s = getStudent(sid);
+  if(!s) return;
+  if(!confirm(`${s.name} 학생의 비밀번호를 초기화할까요? 다음 접속 시 새 비밀번호를 설정하게 됩니다.`)) return;
+  s.selfPin = '';
+  showToast('비밀번호가 초기화되었습니다');
+  saveStudent(s);
+  closeModal();
 }
 function submitEditStudent(e, sid){
   e.preventDefault();
