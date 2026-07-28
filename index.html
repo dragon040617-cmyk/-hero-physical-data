@@ -1041,7 +1041,10 @@ function renderTeamOverview(){
             <div class="tagline">${today} · 전체 ${total}명</div>
           </div>
         </div>
-        <button class="ghost-btn" style="padding:9px 16px;" onclick="closeTeamView()">닫기</button>
+        <div style="display:flex; gap:8px;">
+          <button class="ghost-btn" style="padding:9px 16px;" onclick="openBulkAddEventModal()">🏃 종목 일괄 추가</button>
+          <button class="ghost-btn" style="padding:9px 16px;" onclick="closeTeamView()">닫기</button>
+        </div>
       </div>
       <div class="lane-divider"></div>
 
@@ -2235,6 +2238,39 @@ function openAddEventModal(sid){
       </form>
     </div>`);
 }
+
+function openBulkAddEventModal(){
+  openModal(`
+    <div class="modal">
+      <h3>전체 학생에게 종목 일괄 추가</h3>
+      <div class="stat-note" style="margin-bottom:14px;">이미 그 종목을 갖고 있는 학생은 건너뛰고, <b>없는 학생에게만</b> 추가합니다.</div>
+      <form onsubmit="submitBulkAddEvent(event)">
+        <div class="field"><label>종목명</label><input name="ev" list="evListBulk" required placeholder="예: 제자리멀리뛰기"></div>
+        <datalist id="evListBulk">${EVENT_LIBRARY_DEFAULT.map(e=>`<option value="${e}">`).join('')}</datalist>
+        <div class="modal-actions">
+          <button type="button" class="cancel" onclick="closeModal()">취소</button>
+          <button type="submit" class="confirm">일괄 추가</button>
+        </div>
+      </form>
+    </div>`);
+}
+async function submitBulkAddEvent(e){
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const ev = (f.get('ev')||'').trim();
+  if(!ev) return;
+  closeModal();
+  let added=0, skipped=0;
+  for(const s of state.students){
+    if(s.events.includes(ev)){ skipped++; continue; }
+    s.events.push(ev);
+    if(!s.records[ev]) s.records[ev]=[];
+    await saveStudent(s);
+    added++;
+  }
+  showToast(`${added}명에게 '${ev}' 추가 완료 (${skipped}명은 이미 있어서 건너뜀)`);
+}
+
 function submitAddEvent(e, sid){
   e.preventDefault();
   const f = new FormData(e.target);
