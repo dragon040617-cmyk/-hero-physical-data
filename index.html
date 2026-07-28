@@ -324,7 +324,7 @@
     }
     .sidebar{ position:fixed; top:0; left:-300px; height:100vh; z-index:400; transition:left .25s ease; box-shadow:10px 0 40px rgba(0,0,0,0.6); }
     .sidebar.open{ left:0; }
-    main{ padding:16px 14px calc(84px + env(safe-area-inset-bottom)); width:100%; }
+    main{ padding:calc(28px + env(safe-area-inset-top)) 14px calc(84px + env(safe-area-inset-bottom)); width:100%; }
     .topbar{ flex-direction:column; align-items:flex-start; gap:12px; }
     .tabs{ width:100%; }
     .tab-btn{ flex:1; text-align:center; padding:10px 6px; font-size:11.5px; }
@@ -1292,6 +1292,25 @@ function renderStudentHome(s){
           <button class="submit-btn" type="submit" style="width:100%; margin-top:14px; height:46px; font-size:14px;">오늘 기록 저장</button>
         </form>
       </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <h3 style="margin-bottom:2px;">체력 기록 입력</h3>
+        <div class="stat-note" style="margin-bottom:12px;">${s.events.length? '오늘 측정한 실기 기록이 있으면 입력해주세요.' : '아직 등록된 종목이 없어요. 코치님께 문의해주세요.'}</div>
+        ${s.events.length ? `
+        <form onsubmit="submitStudentRecord(event)">
+          <div class="grid" style="grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:12px; align-items:end;">
+            <div class="field" style="grid-column:1 / -1;">
+              <label>종목</label>
+              <select name="event" id="studentRecordEvent" onchange="updateStudentRecordUnit()">
+                ${s.events.map(ev=>`<option value="${ev}">${ev}</option>`).join('')}
+              </select>
+            </div>
+            <div class="field"><label>날짜</label><input type="date" name="date" value="${todayStr()}"></div>
+            <div class="field"><label>기록 (<span id="studentRecordUnit">${EVENT_UNIT[s.events[0]]||''}</span>)</label><input type="number" step="any" name="value" required placeholder="기록 값"></div>
+          </div>
+          <button class="submit-btn" type="submit" style="width:100%; margin-top:14px; height:46px; font-size:14px;">기록 저장</button>
+        </form>` : ''}
+      </div>
     </div>
 
     <div class="card rubric-card" id="stressGuideCard" style="margin:0 16px 18px; ${state.showStressGuide?'':'display:none;'}">
@@ -1337,6 +1356,29 @@ function submitStudentEntry(e){
   if(existingIdx>=0) s.fatigue[existingIdx]=entry; else s.fatigue.push(entry);
   s.fatigue.sort((a,b)=>a.date.localeCompare(b.date));
   showToast('오늘 기록이 저장되었어요 👍');
+  saveStudent(s);
+}
+
+function updateStudentRecordUnit(){
+  const sel = document.getElementById('studentRecordEvent');
+  const unitEl = document.getElementById('studentRecordUnit');
+  if(sel && unitEl) unitEl.textContent = EVENT_UNIT[sel.value] || '';
+}
+function submitStudentRecord(e){
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const ev = f.get('event');
+  if(!ev) return;
+  const s = getStudent(state.studentSelfId);
+  if(!s) return;
+  if(!s.records[ev]) s.records[ev]=[];
+  const date = f.get('date') || todayStr();
+  const existingIdx = s.records[ev].findIndex(x=>x.date===date);
+  if(existingIdx>=0 && !confirm(`${date} ${ev} 기록이 이미 있습니다. 덮어쓸까요?`)) return;
+  const entry = { date, value:Number(f.get('value')) };
+  if(existingIdx>=0) s.records[ev][existingIdx]=entry; else s.records[ev].push(entry);
+  s.records[ev].sort((a,b)=>a.date.localeCompare(b.date));
+  showToast(`${ev} 기록이 저장되었어요 👍`);
   saveStudent(s);
 }
 
