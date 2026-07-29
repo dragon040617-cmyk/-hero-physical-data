@@ -250,6 +250,8 @@
   .event-tag{ cursor:grab; }
   .event-tag:active{ cursor:grabbing; }
   .event-tag .drag-handle{ color:var(--text-dim); font-size:13px; margin-right:2px; }
+  .event-tag .reorder{ color:var(--text-dim); font-weight:400; padding:0 2px; font-size:11px; }
+  .event-tag .reorder:hover{ color:var(--lime); }
   .add-event{
     background:transparent; border:1px dashed var(--line); border-radius:20px; padding:6px 14px;
     font-size:12.5px; font-weight:700; color:var(--text-dim); cursor:pointer;
@@ -525,6 +527,17 @@ function esc(v){
   if(v===null || v===undefined) return '';
   return String(v).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
+// onclick="fn('VALUE')" 처럼 HTML 속성 안의 JS 작은따옴표 문자열로 안전하게 넣기 위한 이스케이프.
+// 종목명처럼 사용자가 자유 입력하는 텍스트에 따옴표가 들어가도 버튼이 깨지지 않도록 한다.
+function jsAttrEsc(v){
+  if(v===null || v===undefined) return '';
+  return String(v)
+    .replace(/\\/g,'\\\\')
+    .replace(/'/g,"\\'")
+    .replace(/"/g,'&quot;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function daysAgo(n){ const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); }
 
@@ -713,7 +726,7 @@ function buildStudentCardsHTML(filtered){
         <div class="student-avatar">${s.name[0]}</div>
         <div class="student-meta">
           <div class="name">${esc(s.name)}</div>
-          <div class="sub">${s.grade} · ${s.target||'목표 미설정'}${s.rehabHistory?' · <span style="color:var(--accent);">재활 이력</span>':''}</div>
+          <div class="sub">${esc(s.grade)} · ${esc(s.target)||'목표 미설정'}${s.rehabHistory?' · <span style="color:var(--accent);">재활 이력</span>':''}</div>
         </div>
         <div class="fatigue-dot dot-${riskDot(m.riskLevel)}" title="${m.riskLabel}"></div>
         <button class="del-student" title="학생 삭제" onclick="event.stopPropagation(); deleteStudent('${s.id}')">✕</button>
@@ -785,7 +798,7 @@ function renderMain(){
           <div class="avatar-lg">${s.name[0]}</div>
           <div>
             <h2>${esc(s.name)} ${s.rehabHistory?'<span class="badge bad" style="vertical-align:middle; margin-left:6px;">재활 이력</span>':''}</h2>
-            <div class="tagline">${s.grade} · ${s.target || '목표 미설정'} <span class="rubric-hint" onclick="openEditStudentModal('${s.id}')" title="학생 정보 수정">ⓘ 정보 수정</span></div>
+            <div class="tagline">${esc(s.grade)} · ${esc(s.target) || '목표 미설정'} <span class="rubric-hint" onclick="openEditStudentModal('${s.id}')" title="학생 정보 수정">ⓘ 정보 수정</span></div>
           </div>
         </div>
         <div class="tabs">${tabBtns}</div>
@@ -1034,7 +1047,7 @@ function renderTeamOverview(){
 
   const priorityRows = priorityList.map(r=>`
     <div class="insight-box ${r.m.riskLevel==='danger'?'flag':''}" style="cursor:pointer;" onclick="selectStudent('${r.s.id}')">
-      <b>${esc(r.s.name)}</b> (${r.s.grade||''}) — ${r.m.riskLabel}${r.todayEntry? ` · 오늘 피로도 ${r.todayEntry.score}/10`:' · 오늘 미입력'}
+      <b>${esc(r.s.name)}</b> (${esc(r.s.grade)}) — ${r.m.riskLabel}${r.todayEntry? ` · 오늘 피로도 ${r.todayEntry.score}/10`:' · 오늘 미입력'}
     </div>`).join('') || `<div class="empty-mini">현재 주의·위험 단계인 학생이 없습니다.</div>`;
 
   const tableRows = sorted.map(r=>{
@@ -1042,7 +1055,7 @@ function renderTeamOverview(){
     const badgeLabel = r.m.riskLevel==='danger'?'위험':r.m.riskLevel==='caution'?'주의':r.m.riskLevel==='unknown'?'데이터부족':'안정';
     return `<tr style="cursor:pointer;" onclick="selectStudent('${r.s.id}')">
       <td>${esc(r.s.name)}</td>
-      <td>${r.s.grade||'-'}</td>
+      <td>${esc(r.s.grade)||'-'}</td>
       <td>${r.todayEntry? `${r.todayEntry.score}/10` : '<span style="color:var(--text-dim);">미입력</span>'}</td>
       <td><span class="badge ${badge}">${badgeLabel}</span></td>
       <td>${r.decline? '<span style="color:var(--accent);">⚠ 하락 신호</span>' : '-'}</td>
@@ -1096,7 +1109,7 @@ function renderTeamOverview(){
         <div class="field" style="margin-bottom:12px; max-width:260px;">
           <label>종목 선택</label>
           <select id="teamRankEvent" onchange="renderTeamRankList()">
-            ${allTeamEvents.map(ev=>`<option value="${ev}">${ev}</option>`).join('') || '<option value="">등록된 종목 없음</option>'}
+            ${allTeamEvents.map(ev=>`<option value="${esc(ev)}">${esc(ev)}</option>`).join('') || '<option value="">등록된 종목 없음</option>'}
           </select>
         </div>
         <div id="teamRankList"></div>
@@ -1179,7 +1192,7 @@ function renderTeamRankList(){
   el.innerHTML = ranked.length ? `
     <table>
       <thead><tr><th>순위</th><th>이름</th><th>기록</th></tr></thead>
-      <tbody>${ranked.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td class="mono">${r.value} ${EVENT_UNIT[ev]?.split(' ')[0]||''}</td></tr>`).join('')}</tbody>
+      <tbody>${ranked.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td class="mono">${r.value} ${EVENT_UNIT[ev]?.split(' ')[0]||''}</td></tr>`).join('')}</tbody>
     </table>` : `<div class="empty-mini">이 종목의 기록이 있는 학생이 없습니다</div>`;
 }
 
@@ -1223,7 +1236,7 @@ function buildStudentPickCardsHTML(list){
       <div class="student-avatar">${s.name[0]}</div>
       <div class="student-pick-info">
         <div class="student-pick-name">${esc(s.name)}</div>
-        <div class="stat-note">${s.grade||''}</div>
+        <div class="stat-note">${esc(s.grade)}</div>
       </div>
     </button>`).join('') || `<div class="empty-mini">이름을 찾을 수 없어요. 코치님께 등록을 요청하세요.</div>`;
 }
@@ -1297,6 +1310,7 @@ function submitSetPin(e, id){
     return;
   }
   const s = getStudent(id);
+  if(!s){ closeModal(); showToast('학생을 찾을 수 없습니다 (삭제되었을 수 있어요)'); return; }
   s.selfPin = pin;
   closeModal();
   state.studentSelfId = id;
@@ -1309,6 +1323,7 @@ function submitCheckPin(e, id){
   const f = new FormData(e.target);
   const pin = (f.get('pin')||'').trim();
   const s = getStudent(id);
+  if(!s){ closeModal(); showToast('학생을 찾을 수 없습니다 (삭제되었을 수 있어요)'); return; }
   if(pin !== s.selfPin){
     const err=document.getElementById('pinError'); if(err){ err.textContent='비밀번호가 일치하지 않습니다.'; err.style.display='block'; }
     const inp=document.getElementById('pinInput'); if(inp){ inp.value=''; inp.focus(); }
@@ -1399,7 +1414,7 @@ function renderStudentHome(s){
             <div class="field" style="grid-column:1 / -1;">
               <label>종목</label>
               <select name="event" id="studentRecordEvent" onchange="updateStudentRecordUnit()">
-                ${s.events.map(ev=>`<option value="${ev}">${ev}</option>`).join('')}
+                ${s.events.map(ev=>`<option value="${esc(ev)}">${esc(ev)}</option>`).join('')}
               </select>
             </div>
             <div class="field"><label>날짜</label><input type="date" name="date" value="${todayStr()}"></div>
@@ -1501,7 +1516,7 @@ function renderBulkEntry(){
     const already = s.fatigue.find(f=>f.date===todayStr());
     return `
       <tr>
-        <td>${esc(s.name)}<div class="stat-note">${s.grade||''}</div></td>
+        <td>${esc(s.name)}<div class="stat-note">${esc(s.grade)}</div></td>
         <td><input type="number" min="1" max="10" class="bulk-input" style="min-width:56px;" data-sid="${s.id}" data-field="score" placeholder="점수" value="${already?already.score:''}"></td>
         <td><input type="number" step="any" class="bulk-input" style="min-width:56px;" data-sid="${s.id}" data-field="sleep" placeholder="시간" value="${already?already.sleep:''}"></td>
         <td style="text-align:center;"><input type="checkbox" class="bulk-input" data-sid="${s.id}" data-field="attended" ${already? (already.attended!==false?'checked':'') : 'checked'} style="width:16px;height:16px;accent-color:var(--lime);"></td>
@@ -1624,13 +1639,17 @@ function renderOverview(s){
     const latest = recs.length ? recs[recs.length-1].value : null;
     const target = s.targets[ev];
     const lower = LOWER_IS_BETTER.includes(ev);
-    const pct = (latest && target) ? (lower? (target/latest*100) : (latest/target*100)) : null;
+    let pct = null;
+    if(latest!=null && target && Number(target)>0 && Number(latest)>0){
+      pct = lower ? (Number(target)/Number(latest)*100) : (Number(latest)/Number(target)*100);
+      if(!isFinite(pct)) pct = null;
+    }
     const tone = pct===null? '' : pct>=100? 'good' : pct>=85? '' : 'warn';
     return `
       <div class="card stat-tile ${tone}">
         <h3>${ev}</h3>
         <div class="stat">${latest!==null? latest : '—'}<span style="font-size:14px;color:var(--text-dim);"> ${EVENT_UNIT[ev]?.split(' ')[0]||''}</span></div>
-        <div class="stat-note">${target? `목표 ${target} · 달성률 ${pct? pct.toFixed(0)+'%':'-'}`:'목표 미설정'}</div>
+        <div class="stat-note">${target? `목표 ${target} · 달성률 ${pct!==null? pct.toFixed(0)+'%':'-'}`:'목표 미설정'}</div>
       </div>`;
   }).join('') || `<div class="empty-mini">등록된 체력 종목이 없습니다. '체력 기록' 탭에서 종목을 추가하세요.</div>`;
 
@@ -1716,7 +1735,7 @@ function renderFatigueTab(s){
     const stressBadge = f.stress ? `<span class="badge ${Number(f.stress)>=4?'bad':Number(f.stress)>=3?'warn':'good'}" style="margin-left:6px;">스트레스 ${f.stress}</span>` : '';
     const painDisplay = (f.painAreas && f.painAreas.length)
       ? `${f.painAreas.join('/')}${f.painSeverity? ` (강도 ${f.painSeverity})`:''}`
-      : (f.area || '-');
+      : (esc(f.area) || '-');
     return `<tr>
       <td class="mono">${f.date}</td>
       <td><span class="badge ${badge}">${f.score} / 10</span></td>
@@ -1908,13 +1927,15 @@ function renderRecordsTab(s){
 
   const tags = s.events.map((ev,idx)=>`
     <div class="event-tag ${ev===selEv?'active':''}" draggable="true"
-      ondragstart="handleEventDragStart(event,'${ev}')"
+      ondragstart="handleEventDragStart(event,'${jsAttrEsc(ev)}')"
       ondragover="event.preventDefault();"
-      ondrop="handleEventDrop(event,'${s.id}','${ev}')"
-      onclick="selectEvent('${s.id}','${ev}')">
+      ondrop="handleEventDrop(event,'${jsAttrEsc(s.id)}','${jsAttrEsc(ev)}')"
+      onclick="selectEvent('${jsAttrEsc(s.id)}','${jsAttrEsc(ev)}')">
       <span class="drag-handle" title="드래그해서 순서 변경">⠿</span>
-      ${ev}
-      <span class="rm" onclick="event.stopPropagation(); removeEvent('${s.id}','${ev}')">✕</span>
+      ${esc(ev)}
+      ${idx>0?`<span class="reorder" onclick="event.stopPropagation(); moveEvent('${jsAttrEsc(s.id)}','${jsAttrEsc(ev)}',-1)" title="왼쪽으로">◀</span>`:''}
+      ${idx<s.events.length-1?`<span class="reorder" onclick="event.stopPropagation(); moveEvent('${jsAttrEsc(s.id)}','${jsAttrEsc(ev)}',1)" title="오른쪽으로">▶</span>`:''}
+      <span class="rm" onclick="event.stopPropagation(); removeEvent('${jsAttrEsc(s.id)}','${jsAttrEsc(ev)}')">✕</span>
     </div>`).join('');
 
   if(!selEv){
@@ -1932,7 +1953,7 @@ function renderRecordsTab(s){
     return `<tr>
       <td class="mono">${r.date}</td>
       <td class="mono">${r.value} ${EVENT_UNIT[ev]?.split(' ')[0]||''}</td>
-      <td><button class="row-del" onclick="deleteRecord('${s.id}','${ev}',${realIdx})">삭제</button></td>
+      <td><button class="row-del" onclick="deleteRecord('${jsAttrEsc(s.id)}','${jsAttrEsc(ev)}',${realIdx})">삭제</button></td>
     </tr>`;
   }).join('') || `<tr><td colspan="3" class="empty-mini">기록이 없습니다</td></tr>`;
 
@@ -1940,8 +1961,8 @@ function renderRecordsTab(s){
     <div class="event-tag-row">${tags}<button class="add-event" onclick="openAddEventModal('${s.id}')">+ 종목 추가</button></div>
 
     <div class="card" style="margin-bottom:18px;">
-      <h3 style="margin-bottom:12px;">${ev} 기록 입력 <span style="color:var(--text-dim); font-weight:400; text-transform:none;">(${EVENT_UNIT[ev]||''})</span></h3>
-      <form class="entry-form" onsubmit="addRecord(event,'${s.id}','${ev}')">
+      <h3 style="margin-bottom:12px;">${esc(ev)} 기록 입력 <span style="color:var(--text-dim); font-weight:400; text-transform:none;">(${esc(EVENT_UNIT[ev]||'')})</span></h3>
+      <form class="entry-form" onsubmit="addRecord(event,'${jsAttrEsc(s.id)}','${jsAttrEsc(ev)}')">
         <div class="field"><label>날짜</label><input type="date" name="date" value="${todayStr()}" required></div>
         <div class="field"><label>기록</label><input type="number" step="any" name="value" placeholder="기록 값" required></div>
         <div class="field"><label>목표 기록</label><input type="number" step="any" name="target" placeholder="목표 값" value="${target||''}"></div>
@@ -1974,6 +1995,7 @@ function destroyCharts(){ Object.values(chartInstances).forEach(c=>c && c.destro
 function drawCharts(){
   const s = getStudent(state.selectedId);
   if(!s) return;
+  if(typeof Chart === 'undefined'){ console.warn('Chart.js가 로드되지 않아 그래프를 표시할 수 없습니다.'); return; }
   Chart.defaults.color = '#8b93a6';
   Chart.defaults.font.family = "'Manrope', sans-serif";
   const gridColor = '#2b3242';
@@ -2048,6 +2070,24 @@ function drawCharts(){
 
 /* ============ ACTIONS ============ */
 function rerender(){
+  try{
+    rerenderInner();
+  }catch(err){
+    console.error('렌더링 오류:', err);
+    const appEl = document.getElementById('app');
+    if(appEl){
+      appEl.style.display='';
+      appEl.innerHTML = `
+        <div style="max-width:480px; margin:60px auto; padding:24px; text-align:center;">
+          <div style="font-size:32px; margin-bottom:10px;">⚠️</div>
+          <div style="font-family:'Bebas Neue',sans-serif; font-size:22px; margin-bottom:8px;">화면을 표시하는 중 오류가 발생했습니다</div>
+          <div style="color:var(--text-dim); font-size:13px; margin-bottom:16px;">${err.message||'알 수 없는 오류'}</div>
+          <button class="submit-btn" onclick="location.reload()">새로고침</button>
+        </div>`;
+    }
+  }
+}
+function rerenderInner(){
   if(state.isStudentMode){
     document.getElementById('app').innerHTML = renderStudentApp();
     destroyCharts();
@@ -2121,11 +2161,21 @@ function handleEventDrop(e, sid, targetEv){
   draggedEventName = null;
   if(!dragged || dragged===targetEv) return;
   const s = getStudent(sid);
+  if(!s) return;
   const from = s.events.indexOf(dragged);
   const to = s.events.indexOf(targetEv);
   if(from<0 || to<0) return;
   s.events.splice(from,1);
   s.events.splice(to,0,dragged);
+  saveStudent(s);
+}
+function moveEvent(sid, ev, dir){
+  const s = getStudent(sid);
+  if(!s) return;
+  const idx = s.events.indexOf(ev);
+  const newIdx = idx+dir;
+  if(idx<0 || newIdx<0 || newIdx>=s.events.length) return;
+  [s.events[idx], s.events[newIdx]] = [s.events[newIdx], s.events[idx]];
   saveStudent(s);
 }
 function toggleRubric(){
@@ -2441,10 +2491,15 @@ function importData(e){
   reader.onload = async (ev)=>{
     try{
       const parsed = JSON.parse(ev.target.result);
-      if(!parsed.students) throw new Error('invalid');
+      if(!parsed.students || !Array.isArray(parsed.students)) throw new Error('invalid');
       showToast('데이터를 서버에 업로드하는 중...');
       for(const item of parsed.students){
         if(!item.id) item.id = uid();
+        if(!item.name) continue; // 이름 없는 항목은 건너뜀
+        item.fatigue = Array.isArray(item.fatigue) ? item.fatigue : [];
+        item.events = Array.isArray(item.events) ? item.events : [];
+        item.records = (item.records && typeof item.records==='object') ? item.records : {};
+        item.targets = (item.targets && typeof item.targets==='object') ? item.targets : {};
         await saveStudent(item);
       }
       showToast('데이터를 불러와 모든 코치에게 동기화했습니다');
@@ -2585,7 +2640,18 @@ function subscribeStudents(){
     }
     firstSnapshot=false;
     const list = [];
-    snap.forEach(doc=> list.push({ id: doc.id, ...doc.data() }));
+    snap.forEach(doc=>{
+      const d = doc.data();
+      list.push({
+        id: doc.id,
+        ...d,
+        name: d.name || '(이름 없음)',
+        fatigue: Array.isArray(d.fatigue) ? d.fatigue : [],
+        events: Array.isArray(d.events) ? d.events : [],
+        records: (d.records && typeof d.records==='object') ? d.records : {},
+        targets: (d.targets && typeof d.targets==='object') ? d.targets : {}
+      });
+    });
     state.students = list;
     if(!state.selectedId || !list.find(s=>s.id===state.selectedId)){
       state.selectedId = list[0]?.id || null;
