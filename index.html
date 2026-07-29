@@ -520,6 +520,11 @@ const FATIGUE_RUBRIC = [
   {range:"9~10", label:"위험", desc:"심한 통증·수면 매우 부족 → 휴식 필요, 부상 위험"},
 ];
 function uid(){ return Math.random().toString(36).slice(2,9); }
+// 학생 이름·메모 등 자유 입력 텍스트를 HTML에 안전하게 표시하기 위한 이스케이프
+function esc(v){
+  if(v===null || v===undefined) return '';
+  return String(v).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function daysAgo(n){ const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); }
 
@@ -707,7 +712,7 @@ function buildStudentCardsHTML(filtered){
       <div class="student-card ${s.id===state.selectedId?'active':''}" onclick="selectStudent('${s.id}')">
         <div class="student-avatar">${s.name[0]}</div>
         <div class="student-meta">
-          <div class="name">${s.name}</div>
+          <div class="name">${esc(s.name)}</div>
           <div class="sub">${s.grade} · ${s.target||'목표 미설정'}${s.rehabHistory?' · <span style="color:var(--accent);">재활 이력</span>':''}</div>
         </div>
         <div class="fatigue-dot dot-${riskDot(m.riskLevel)}" title="${m.riskLabel}"></div>
@@ -779,7 +784,7 @@ function renderMain(){
         <div class="heading">
           <div class="avatar-lg">${s.name[0]}</div>
           <div>
-            <h2>${s.name} ${s.rehabHistory?'<span class="badge bad" style="vertical-align:middle; margin-left:6px;">재활 이력</span>':''}</h2>
+            <h2>${esc(s.name)} ${s.rehabHistory?'<span class="badge bad" style="vertical-align:middle; margin-left:6px;">재활 이력</span>':''}</h2>
             <div class="tagline">${s.grade} · ${s.target || '목표 미설정'} <span class="rubric-hint" onclick="openEditStudentModal('${s.id}')" title="학생 정보 수정">ⓘ 정보 수정</span></div>
           </div>
         </div>
@@ -1029,14 +1034,14 @@ function renderTeamOverview(){
 
   const priorityRows = priorityList.map(r=>`
     <div class="insight-box ${r.m.riskLevel==='danger'?'flag':''}" style="cursor:pointer;" onclick="selectStudent('${r.s.id}')">
-      <b>${r.s.name}</b> (${r.s.grade||''}) — ${r.m.riskLabel}${r.todayEntry? ` · 오늘 피로도 ${r.todayEntry.score}/10`:' · 오늘 미입력'}
+      <b>${esc(r.s.name)}</b> (${r.s.grade||''}) — ${r.m.riskLabel}${r.todayEntry? ` · 오늘 피로도 ${r.todayEntry.score}/10`:' · 오늘 미입력'}
     </div>`).join('') || `<div class="empty-mini">현재 주의·위험 단계인 학생이 없습니다.</div>`;
 
   const tableRows = sorted.map(r=>{
     const badge = r.m.riskLevel==='danger'?'bad':r.m.riskLevel==='caution'?'warn':r.m.riskLevel==='unknown'?'neutral':'good';
     const badgeLabel = r.m.riskLevel==='danger'?'위험':r.m.riskLevel==='caution'?'주의':r.m.riskLevel==='unknown'?'데이터부족':'안정';
     return `<tr style="cursor:pointer;" onclick="selectStudent('${r.s.id}')">
-      <td>${r.s.name}</td>
+      <td>${esc(r.s.name)}</td>
       <td>${r.s.grade||'-'}</td>
       <td>${r.todayEntry? `${r.todayEntry.score}/10` : '<span style="color:var(--text-dim);">미입력</span>'}</td>
       <td><span class="badge ${badge}">${badgeLabel}</span></td>
@@ -1217,7 +1222,7 @@ function buildStudentPickCardsHTML(list){
     <button class="student-pick-card" onclick="attemptSelectStudent('${s.id}')">
       <div class="student-avatar">${s.name[0]}</div>
       <div class="student-pick-info">
-        <div class="student-pick-name">${s.name}</div>
+        <div class="student-pick-name">${esc(s.name)}</div>
         <div class="stat-note">${s.grade||''}</div>
       </div>
     </button>`).join('') || `<div class="empty-mini">이름을 찾을 수 없어요. 코치님께 등록을 요청하세요.</div>`;
@@ -1267,7 +1272,7 @@ function openPinModal(id, mode){
   openModal(`
     <div class="modal">
       <h3>${title}</h3>
-      <div class="stat-note" style="margin-bottom:14px;">${s.name} · ${desc}</div>
+      <div class="stat-note" style="margin-bottom:14px;">${esc(s.name)} · ${desc}</div>
       <form onsubmit="${mode==='setup'?`submitSetPin(event,'${id}')`:`submitCheckPin(event,'${id}')`}">
         <div class="field" style="margin-bottom:10px;">
           <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" name="pin" id="pinInput" placeholder="••••" required
@@ -1324,7 +1329,7 @@ function renderStudentHome(s){
       <div class="student-header">
         <div class="who">
           <div class="avatar-lg">${s.name[0]}</div>
-          <div><h2 class="who-name">${s.name}</h2><div class="tagline">${s.grade||''}</div></div>
+          <div><h2 class="who-name">${esc(s.name)}</h2><div class="tagline">${s.grade||''}</div></div>
         </div>
         <div class="student-actions">
           <span class="rubric-hint" onclick="switchStudentSelf()">다른 사람으로 전환</span>
@@ -1379,7 +1384,7 @@ function renderStudentHome(s){
                 ${SESSION_TYPES.map(t=>`<label class="chk-pill"><input type="checkbox" name="sessionType" value="${t}" ${already&&already.sessionTypes&&already.sessionTypes.includes(t)?'checked':''}> ${t}</label>`).join('')}
               </div>
             </div>
-            <div class="field" style="grid-column:1 / -1;"><label>하고 싶은 말 (선택)</label><input type="text" name="memo" placeholder="특이사항이 있으면 적어주세요" value="${already?already.memo:''}"></div>
+            <div class="field" style="grid-column:1 / -1;"><label>하고 싶은 말 (선택)</label><input type="text" name="memo" placeholder="특이사항이 있으면 적어주세요" value="${already?esc(already.memo):''}"></div>
           </div>
           <button class="submit-btn" type="submit" style="width:100%; margin-top:14px; height:46px; font-size:14px;">오늘 기록 저장</button>
         </form>
@@ -1496,7 +1501,7 @@ function renderBulkEntry(){
     const already = s.fatigue.find(f=>f.date===todayStr());
     return `
       <tr>
-        <td>${s.name}<div class="stat-note">${s.grade||''}</div></td>
+        <td>${esc(s.name)}<div class="stat-note">${s.grade||''}</div></td>
         <td><input type="number" min="1" max="10" class="bulk-input" style="min-width:56px;" data-sid="${s.id}" data-field="score" placeholder="점수" value="${already?already.score:''}"></td>
         <td><input type="number" step="any" class="bulk-input" style="min-width:56px;" data-sid="${s.id}" data-field="sleep" placeholder="시간" value="${already?already.sleep:''}"></td>
         <td style="text-align:center;"><input type="checkbox" class="bulk-input" data-sid="${s.id}" data-field="attended" ${already? (already.attended!==false?'checked':'') : 'checked'} style="width:16px;height:16px;accent-color:var(--lime);"></td>
@@ -1704,7 +1709,7 @@ function renderFatigueTab(s){
     const envBits = [];
     if(f.attended===false) envBits.push(`<span style="color:var(--accent);">결석</span>`);
     if(f.sessionTypes && f.sessionTypes.length) envBits.push(f.sessionTypes.join('/'));
-    if(f.rehabNote) envBits.push(`재활메모: ${f.rehabNote}`);
+    if(f.rehabNote) envBits.push(`재활메모: ${esc(f.rehabNote)}`);
     if(f.weather) envBits.push(f.weather + (f.temp!==''&&f.temp!==undefined && f.temp!==null? ` ${f.temp}°C`:''));
     if(f.mealBefore!==undefined) envBits.push(`운동 전 식사${f.mealBefore?'✓':'✗'}`);
     const envText = envBits.length ? envBits.join(' · ') : '-';
@@ -1718,7 +1723,7 @@ function renderFatigueTab(s){
       <td class="mono">${f.sleep!==''&&f.sleep!==undefined? f.sleep+'h':'-'}</td>
       <td>${painDisplay}</td>
       <td style="font-size:12px; color:var(--text-muted);">${envText}${stressBadge}</td>
-      <td>${f.memo||'-'}</td>
+      <td>${esc(f.memo)||'-'}</td>
       <td><button class="row-del" onclick="deleteFatigue('${s.id}',${realIdx})">삭제</button></td>
     </tr>`;
   }).join('') || `<tr><td colspan="7" class="empty-mini">기록이 없습니다</td></tr>`;
@@ -1977,28 +1982,32 @@ function drawCharts(){
     const fc = document.getElementById('fatigueChart');
     const sc = document.getElementById('sleepChart');
     if(fc){
-      const m = computeFatigueMetrics(s);
-      const datasets = [{ label:'피로도', data:s.fatigue.map(f=>f.score), borderColor:'#ff4b33', backgroundColor:'rgba(255,75,51,0.15)', fill:true, tension:0.35, pointRadius:3 }];
-      if(m.chronic!==null){
-        datasets.push({ label:'평소 기준선', data:s.fatigue.map(()=>m.chronic), borderColor:'#c6ff3d', borderDash:[6,4], pointRadius:0, fill:false });
-      }
-      chartInstances.fatigue = new Chart(fc, {
-        type:'line',
-        data:{ labels:s.fatigue.map(f=>f.date.slice(5)), datasets },
-        options:{ responsive:true, maintainAspectRatio:false,
-          scales:{ y:{min:0,max:10, grid:{color:gridColor}}, x:{grid:{display:false}} },
-          plugins:{legend:{display: m.chronic!==null, labels:{boxWidth:12}}} }
-      });
+      try{
+        const m = computeFatigueMetrics(s);
+        const datasets = [{ label:'피로도', data:s.fatigue.map(f=>f.score), borderColor:'#ff4b33', backgroundColor:'rgba(255,75,51,0.15)', fill:true, tension:0.35, pointRadius:3 }];
+        if(m.chronic!==null){
+          datasets.push({ label:'평소 기준선', data:s.fatigue.map(()=>m.chronic), borderColor:'#c6ff3d', borderDash:[6,4], pointRadius:0, fill:false });
+        }
+        chartInstances.fatigue = new Chart(fc, {
+          type:'line',
+          data:{ labels:s.fatigue.map(f=>f.date.slice(5)), datasets },
+          options:{ responsive:true, maintainAspectRatio:false,
+            scales:{ y:{min:0,max:10, grid:{color:gridColor}}, x:{grid:{display:false}} },
+            plugins:{legend:{display: m.chronic!==null, labels:{boxWidth:12}}} }
+        });
+      }catch(err){ console.warn('피로도 그래프 오류:', err.message); }
     }
     if(sc){
-      chartInstances.sleep = new Chart(sc, {
-        type:'line',
-        data:{ labels:s.fatigue.map(f=>f.date.slice(5)),
-          datasets:[{ label:'수면', data:s.fatigue.map(f=>Number(f.sleep)||null), borderColor:'#c6ff3d', backgroundColor:'rgba(198,255,61,0.12)', fill:true, tension:0.35, pointRadius:3 }]},
-        options:{ responsive:true, maintainAspectRatio:false,
-          scales:{ y:{min:0,max:12, grid:{color:gridColor}}, x:{grid:{display:false}} },
-          plugins:{legend:{display:false}} }
-      });
+      try{
+        chartInstances.sleep = new Chart(sc, {
+          type:'line',
+          data:{ labels:s.fatigue.map(f=>f.date.slice(5)),
+            datasets:[{ label:'수면', data:s.fatigue.map(f=>Number(f.sleep)||null), borderColor:'#c6ff3d', backgroundColor:'rgba(198,255,61,0.12)', fill:true, tension:0.35, pointRadius:3 }]},
+          options:{ responsive:true, maintainAspectRatio:false,
+            scales:{ y:{min:0,max:12, grid:{color:gridColor}}, x:{grid:{display:false}} },
+            plugins:{legend:{display:false}} }
+        });
+      }catch(err){ console.warn('수면 그래프 오류:', err.message); }
     }
   }
   if(state.activeTab==='records' && state.selectedEventByStudent[s.id]){
@@ -2152,6 +2161,7 @@ function addFatigue(e, sid){
   e.preventDefault();
   const f = new FormData(e.target);
   const s = getStudent(sid);
+  if(!s){ showToast('학생을 찾을 수 없습니다 (삭제되었을 수 있어요)'); return; }
   const date = f.get('date');
   const existingIdx = s.fatigue.findIndex(x=>x.date===date);
   if(existingIdx>=0 && !confirm(`${date} 기록이 이미 있습니다. 덮어쓸까요?`)) return;
@@ -2173,6 +2183,7 @@ function addFatigue(e, sid){
 }
 function deleteFatigue(sid, idx){
   const s = getStudent(sid);
+  if(!s) return;
   s.fatigue.splice(idx,1);
   saveStudent(s);
 }
@@ -2180,6 +2191,7 @@ function addRecord(e, sid, ev){
   e.preventDefault();
   const f = new FormData(e.target);
   const s = getStudent(sid);
+  if(!s){ showToast('학생을 찾을 수 없습니다 (삭제되었을 수 있어요)'); return; }
   if(!s.records[ev]) s.records[ev]=[];
   const date = f.get('date');
   const existingIdx = s.records[ev].findIndex(x=>x.date===date);
@@ -2194,11 +2206,13 @@ function addRecord(e, sid, ev){
 }
 function deleteRecord(sid, ev, idx){
   const s = getStudent(sid);
+  if(!s || !s.records[ev]) return;
   s.records[ev].splice(idx,1);
   saveStudent(s);
 }
 function removeEvent(sid, ev){
   const s = getStudent(sid);
+  if(!s) return;
   if(!confirm(`'${ev}' 종목을 삭제하시겠습니까? 관련 기록도 함께 삭제됩니다.`)) return;
   s.events = s.events.filter(x=>x!==ev);
   delete s.records[ev];
@@ -2265,9 +2279,9 @@ function openEditStudentModal(sid){
     <div class="modal">
       <h3>학생 정보 수정</h3>
       <form onsubmit="submitEditStudent(event,'${sid}')">
-        <div class="field"><label>이름</label><input name="name" required value="${s.name}"></div>
-        <div class="field"><label>학년</label><input name="grade" value="${s.grade||''}"></div>
-        <div class="field"><label>목표</label><input name="target" value="${s.target||''}"></div>
+        <div class="field"><label>이름</label><input name="name" required value="${esc(s.name)}"></div>
+        <div class="field"><label>학년</label><input name="grade" value="${esc(s.grade||'')}"></div>
+        <div class="field"><label>목표</label><input name="target" value="${esc(s.target||'')}"></div>
         <div class="field">
           <label>재활이 필요했던 부상 이력</label>
           <select name="rehabHistory">
@@ -2302,6 +2316,7 @@ function submitEditStudent(e, sid){
   e.preventDefault();
   const f = new FormData(e.target);
   const s = getStudent(sid);
+  if(!s){ closeModal(); showToast('학생을 찾을 수 없습니다 (삭제되었을 수 있어요)'); return; }
   s.name = f.get('name');
   s.grade = f.get('grade')||'';
   s.target = f.get('target')||'';
@@ -2312,7 +2327,9 @@ function submitEditStudent(e, sid){
 }
 
 function openAddEventModal(sid){
-  const suggestions = EVENT_LIBRARY_DEFAULT.filter(ev=>!getStudent(sid).events.includes(ev));
+  const s0 = getStudent(sid);
+  if(!s0) return;
+  const suggestions = EVENT_LIBRARY_DEFAULT.filter(ev=>!s0.events.includes(ev));
   openModal(`
     <div class="modal">
       <h3>체력 종목 추가</h3>
@@ -2366,6 +2383,7 @@ function submitAddEvent(e, sid){
   const ev = f.get('ev').trim();
   if(!ev) return;
   const s = getStudent(sid);
+  if(!s){ closeModal(); return; }
   if(!s.events.includes(ev)) s.events.push(ev);
   if(!s.records[ev]) s.records[ev]=[];
   const tg = f.get('target');
