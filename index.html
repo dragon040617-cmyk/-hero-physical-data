@@ -504,6 +504,7 @@ const LOWER_IS_BETTER = ["10m 왕복달리기","20m 왕복달리기","Z-런","25
 const JUMP_EVENTS = ["제자리멀리뛰기","CMJ"];
 const SESSION_TYPES = ["기술","웨이트","스피드(야외)","실내 체력","재활","테스트"];
 const BODY_PARTS = ["허리","무릎","발목","어깨","종아리","허벅지","정강이","손목","목","기타"];
+const BRANCHES = ["해운대점","사직점","주례점"];
 const JUMP_DROP_STEP = 5;      // % 단위 임계값
 const JUMP_STREAK_ESCALATE = 4; // 연속 하락일수 임계값
 const JUMP_LEVELS = [
@@ -551,6 +552,7 @@ let state = {
   bulkEntryOpen: false,
   mobileSidebarOpen: false,
   mobileTopbarVisible: false,
+  sidebarBranchFilter: '',
   isStudentMode: false,
   studentSelfId: null,
   teamViewOpen: false,
@@ -726,22 +728,36 @@ function buildStudentCardsHTML(filtered){
         <div class="student-avatar">${s.name[0]}</div>
         <div class="student-meta">
           <div class="name">${esc(s.name)}</div>
-          <div class="sub">${esc(s.grade)} · ${esc(s.target)||'목표 미설정'}${s.rehabHistory?' · <span style="color:var(--accent);">재활 이력</span>':''}</div>
+          <div class="sub">${s.branch?`${esc(s.branch)} · `:''}${esc(s.grade)} · ${esc(s.target)||'목표 미설정'}${s.rehabHistory?' · <span style="color:var(--accent);">재활 이력</span>':''}</div>
         </div>
         <div class="fatigue-dot dot-${riskDot(m.riskLevel)}" title="${m.riskLabel}"></div>
         <button class="del-student" title="학생 삭제" onclick="event.stopPropagation(); deleteStudent('${s.id}')">✕</button>
       </div>`;
   }).join('') || `<div class="empty-mini">검색 결과가 없습니다</div>`;
 }
+function getFilteredStudents(){
+  const q = (document.getElementById('searchInput')?.value || '').trim();
+  const branch = state.sidebarBranchFilter;
+  return state.students.filter(s=>{
+    if(!s.name.includes(q)) return false;
+    if(!branch) return true;
+    if(branch==='__unassigned__') return !s.branch;
+    return s.branch===branch;
+  });
+}
 function filterStudentList(){
   const listEl = document.querySelector('.student-list');
   if(!listEl) return;
-  const q = (document.getElementById('searchInput')?.value || '').trim();
-  listEl.innerHTML = buildStudentCardsHTML(state.students.filter(s=> s.name.includes(q)));
+  listEl.innerHTML = buildStudentCardsHTML(getFilteredStudents());
+}
+function filterByBranchInTeamView(branch){
+  state.sidebarBranchFilter = branch;
+  closeTeamView();
 }
 function renderSidebar(){
   const q = (document.getElementById('searchInput')?.value || '').trim();
-  const cards = buildStudentCardsHTML(state.students.filter(s=> s.name.includes(q)));
+  const branchFilter = state.sidebarBranchFilter;
+  const cards = buildStudentCardsHTML(getFilteredStudents());
   const dangerCount = state.students.filter(s=> computeFatigueMetrics(s).riskLevel==='danger').length;
 
   return `
@@ -759,7 +775,12 @@ function renderSidebar(){
       <button class="add-btn" onclick="openAddStudentModal()">+ 학생 등록</button>
       <button class="add-btn" style="background:var(--surface-2); border:1px solid var(--lime); color:var(--lime); margin-top:-6px; position:relative;" onclick="openTeamView()">🏠 팀 전체 현황${dangerCount>0?` <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:var(--accent); color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">위험 ${dangerCount}</span>`:''}</button>
       <button class="add-btn" style="background:var(--lime); color:#0d1a03; margin-top:-6px; margin-bottom:12px;" onclick="openBulkEntry()">📋 오늘 일괄 입력</button>
-      <input class="student-search" id="searchInput" placeholder="학생 이름 검색" value="${q}" oninput="filterStudentList()">
+      <input class="student-search" id="searchInput" placeholder="학생 이름 검색" value="${q}" oninput="filterStudentList()" style="margin-bottom:8px;">
+      <select id="branchFilter" class="student-search" onchange="state.sidebarBranchFilter=this.value; filterStudentList();" style="margin-bottom:12px;">
+        <option value="" ${!branchFilter?'selected':''}>전체 지점</option>
+        ${BRANCHES.map(b=>`<option value="${b}" ${branchFilter===b?'selected':''}>${b}</option>`).join('')}
+        <option value="__unassigned__" ${branchFilter==='__unassigned__'?'selected':''}>미지정</option>
+      </select>
       <div class="student-list">${cards}</div>
       <div class="sidebar-footer">
         <button class="ghost-btn" onclick="exportData()">내보내기</button>
@@ -798,7 +819,7 @@ function renderMain(){
           <div class="avatar-lg">${s.name[0]}</div>
           <div>
             <h2>${esc(s.name)} ${s.rehabHistory?'<span class="badge bad" style="vertical-align:middle; margin-left:6px;">재활 이력</span>':''}</h2>
-            <div class="tagline">${esc(s.grade)} · ${esc(s.target) || '목표 미설정'} <span class="rubric-hint" onclick="openEditStudentModal('${s.id}')" title="학생 정보 수정">ⓘ 정보 수정</span></div>
+            <div class="tagline">${s.branch?`${esc(s.branch)} · `:''}${esc(s.grade)} · ${esc(s.target) || '목표 미설정'} <span class="rubric-hint" onclick="openEditStudentModal('${s.id}')" title="학생 정보 수정">ⓘ 정보 수정</span></div>
           </div>
         </div>
         <div class="tabs">${tabBtns}</div>
@@ -1045,6 +1066,30 @@ function renderTeamOverview(){
 
   const allTeamEvents = [...new Set(state.students.flatMap(s=>s.events))];
 
+  // 지점별 현황
+  const branchGroups = {};
+  (BRANCHES.concat(['미지정'])).forEach(b=> branchGroups[b] = []);
+  rows.forEach(r=>{
+    const b = r.s.branch && BRANCHES.includes(r.s.branch) ? r.s.branch : '미지정';
+    branchGroups[b].push(r);
+  });
+  const branchCards = Object.keys(branchGroups).filter(b=> branchGroups[b].length).map(b=>{
+    const grp = branchGroups[b];
+    const grpTotal = grp.length;
+    const grpLogged = grp.filter(r=>r.todayEntry).length;
+    const grpDanger = grp.filter(r=>r.m.riskLevel==='danger').length;
+    const grpCaution = grp.filter(r=>r.m.riskLevel==='caution').length;
+    const scores = grp.filter(r=>r.todayEntry).map(r=>Number(r.todayEntry.score));
+    const grpAvg = scores.length ? (scores.reduce((a,c)=>a+c,0)/scores.length).toFixed(1) : '-';
+    const tone = grpDanger>0 ? '' : grpCaution>0 ? 'warn' : 'good';
+    return `
+      <div class="card stat-tile ${tone}" style="cursor:pointer;" onclick="filterByBranchInTeamView('${b==='미지정'?'__unassigned__':b}')">
+        <h3>${esc(b)}</h3>
+        <div class="stat">${grpTotal}<span style="font-size:14px;color:var(--text-dim);">명</span></div>
+        <div class="stat-note">입력 ${grpLogged}/${grpTotal} · 평균 피로도 ${grpAvg}${(grpDanger+grpCaution)>0?` · 위험${grpDanger} 주의${grpCaution}`:''}</div>
+      </div>`;
+  }).join('');
+
   const priorityRows = priorityList.map(r=>`
     <div class="insight-box ${r.m.riskLevel==='danger'?'flag':''}" style="cursor:pointer;" onclick="selectStudent('${r.s.id}')">
       <b>${esc(r.s.name)}</b> (${esc(r.s.grade)}) — ${r.m.riskLabel}${r.todayEntry? ` · 오늘 피로도 ${r.todayEntry.score}/10`:' · 오늘 미입력'}
@@ -1055,13 +1100,14 @@ function renderTeamOverview(){
     const badgeLabel = r.m.riskLevel==='danger'?'위험':r.m.riskLevel==='caution'?'주의':r.m.riskLevel==='unknown'?'데이터부족':'안정';
     return `<tr style="cursor:pointer;" onclick="selectStudent('${r.s.id}')">
       <td>${esc(r.s.name)}</td>
+      <td>${esc(r.s.branch)||'-'}</td>
       <td>${esc(r.s.grade)||'-'}</td>
       <td>${r.todayEntry? `${r.todayEntry.score}/10` : '<span style="color:var(--text-dim);">미입력</span>'}</td>
       <td><span class="badge ${badge}">${badgeLabel}</span></td>
       <td>${r.decline? '<span style="color:var(--accent);">⚠ 하락 신호</span>' : '-'}</td>
       <td>${r.todayEntry? (r.todayEntry.attended!==false? '✓' : '<span style="color:var(--accent);">결석</span>') : '-'}</td>
     </tr>`;
-  }).join('') || `<tr><td colspan="6" class="empty-mini">등록된 학생이 없습니다</td></tr>`;
+  }).join('') || `<tr><td colspan="7" class="empty-mini">등록된 학생이 없습니다</td></tr>`;
 
   const sessionBits = SESSION_TYPES.map(t=>`
     <div class="card stat-tile">
@@ -1090,6 +1136,11 @@ function renderTeamOverview(){
         <div class="card stat-tile"><h3>오늘 출석</h3><div class="stat">${attendedToday} / ${total}</div><div class="stat-note">입력된 기록 기준</div></div>
         <div class="card stat-tile ${riskCounts.danger>0?'':'good'}"><h3>위험·주의 학생</h3><div class="stat">${riskCounts.danger+riskCounts.caution}명</div><div class="stat-note">위험 ${riskCounts.danger} · 주의 ${riskCounts.caution}</div></div>
       </div>
+
+      <div class="lane-divider"></div>
+      <div class="section-title">지점별 현황</div>
+      <div class="stat-note" style="margin-bottom:10px;">카드를 누르면 그 지점 학생만 사이드바에서 볼 수 있어요.</div>
+      <div class="grid grid-3">${branchCards || `<div class="empty-mini">등록된 학생이 없습니다</div>`}</div>
 
       <div class="lane-divider"></div>
       <div class="section-title">우선 확인 필요 학생</div>
@@ -1127,7 +1178,7 @@ function renderTeamOverview(){
       <div class="section-title">전체 학생 현황</div>
       <div class="card" style="padding:8px 0; overflow-x:auto;">
         <table>
-          <thead><tr><th>이름</th><th>학년</th><th>오늘 피로도</th><th>위험도</th><th>기록 추세</th><th>출석</th></tr></thead>
+          <thead><tr><th>이름</th><th>지점</th><th>학년</th><th>오늘 피로도</th><th>위험도</th><th>기록 추세</th><th>출석</th></tr></thead>
           <tbody>${tableRows}</tbody>
         </table>
       </div>
@@ -1612,15 +1663,15 @@ function renderOverview(s){
 
   const declineFlags = detectPlateauOrDecline(s);
   const declineInsights = declineFlags.map(f=>{
-    if(f.type==='decline') return {flag:true, html:`<b>${f.ev}</b> 기록이 최근 3회 평균 기준 <b>${Math.abs(f.changePct).toFixed(1)}%</b> 하락했습니다. 정체·슬럼프 초기 신호일 수 있으니 훈련 방식을 점검해보세요.`};
-    return {flag:false, html:`<b>${f.ev}</b> 기록이 최근 정체 구간입니다. 자극 변화(훈련 방식·강도 조절)를 고려해보세요.`};
+    if(f.type==='decline') return {flag:true, html:`<b>${esc(f.ev)}</b> 기록이 최근 3회 평균 기준 <b>${Math.abs(f.changePct).toFixed(1)}%</b> 하락했습니다. 정체·슬럼프 초기 신호일 수 있으니 훈련 방식을 점검해보세요.`};
+    return {flag:false, html:`<b>${esc(f.ev)}</b> 기록이 최근 정체 구간입니다. 자극 변화(훈련 방식·강도 조절)를 고려해보세요.`};
   });
 
   const consistencyList = computeConsistency(s);
   const consistencyInsights = consistencyList.map(c=>{
-    if(c.cv<3) return {flag:false, html:`<b>${c.ev}</b> 최근 기록 편차가 <b>${c.cv.toFixed(1)}%</b>로 매우 안정적입니다. 실전에서도 기복 없이 낼 가능성이 높습니다.`};
-    if(c.cv<7) return {flag:false, html:`<b>${c.ev}</b> 최근 기록 편차가 <b>${c.cv.toFixed(1)}%</b>로 보통 수준입니다.`};
-    return {flag:true, html:`<b>${c.ev}</b> 최근 기록 편차가 <b>${c.cv.toFixed(1)}%</b>로 큰 편입니다. 컨디션에 따라 기복이 있으니 안정화 훈련(반복 측정·루틴화)이 필요해 보입니다.`};
+    if(c.cv<3) return {flag:false, html:`<b>${esc(c.ev)}</b> 최근 기록 편차가 <b>${c.cv.toFixed(1)}%</b>로 매우 안정적입니다. 실전에서도 기복 없이 낼 가능성이 높습니다.`};
+    if(c.cv<7) return {flag:false, html:`<b>${esc(c.ev)}</b> 최근 기록 편차가 <b>${c.cv.toFixed(1)}%</b>로 보통 수준입니다.`};
+    return {flag:true, html:`<b>${esc(c.ev)}</b> 최근 기록 편차가 <b>${c.cv.toFixed(1)}%</b>로 큰 편입니다. 컨디션에 따라 기복이 있으니 안정화 훈련(반복 측정·루틴화)이 필요해 보입니다.`};
   });
 
   const recovery = computeRecoveryPattern(s);
@@ -1647,7 +1698,7 @@ function renderOverview(s){
     const tone = pct===null? '' : pct>=100? 'good' : pct>=85? '' : 'warn';
     return `
       <div class="card stat-tile ${tone}">
-        <h3>${ev}</h3>
+        <h3>${esc(ev)}</h3>
         <div class="stat">${latest!==null? latest : '—'}<span style="font-size:14px;color:var(--text-dim);"> ${EVENT_UNIT[ev]?.split(' ')[0]||''}</span></div>
         <div class="stat-note">${target? `목표 ${target} · 달성률 ${pct!==null? pct.toFixed(0)+'%':'-'}`:'목표 미설정'}</div>
       </div>`;
@@ -1973,7 +2024,7 @@ function renderRecordsTab(s){
     ${JUMP_EVENTS.includes(ev) ? renderJumpFatiguePanel(s, ev) : ''}
 
     <div class="card" style="margin-bottom:18px;">
-      <h3 style="margin-bottom:10px;">${ev} 기록 추이 <span style="text-transform:none; color:var(--text-dim); font-weight:400;">(회색 점선 = 14일 기준선, 주황 점선 = 5% 경계)</span></h3>
+      <h3 style="margin-bottom:10px;">${esc(ev)} 기록 추이 <span style="text-transform:none; color:var(--text-dim); font-weight:400;">(회색 점선 = 14일 기준선, 주황 점선 = 5% 경계)</span></h3>
       <div class="stat-note" style="margin-bottom:8px;">현재 저장된 기록: <b>${recs.length}건</b></div>
       ${recs.length ? `<div class="chart-wrap"><canvas id="recordChart"></canvas></div><div class="stat-note" id="recordChartStatus" style="margin-top:6px;"></div>` : `<div class="empty-mini">아직 이 종목의 기록이 없습니다. 위에서 첫 기록을 입력하면 바로 그래프가 표시됩니다.</div>`}
     </div>
@@ -2296,6 +2347,13 @@ function openAddStudentModal(){
       <form onsubmit="submitAddStudent(event)">
         <div class="field"><label>이름</label><input name="name" required placeholder="학생 이름"></div>
         <div class="field"><label>학년</label><input name="grade" placeholder="예: 고3"></div>
+        <div class="field">
+          <label>지점</label>
+          <select name="branch">
+            <option value="">선택 안함</option>
+            ${BRANCHES.map(b=>`<option value="${b}">${b}</option>`).join('')}
+          </select>
+        </div>
         <div class="field"><label>목표</label><input name="target" placeholder="예: OO대학 체육교육과"></div>
         <div class="field">
           <label>재활이 필요했던 부상 이력</label>
@@ -2314,7 +2372,7 @@ function openAddStudentModal(){
 async function submitAddStudent(e){
   e.preventDefault();
   const f = new FormData(e.target);
-  const ns = { id:uid(), name:f.get('name'), grade:f.get('grade')||'', target:f.get('target')||'', rehabHistory:f.get('rehabHistory')==='true', events:[], targets:{}, fatigue:[], records:{} };
+  const ns = { id:uid(), name:f.get('name'), grade:f.get('grade')||'', branch:f.get('branch')||'', target:f.get('target')||'', rehabHistory:f.get('rehabHistory')==='true', events:[], targets:{}, fatigue:[], records:{} };
   state.selectedId = ns.id;
   state.activeTab='overview';
   closeModal();
@@ -2331,6 +2389,13 @@ function openEditStudentModal(sid){
       <form onsubmit="submitEditStudent(event,'${sid}')">
         <div class="field"><label>이름</label><input name="name" required value="${esc(s.name)}"></div>
         <div class="field"><label>학년</label><input name="grade" value="${esc(s.grade||'')}"></div>
+        <div class="field">
+          <label>지점</label>
+          <select name="branch">
+            <option value="" ${!s.branch?'selected':''}>선택 안함</option>
+            ${BRANCHES.map(b=>`<option value="${b}" ${s.branch===b?'selected':''}>${b}</option>`).join('')}
+          </select>
+        </div>
         <div class="field"><label>목표</label><input name="target" value="${esc(s.target||'')}"></div>
         <div class="field">
           <label>재활이 필요했던 부상 이력</label>
@@ -2369,6 +2434,7 @@ function submitEditStudent(e, sid){
   if(!s){ closeModal(); showToast('학생을 찾을 수 없습니다 (삭제되었을 수 있어요)'); return; }
   s.name = f.get('name');
   s.grade = f.get('grade')||'';
+  s.branch = f.get('branch')||'';
   s.target = f.get('target')||'';
   s.rehabHistory = f.get('rehabHistory')==='true';
   closeModal();
@@ -2460,7 +2526,7 @@ function csvEscape(val){
 }
 function exportCSV(){
   const cutoff = daysAgo(30);
-  const header = ['이름','학년','목표','재활이력','최근30일 평균 피로도','최근30일 평균 수면','위험도','종목별 최신기록'];
+  const header = ['이름','지점','학년','목표','재활이력','최근30일 평균 피로도','최근30일 평균 수면','위험도','종목별 최신기록'];
   const rows = state.students.map(s=>{
     const recent = s.fatigue.filter(f=>f.date>=cutoff);
     const avgScore = recent.length ? (recent.reduce((a,b)=>a+Number(b.score),0)/recent.length).toFixed(1) : '';
@@ -2473,7 +2539,7 @@ function exportCSV(){
       const latest = recs.slice().sort((a,b)=>a.date.localeCompare(b.date)).pop();
       return `${ev}:${latest.value}`;
     }).join(', ');
-    return [s.name, s.grade||'', s.target||'', s.rehabHistory?'있음':'없음', avgScore, avgSleep, m.riskLabel, eventsSummary];
+    return [s.name, s.branch||'', s.grade||'', s.target||'', s.rehabHistory?'있음':'없음', avgScore, avgSleep, m.riskLabel, eventsSummary];
   });
   const csvLines = [header, ...rows].map(r=> r.map(csvEscape).join(',')).join('\r\n');
   const blob = new Blob(['\uFEFF'+csvLines], {type:'text/csv;charset=utf-8;'});
