@@ -290,6 +290,8 @@
   .student-pick-name{ font-weight:800; font-size:15px; }
   .student-pick-card:active{ border-color:var(--lime); }
 
+
+
   .student-header{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:20px; }
   .student-header .who{ display:flex; align-items:center; gap:12px; min-width:0; }
   .student-header .who-name{ font-family:'Bebas Neue',sans-serif; font-size:26px; margin:0; letter-spacing:0.02em; overflow-wrap:anywhere; }
@@ -446,6 +448,10 @@
   .log-card-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
   .log-brand{ font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:0.03em; color:var(--lime); }
   .log-title{ font-weight:800; font-size:17px; margin-top:4px; }
+  .log-type-badge{
+    display:inline-block; font-size:12px; font-weight:700; padding:2px 10px; border-radius:20px;
+    border:1px solid; margin-left:6px; vertical-align:middle;
+  }
   .log-instructor{ color:var(--text-dim); font-size:13.5px; margin-top:4px; }
   .log-section{ margin-top:16px; font-size:15px; }
   .log-section b{ color:var(--lime); font-size:13px; letter-spacing:0.02em; }
@@ -1289,6 +1295,26 @@ function renderTeamRankList(){
    코치 계정과 완전히 다른, 훨씬 단순한 화면. 학생이 자기 이름을 고르고
    오늘의 컨디션을 스스로 기록한다. 다른 학생 정보는 보이지 않고,
    삭제/수정 같은 관리 기능도 없다. */
+
+// 이번 달 기록 현황 — 이번 달에 며칠 기록했는지
+function computeMonthlyLogStats(s){
+  const now = new Date();
+  const monthPrefix = todayStr().slice(0,7);
+  const dayOfMonth = now.getDate();
+  const loggedThisMonth = s.fatigue.filter(f=> f.date.startsWith(monthPrefix)).length;
+  return { loggedThisMonth, dayOfMonth };
+}
+// 오늘 컨디션이 최근(최대 7일, 오늘 제외) 평균 대비 좋은지/나쁜지
+function computeTodayTrend(s){
+  const sorted = s.fatigue.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  if(sorted.length<2) return null;
+  const today = sorted[sorted.length-1];
+  const prior = sorted.slice(0,-1).slice(-7);
+  if(!prior.length) return null;
+  const avg = prior.reduce((a,b)=>a+Number(b.score),0)/prior.length;
+  return { diff: Number(today.score)-avg, avg, today: Number(today.score) };
+}
+
 function computeStudentFeedback(s){
   const m = computeFatigueMetrics(s);
   const rec = computeTrainingRecommendation(s);
@@ -1428,6 +1454,15 @@ function renderStudentHome(s){
   const fb = computeStudentFeedback(s);
   const already = s.fatigue.find(f=>f.date===todayStr());
 
+  const monthly = computeMonthlyLogStats(s);
+  const trend = computeTodayTrend(s);
+  let trendArrow='—', trendLabel='비교할 기록 없음', trendColor='var(--text-dim)';
+  if(trend){
+    if(trend.diff<=-1){ trendArrow='▼'; trendLabel='최근보다 좋음'; trendColor='var(--lime)'; }
+    else if(trend.diff>=1){ trendArrow='▲'; trendLabel='최근보다 힘듦'; trendColor='var(--accent)'; }
+    else{ trendArrow='='; trendLabel='평소와 비슷'; trendColor='var(--text-muted)'; }
+  }
+
   return `
     <div class="student-self-wrap">
       <div class="student-header">
@@ -1438,6 +1473,17 @@ function renderStudentHome(s){
         <div class="student-actions">
           <span class="rubric-hint" onclick="switchStudentSelf()">다른 사람으로 전환</span>
           <span class="rubric-hint" onclick="logout()">로그아웃</span>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-bottom:16px;">
+        <div class="card stat-tile">
+          <h3>이번 달 기록</h3>
+          <div class="stat" style="font-size:24px;">${monthly.loggedThisMonth}<span style="font-size:13px;color:var(--text-dim);">/${monthly.dayOfMonth}일</span></div>
+        </div>
+        <div class="card stat-tile" style="border-left-color:${trendColor};">
+          <h3>최근 대비 오늘</h3>
+          <div class="stat" style="font-size:24px; color:${trendColor};">${trendArrow} <span style="font-size:15px;">${trendLabel}</span></div>
         </div>
       </div>
 
@@ -1605,19 +1651,28 @@ function formatLogDate(dateStr){
   if(!dateStr) return '';
   const parts = dateStr.split('-');
   if(parts.length!==3) return dateStr;
-  return `${parts[0].slice(2)}.${parts[1]}.${parts[2]}`;
+  const days = ['일','월','화','수','목','금','토'];
+  const d = new Date(dateStr);
+  const dayLabel = isNaN(d.getTime()) ? '' : ` (${days[d.getDay()]})`;
+  return `${parts[0].slice(2)}.${parts[1]}.${parts[2]}${dayLabel}`;
 }
-function renderClassLogView(){
-  const logs = state.classLogs || [];
-  const logCards = logs.map(log=>{
+const CLASS_TYPE_PALETTE = ['#ff4b33','#c6ff3d','#ffb020','#3ddc84','#7c9dff','#ff8a3d'];
+function classTypeColor(name){
+  if(!name) return 'var(--text-dim)';
+  let hash=0;
+  for(let i=0;i<name.length;i++) hash = (hash*31 + name.charCodeAt(i)) % CLASS_TYPE_PALETTE.length;
+  return CLASS_TYPE_PALETTE[Math.abs(hash)];
+}
+function buildClassLogCardsHTML(logs){
+  return logs.map(log=>{
     const classTypeLabel = log.classType || [log.branch, log.className].filter(Boolean).join(' '); // 이전 버전 데이터 호환
-    const title = `${formatLogDate(log.date)}${classTypeLabel?` ${esc(classTypeLabel)}`:''}`;
+    const color = classTypeColor(classTypeLabel);
     return `
       <div class="log-card">
         <div class="log-card-head">
           <div>
             <div class="log-brand">HERO 수업일지</div>
-            <div class="log-title">&lt;수업일지&gt; ${title}</div>
+            <div class="log-title">&lt;수업일지&gt; ${formatLogDate(log.date)} ${classTypeLabel?`<span class="log-type-badge" style="background:${color}22; color:${color}; border-color:${color}55;">${esc(classTypeLabel)}</span>`:''}</div>
             <div class="log-instructor">메인강사 ${esc(log.instructor)||'-'}${log.assistant?` · 보조강사 ${esc(log.assistant)}`:''}</div>
           </div>
           <button class="row-del" onclick="deleteClassLog('${log.id}')">삭제</button>
@@ -1628,6 +1683,19 @@ function renderClassLogView(){
         <div class="log-section"><b>-청소-</b><div class="log-body">${esc(log.cleaning)||'-'}</div></div>
       </div>`;
   }).join('') || `<div class="empty-mini">아직 작성된 수업일지가 없습니다.</div>`;
+}
+function filterClassLogList(){
+  const listEl = document.getElementById('classLogList');
+  const sel = document.getElementById('classLogTypeFilter');
+  if(!listEl) return;
+  const type = sel ? sel.value : '';
+  const logs = (state.classLogs||[]).filter(l=> !type || (l.classType||[l.branch,l.className].filter(Boolean).join(' '))===type);
+  listEl.innerHTML = buildClassLogCardsHTML(logs);
+}
+function renderClassLogView(){
+  const logs = state.classLogs || [];
+  const usedTypes = [...new Set(logs.map(l=> l.classType || [l.branch,l.className].filter(Boolean).join(' ')).filter(Boolean))];
+  const logCards = buildClassLogCardsHTML(logs);
 
   return `
     <main>
@@ -1638,7 +1706,14 @@ function renderClassLogView(){
             <div class="tagline">${todayStr()} · 총 ${logs.length}건</div>
           </div>
         </div>
-        <button class="ghost-btn" style="padding:9px 16px;" onclick="closeClassLogView()">닫기</button>
+        <div style="display:flex; align-items:center; gap:10px;">
+          ${usedTypes.length ? `
+          <select id="classLogTypeFilter" class="student-search" style="margin-bottom:0; width:auto;" onchange="filterClassLogList()">
+            <option value="">전체 수업 종류</option>
+            ${usedTypes.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('')}
+          </select>` : ''}
+          <button class="ghost-btn" style="padding:9px 16px;" onclick="closeClassLogView()">닫기</button>
+        </div>
       </div>
       <div class="lane-divider"></div>
 
@@ -1677,7 +1752,7 @@ function renderClassLogView(){
       </div>
 
       <div class="section-title">지난 수업일지</div>
-      ${logCards}
+      <div id="classLogList">${logCards}</div>
     </main>`;
 }
 function toggleCustomClassType(sel){
