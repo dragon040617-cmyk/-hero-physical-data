@@ -424,6 +424,41 @@
   .rubric-row:last-child{ border-bottom:none; }
   .rubric-row .badge{ flex-shrink:0; min-width:46px; text-align:center; }
 
+  /* ---- 수업일지 ---- */
+  .log-form-card{ padding:24px; margin-bottom:24px; }
+  .log-form-title{ font-size:19px; margin-bottom:18px; }
+  .log-form-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:16px; margin-bottom:16px; }
+  .log-form-grid .field label, .log-textarea-field label{ font-size:12.5px; margin-bottom:2px; }
+  .log-form-grid input, .log-form-grid select{ font-size:15px; padding:11px 12px; }
+  .log-textarea-field{ margin-bottom:18px; }
+  .log-textarea{
+    background:var(--surface-2); border:1px solid var(--line); color:var(--text);
+    border-radius:10px; padding:14px 14px; font-size:15px; line-height:1.6;
+    font-family:'Manrope',sans-serif; resize:vertical; width:100%;
+  }
+  .log-textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .log-submit-btn{ width:100%; height:48px; font-size:15px; margin-top:4px; }
+
+  .log-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    padding:22px 24px; margin-bottom:18px;
+  }
+  .log-card-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .log-brand{ font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:0.03em; color:var(--lime); }
+  .log-title{ font-weight:800; font-size:17px; margin-top:4px; }
+  .log-instructor{ color:var(--text-dim); font-size:13.5px; margin-top:4px; }
+  .log-section{ margin-top:16px; font-size:15px; }
+  .log-section b{ color:var(--lime); font-size:13px; letter-spacing:0.02em; }
+  .log-body{ white-space:pre-wrap; line-height:1.75; margin-top:6px; color:var(--text); }
+
+  @media (max-width:700px){
+    .log-form-card{ padding:18px 16px; }
+    .log-form-grid{ grid-template-columns:1fr; gap:14px; }
+    .log-card{ padding:18px; }
+    .log-brand{ font-size:18px; }
+    .log-title{ font-size:16px; }
+  }
+
   ::-webkit-scrollbar{ width:8px; height:8px; }
   ::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
 </style>
@@ -505,6 +540,7 @@ const JUMP_EVENTS = ["제자리멀리뛰기","CMJ"];
 const SESSION_TYPES = ["기술","웨이트","스피드(야외)","실내 체력","재활","테스트"];
 const BODY_PARTS = ["허리","무릎","발목","어깨","종아리","허벅지","정강이","손목","목","기타"];
 const BRANCHES = ["해운대점","사직점","주례점"];
+const CLASS_TYPES = ["해운대수업","사직수업","주례수업","수시집중반","해운대 수시반","사직 수시반"];
 const JUMP_DROP_STEP = 5;      // % 단위 임계값
 const JUMP_STREAK_ESCALATE = 4; // 연속 하락일수 임계값
 const JUMP_LEVELS = [
@@ -553,6 +589,8 @@ let state = {
   mobileSidebarOpen: false,
   mobileTopbarVisible: false,
   sidebarBranchFilter: '',
+  classLogOpen: false,
+  classLogs: [],
   isStudentMode: false,
   studentSelfId: null,
   teamViewOpen: false,
@@ -774,7 +812,7 @@ function renderSidebar(){
       </div>
       <button class="add-btn" onclick="openAddStudentModal()">+ 학생 등록</button>
       <button class="add-btn" style="background:var(--surface-2); border:1px solid var(--lime); color:var(--lime); margin-top:-6px; position:relative;" onclick="openTeamView()">🏠 팀 전체 현황${dangerCount>0?` <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:var(--accent); color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">위험 ${dangerCount}</span>`:''}</button>
-      <button class="add-btn" style="background:var(--lime); color:#0d1a03; margin-top:-6px; margin-bottom:12px;" onclick="openBulkEntry()">📋 오늘 일괄 입력</button>
+      <button class="add-btn" style="background:var(--lime); color:#0d1a03; margin-top:-6px; margin-bottom:12px;" onclick="openClassLogView()">📝 수업일지</button>
       <input class="student-search" id="searchInput" placeholder="학생 이름 검색" value="${q}" oninput="filterStudentList()" style="margin-bottom:8px;">
       <select id="branchFilter" class="student-search" onchange="state.sidebarBranchFilter=this.value; filterStudentList();" style="margin-bottom:12px;">
         <option value="" ${!branchFilter?'selected':''}>전체 지점</option>
@@ -1562,6 +1600,121 @@ function drawStudentChart(){
   }catch(err){ console.warn('학생 그래프 오류:', err.message); }
 }
 
+/* ---- 수업일지 (코치 전용, 학생 데이터와 무관) ---- */
+function formatLogDate(dateStr){
+  if(!dateStr) return '';
+  const parts = dateStr.split('-');
+  if(parts.length!==3) return dateStr;
+  return `${parts[0].slice(2)}.${parts[1]}.${parts[2]}`;
+}
+function renderClassLogView(){
+  const logs = state.classLogs || [];
+  const logCards = logs.map(log=>{
+    const classTypeLabel = log.classType || [log.branch, log.className].filter(Boolean).join(' '); // 이전 버전 데이터 호환
+    const title = `${formatLogDate(log.date)}${classTypeLabel?` ${esc(classTypeLabel)}`:''}`;
+    return `
+      <div class="log-card">
+        <div class="log-card-head">
+          <div>
+            <div class="log-brand">HERO 수업일지</div>
+            <div class="log-title">&lt;수업일지&gt; ${title}</div>
+            <div class="log-instructor">메인강사 ${esc(log.instructor)||'-'}${log.assistant?` · 보조강사 ${esc(log.assistant)}`:''}</div>
+          </div>
+          <button class="row-del" onclick="deleteClassLog('${log.id}')">삭제</button>
+        </div>
+        <div class="lane-divider" style="margin:16px 0;"></div>
+        <div class="log-section"><b>-수업내용-</b><div class="log-body">${esc(log.content)||'-'}</div></div>
+        <div class="log-section"><b>-특이사항-</b><div class="log-body">${esc(log.notes)||'-'}</div></div>
+        <div class="log-section"><b>-청소-</b><div class="log-body">${esc(log.cleaning)||'-'}</div></div>
+      </div>`;
+  }).join('') || `<div class="empty-mini">아직 작성된 수업일지가 없습니다.</div>`;
+
+  return `
+    <main>
+      <div class="topbar">
+        <div class="heading">
+          <div>
+            <h2>수업일지</h2>
+            <div class="tagline">${todayStr()} · 총 ${logs.length}건</div>
+          </div>
+        </div>
+        <button class="ghost-btn" style="padding:9px 16px;" onclick="closeClassLogView()">닫기</button>
+      </div>
+      <div class="lane-divider"></div>
+
+      <div class="card log-form-card">
+        <h3 class="log-form-title">새 수업일지 작성</h3>
+        <form onsubmit="submitClassLog(event)">
+          <div class="log-form-grid">
+            <div class="field"><label>날짜</label><input type="date" name="date" value="${todayStr()}" required></div>
+            <div class="field">
+              <label>수업 종류</label>
+              <select name="classType" id="classTypeSelect" onchange="toggleCustomClassType(this)">
+                ${CLASS_TYPES.map(c=>`<option value="${c}">${c}</option>`).join('')}
+                <option value="__custom__">직접 입력...</option>
+              </select>
+            </div>
+            <div class="field"><label>메인강사</label><input type="text" name="instructor" placeholder="예: 조용민"></div>
+            <div class="field"><label>보조강사</label><input type="text" name="assistant" placeholder="예: 없음"></div>
+          </div>
+          <div class="field" id="customClassTypeField" style="display:none; margin-top:2px;">
+            <label>수업 종류 직접 입력</label>
+            <input type="text" name="classTypeCustom" placeholder="예: 해운대 심화반">
+          </div>
+
+          <div class="field log-textarea-field">
+            <label>수업내용</label>
+            <textarea name="content" rows="6" class="log-textarea" placeholder="오늘 진행한 훈련 내용을 적어주세요"></textarea>
+          </div>
+          <div class="field log-textarea-field">
+            <label>특이사항</label>
+            <textarea name="notes" rows="6" class="log-textarea" placeholder="학생 컨디션, 부상, 분위기 등"></textarea>
+          </div>
+          <div class="field log-textarea-field"><label>청소</label><input type="text" name="cleaning" placeholder="예: 지하 바닥 청소"></div>
+
+          <button class="submit-btn log-submit-btn" type="submit">일지 저장</button>
+        </form>
+      </div>
+
+      <div class="section-title">지난 수업일지</div>
+      ${logCards}
+    </main>`;
+}
+function toggleCustomClassType(sel){
+  const field = document.getElementById('customClassTypeField');
+  if(!field) return;
+  field.style.display = sel.value==='__custom__' ? '' : 'none';
+}
+function submitClassLog(e){
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const rawType = f.get('classType');
+  const classType = rawType==='__custom__' ? (f.get('classTypeCustom')||'').trim() : (rawType||'');
+  if(rawType==='__custom__' && !classType){
+    showToast('수업 종류를 직접 입력해주세요');
+    return;
+  }
+  const logObj = {
+    id: uid(),
+    date: f.get('date') || todayStr(),
+    classType,
+    instructor: f.get('instructor')||'',
+    assistant: f.get('assistant')||'',
+    content: f.get('content')||'',
+    notes: f.get('notes')||'',
+    cleaning: f.get('cleaning')||'',
+    createdAt: Date.now(),
+    createdBy: currentCoachEmail||''
+  };
+  showToast('수업일지가 저장되었습니다');
+  saveClassLog(logObj);
+  e.target.reset();
+  const dateInput = e.target.querySelector('input[name="date"]');
+  if(dateInput) dateInput.value = todayStr();
+  const customField = document.getElementById('customClassTypeField');
+  if(customField) customField.style.display = 'none';
+}
+
 function renderBulkEntry(){
   const rows = state.students.map(s=>{
     const already = s.fatigue.find(f=>f.date===todayStr());
@@ -2150,15 +2303,15 @@ function rerenderInner(){
     <div class="mobile-topbar ${state.mobileTopbarVisible?'show':''}">
       <button class="hamburger" onclick="toggleSidebar()">☰</button>
       <span class="mobile-brand">HERO PHYSICAL DATA</span>
-    </div>` + renderSidebar() + (state.teamViewOpen ? renderTeamOverview() : state.bulkEntryOpen ? renderBulkEntry() : renderMain())
+    </div>` + renderSidebar() + (state.teamViewOpen ? renderTeamOverview() : state.classLogOpen ? renderClassLogView() : renderMain())
     + renderBottomNav();
   destroyCharts();
   if(state.teamViewOpen){ drawTeamChart(); updateMissingListPreview(); renderTeamRankList(); }
-  else if(!state.bulkEntryOpen) drawCharts();
+  else if(!state.classLogOpen) drawCharts();
   document.getElementById('sidebarBackdrop')?.classList.toggle('show', state.mobileSidebarOpen);
 }
 function renderBottomNav(){
-  const tab = state.teamViewOpen ? 'team' : state.bulkEntryOpen ? 'bulk' : 'student';
+  const tab = state.teamViewOpen ? 'team' : state.classLogOpen ? 'log' : 'student';
   return `
     <nav class="bottom-nav">
       <button class="bn-item ${tab==='student'?'active':''}" onclick="bottomNavGo('student')">
@@ -2167,8 +2320,8 @@ function renderBottomNav(){
       <button class="bn-item ${tab==='team'?'active':''}" onclick="bottomNavGo('team')">
         <span class="bn-icon">🏠</span><span>팀 현황</span>
       </button>
-      <button class="bn-item ${tab==='bulk'?'active':''}" onclick="bottomNavGo('bulk')">
-        <span class="bn-icon">📋</span><span>일괄 입력</span>
+      <button class="bn-item ${tab==='log'?'active':''}" onclick="bottomNavGo('log')">
+        <span class="bn-icon">📝</span><span>수업일지</span>
       </button>
       <button class="bn-item" onclick="openAddStudentModal()">
         <span class="bn-icon">＋</span><span>학생 등록</span>
@@ -2177,9 +2330,9 @@ function renderBottomNav(){
 }
 function bottomNavGo(tab){
   if(tab==='team'){ openTeamView(); }
-  else if(tab==='bulk'){ openBulkEntry(); }
+  else if(tab==='log'){ openClassLogView(); }
   else{
-    state.teamViewOpen=false; state.bulkEntryOpen=false;
+    state.teamViewOpen=false; state.classLogOpen=false;
     if(!state.selectedId && state.students.length) state.selectedId = state.students[0].id;
     state.mobileSidebarOpen = true;
     rerender();
@@ -2193,10 +2346,10 @@ function toggleSidebar(){
   state.mobileSidebarOpen = !state.mobileSidebarOpen;
   rerender();
 }
-function selectStudent(id){ state.selectedId=id; state.activeTab='overview'; state.bulkEntryOpen=false; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
-function openBulkEntry(){ state.bulkEntryOpen=true; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
-function closeBulkEntry(){ state.bulkEntryOpen=false; rerender(); }
-function openTeamView(){ state.teamViewOpen=true; state.bulkEntryOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
+function selectStudent(id){ state.selectedId=id; state.activeTab='overview'; state.classLogOpen=false; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
+function openClassLogView(){ state.classLogOpen=true; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
+function closeClassLogView(){ state.classLogOpen=false; rerender(); }
+function openTeamView(){ state.teamViewOpen=true; state.classLogOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
 function closeTeamView(){ state.teamViewOpen=false; rerender(); }
 function setTab(tab){ state.activeTab=tab; rerender(); }
 function selectEvent(sid, ev){ state.selectedEventByStudent[sid]=ev; rerender(); }
@@ -2623,7 +2776,7 @@ const FIREBASE_CONFIG = {
   appId: "1:505238936070:web:ab01e5164d03c44de0c187"
 };
 
-let auth=null, db=null, currentCoachEmail='', unsubscribeStudents=null;
+let auth=null, db=null, currentCoachEmail='', unsubscribeStudents=null, unsubscribeClassLogs=null;
 const SEED_STUDENTS = JSON.parse(JSON.stringify(state.students));
 let firstSnapshot=true;
 
@@ -2654,10 +2807,12 @@ function initFirebase(){
         document.getElementById('loginScreen').style.display='none';
         document.getElementById('app').style.display='';
         subscribeStudents();
+        if(!state.isStudentMode) subscribeClassLogs();
       }else{
         currentCoachEmail='';
         state.isStudentMode = false;
         if(unsubscribeStudents){ unsubscribeStudents(); unsubscribeStudents=null; }
+        if(unsubscribeClassLogs){ unsubscribeClassLogs(); unsubscribeClassLogs=null; }
         document.getElementById('loginScreen').style.display='';
         document.getElementById('app').style.display='none';
       }
@@ -2735,6 +2890,36 @@ async function saveStudent(s){
   Object.keys(s).forEach(k=>{ if(!k.startsWith('_')) clean[k]=s[k]; });
   try{ await db.collection('students').doc(s.id).set(clean); }
   catch(err){ showToast('저장 실패: '+err.message); }
+}
+
+// ---- 수업일지 (코치 전용, 학생과 무관한 별도 컬렉션) ----
+function subscribeClassLogs(){
+  if(!db) return;
+  if(unsubscribeClassLogs) unsubscribeClassLogs();
+  unsubscribeClassLogs = db.collection('classLogs').onSnapshot(snap=>{
+    const list = [];
+    snap.forEach(doc=> list.push({ id: doc.id, ...doc.data() }));
+    list.sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (b.createdAt||0)-(a.createdAt||0));
+    state.classLogs = list;
+    if(state.classLogOpen) rerender();
+  }, err=>{
+    if(err && err.code==='permission-denied'){
+      showToast('수업일지 저장 공간이 아직 설정되지 않았어요 (Firestore 규칙 확인 필요)');
+    }else{
+      showToast('수업일지 동기화 오류: '+(err&&err.message||''));
+    }
+  });
+}
+async function saveClassLog(logObj){
+  if(!db){ showToast('Firebase 설정이 필요합니다'); return; }
+  try{ await db.collection('classLogs').doc(logObj.id).set(logObj); }
+  catch(err){ showToast('저장 실패: '+err.message); }
+}
+async function deleteClassLog(id){
+  if(!confirm('이 수업일지를 삭제할까요?')) return;
+  if(!db) return;
+  try{ await db.collection('classLogs').doc(id).delete(); }
+  catch(err){ showToast('삭제 실패: '+err.message); }
 }
 
 /* ============ INIT ============ */
