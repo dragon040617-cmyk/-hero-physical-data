@@ -259,10 +259,16 @@
   .chk-pill{
     display:flex; align-items:center; gap:6px; background:var(--surface-2); border:1px solid var(--line);
     border-radius:20px; padding:6px 12px; font-size:12.5px; font-weight:600; color:var(--text-muted);
-    cursor:pointer; text-transform:none; letter-spacing:0;
+    cursor:pointer; text-transform:none; letter-spacing:0; transition:box-shadow .15s ease, border-color .15s ease, color .15s ease;
   }
   .chk-pill input{ width:14px; height:14px; accent-color:var(--lime); }
   .chk-pill:has(input:checked){ border-color:var(--lime); color:var(--lime); background:var(--lime-soft); }
+  .chk-pill-glow{ font-weight:700; border-width:1px; }
+  .chk-pill-glow:has(input:checked){
+    border-color:var(--lime); color:var(--lime); background:var(--lime-soft);
+    text-shadow:0 0 10px rgba(198,255,61,0.65);
+    box-shadow:0 0 0 1px rgba(198,255,61,0.35), 0 0 14px rgba(198,255,61,0.35);
+  }
   .add-event:hover{ color:var(--text); border-color:var(--text-muted); }
 
   .chart-wrap{ height:260px; position:relative; }
@@ -433,6 +439,7 @@
   .log-form-grid .field label, .log-textarea-field label{ font-size:12.5px; margin-bottom:2px; }
   .log-form-grid input, .log-form-grid select{ font-size:15px; padding:11px 12px; }
   .log-textarea-field{ margin-bottom:18px; }
+  .chk-pill-row{ display:flex; gap:8px; flex-wrap:wrap; padding-top:6px; }
   .log-textarea{
     background:var(--surface-2); border:1px solid var(--line); color:var(--text);
     border-radius:10px; padding:14px 14px; font-size:15px; line-height:1.6;
@@ -453,6 +460,7 @@
     border:1px solid; margin-left:6px; vertical-align:middle;
   }
   .log-instructor{ color:var(--text-dim); font-size:13.5px; margin-top:4px; }
+  .log-label-accent{ color:var(--lime); font-weight:700; text-shadow:0 0 8px rgba(198,255,61,0.4); }
   .log-section{ margin-top:16px; font-size:15px; }
   .log-section b{ color:var(--lime); font-size:13px; letter-spacing:0.02em; }
   .log-body{ white-space:pre-wrap; line-height:1.75; margin-top:6px; color:var(--text); }
@@ -547,6 +555,8 @@ const SESSION_TYPES = ["기술","웨이트","스피드(야외)","실내 체력",
 const BODY_PARTS = ["허리","무릎","발목","어깨","종아리","허벅지","정강이","손목","목","기타"];
 const BRANCHES = ["해운대점","사직점","주례점"];
 const CLASS_TYPES = ["해운대수업","사직수업","주례수업","수시집중반","해운대 수시반","사직 수시반"];
+const MAIN_INSTRUCTORS = ["정식쌤","선영쌤","현우쌤","현식쌤","민규쌤"];
+const ASSISTANT_INSTRUCTORS = ["용민쌤","유빈쌤","재언쌤","지환쌤","검균쌤","정호쌤","여을쌤","태산쌤","은성쌤","승현쌤"];
 const JUMP_DROP_STEP = 5;      // % 단위 임계값
 const JUMP_STREAK_ESCALATE = 4; // 연속 하락일수 임계값
 const JUMP_LEVELS = [
@@ -1667,13 +1677,17 @@ function buildClassLogCardsHTML(logs){
   return logs.map(log=>{
     const classTypeLabel = log.classType || [log.branch, log.className].filter(Boolean).join(' '); // 이전 버전 데이터 호환
     const color = classTypeColor(classTypeLabel);
+    const instructorText = Array.isArray(log.instructor) ? log.instructor.join(', ') : (log.instructor||'');
+    const assistantText = Array.isArray(log.assistant) ? log.assistant.join(', ') : (log.assistant||'');
+    const progressText = Array.isArray(log.progress) ? log.progress.join(', ') : '';
     return `
       <div class="log-card">
         <div class="log-card-head">
           <div>
             <div class="log-brand">HERO 수업일지</div>
             <div class="log-title">&lt;수업일지&gt; ${formatLogDate(log.date)} ${classTypeLabel?`<span class="log-type-badge" style="background:${color}22; color:${color}; border-color:${color}55;">${esc(classTypeLabel)}</span>`:''}</div>
-            <div class="log-instructor">메인강사 ${esc(log.instructor)||'-'}${log.assistant?` · 보조강사 ${esc(log.assistant)}`:''}</div>
+            <div class="log-instructor"><span class="log-label-accent">메인강사</span> ${esc(instructorText)||'-'}${assistantText?` · <span class="log-label-accent">보조강사</span> ${esc(assistantText)}`:''}</div>
+            ${progressText?`<div class="log-instructor">수업진행 ${esc(progressText)}</div>`:''}
           </div>
           <button class="row-del" onclick="deleteClassLog('${log.id}')">삭제</button>
         </div>
@@ -1729,12 +1743,29 @@ function renderClassLogView(){
                 <option value="__custom__">직접 입력...</option>
               </select>
             </div>
-            <div class="field"><label>메인강사</label><input type="text" name="instructor" placeholder="예: 조용민"></div>
-            <div class="field"><label>보조강사</label><input type="text" name="assistant" placeholder="예: 없음"></div>
           </div>
-          <div class="field" id="customClassTypeField" style="display:none; margin-top:2px;">
+          <div class="field" id="customClassTypeField" style="display:none; margin-top:2px; margin-bottom:16px;">
             <label>수업 종류 직접 입력</label>
             <input type="text" name="classTypeCustom" placeholder="예: 해운대 심화반">
+          </div>
+
+          <div class="field log-textarea-field">
+            <label>메인강사</label>
+            <div class="chk-pill-row">
+              ${MAIN_INSTRUCTORS.map(n=>`<label class="chk-pill chk-pill-glow"><input type="checkbox" name="instructor" value="${n}"> ${n}</label>`).join('')}
+            </div>
+          </div>
+          <div class="field log-textarea-field">
+            <label>보조강사</label>
+            <div class="chk-pill-row">
+              ${ASSISTANT_INSTRUCTORS.map(n=>`<label class="chk-pill chk-pill-glow"><input type="checkbox" name="assistant" value="${n}"> ${n}</label>`).join('')}
+            </div>
+          </div>
+          <div class="field log-textarea-field">
+            <label>수업진행</label>
+            <div class="chk-pill-row">
+              ${SESSION_TYPES.map(t=>`<label class="chk-pill"><input type="checkbox" name="progress" value="${t}"> ${t}</label>`).join('')}
+            </div>
           </div>
 
           <div class="field log-textarea-field">
@@ -1773,8 +1804,9 @@ function submitClassLog(e){
     id: uid(),
     date: f.get('date') || todayStr(),
     classType,
-    instructor: f.get('instructor')||'',
-    assistant: f.get('assistant')||'',
+    instructor: f.getAll('instructor'),
+    assistant: f.getAll('assistant'),
+    progress: f.getAll('progress'),
     content: f.get('content')||'',
     notes: f.get('notes')||'',
     cleaning: f.get('cleaning')||'',
