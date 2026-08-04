@@ -1865,7 +1865,7 @@ async function submitBulkEntry(){
     if(!bySid[sid]) bySid[sid]={};
     bySid[sid][field] = inp.type==='checkbox' ? inp.checked : inp.value;
   });
-  let saved=0, skipped=0;
+  let saved=0, skipped=0, failed=0;
   const date = todayStr();
   for(const sid in bySid){
     const data = bySid[sid];
@@ -1876,10 +1876,10 @@ async function submitBulkEntry(){
     const entry = { date, score:Number(data.score), sleep:data.sleep||'', area:'', memo:'', attended:!!data.attended, sessionTypes:[], rehabNote:'', weather:'', temp:'', mealBefore:false, stress:'' };
     if(idx>=0) s.fatigue[idx] = {...s.fatigue[idx], ...entry}; else s.fatigue.push(entry);
     s.fatigue.sort((a,b)=>a.date.localeCompare(b.date));
-    await saveStudent(s);
-    saved++;
+    const ok = await saveStudent(s);
+    if(ok) saved++; else failed++;
   }
-  showToast(`${saved}명 저장 완료${skipped? ` (${skipped}명은 점수 미입력으로 건너뜀)`:''}`);
+  showToast(`${saved}명 저장 완료${failed?` · ${failed}명 실패(재시도 필요)`:''}${skipped? ` (${skipped}명은 점수 미입력으로 건너뜀)`:''}`);
   state.bulkEntryOpen = false;
   rerender();
 }
@@ -2726,12 +2726,13 @@ function openBulkAddEventModal(){
     <div class="modal">
       <h3>전체 학생에게 종목 일괄 추가</h3>
       <div class="stat-note" style="margin-bottom:14px;">이미 그 종목을 갖고 있는 학생은 건너뛰고, <b>없는 학생에게만</b> 추가합니다.</div>
-      <form onsubmit="submitBulkAddEvent(event)">
+      <form onsubmit="submitBulkAddEvent(event)" id="bulkAddEventForm">
         <div class="field"><label>종목명</label><input name="ev" list="evListBulk" required placeholder="예: 제자리멀리뛰기"></div>
         <datalist id="evListBulk">${EVENT_LIBRARY_DEFAULT.map(e=>`<option value="${e}">`).join('')}</datalist>
+        <div id="bulkAddEventProgress" class="stat-note" style="margin-top:10px; display:none;"></div>
         <div class="modal-actions">
           <button type="button" class="cancel" onclick="closeModal()">취소</button>
-          <button type="submit" class="confirm">일괄 추가</button>
+          <button type="submit" class="confirm" id="bulkAddEventSubmitBtn">일괄 추가</button>
         </div>
       </form>
     </div>`);
@@ -2741,16 +2742,31 @@ async function submitBulkAddEvent(e){
   const f = new FormData(e.target);
   const ev = (f.get('ev')||'').trim();
   if(!ev) return;
-  closeModal();
-  let added=0, skipped=0;
-  for(const s of state.students){
-    if(s.events.includes(ev)){ skipped++; continue; }
+
+  const submitBtn = document.getElementById('bulkAddEventSubmitBtn');
+  const progressEl = document.getElementById('bulkAddEventProgress');
+  if(submitBtn) submitBtn.disabled = true;
+  if(progressEl) progressEl.style.display = '';
+
+  const targets = state.students.filter(s=>!s.events.includes(ev));
+  let added=0, failed=0, failedNames=[];
+  const skipped = state.students.length - targets.length;
+
+  for(let i=0;i<targets.length;i++){
+    const s = targets[i];
+    if(progressEl) progressEl.textContent = `처리 중... (${i+1}/${targets.length}) — 이 창을 닫지 말고 잠시 기다려주세요`;
     s.events.push(ev);
     if(!s.records[ev]) s.records[ev]=[];
-    await saveStudent(s);
-    added++;
+    const ok = await saveStudent(s);
+    if(ok) added++; else { failed++; failedNames.push(s.name); }
   }
-  showToast(`${added}명에게 '${ev}' 추가 완료 (${skipped}명은 이미 있어서 건너뜀)`);
+
+  closeModal();
+  if(failed===0){
+    showToast(`${added}명에게 '${ev}' 추가 완료 (${skipped}명은 이미 있어서 건너뜀)`);
+  }else{
+    showToast(`${added}명 추가 완료, ${failed}명 실패 (${failedNames.slice(0,5).join(', ')}${failedNames.length>5?' 외':''}) — 다시 시도해주세요`);
+  }
 }
 
 function submitAddEvent(e, sid){
@@ -2992,11 +3008,11 @@ function subscribeStudents(){
 
 // 학생 문서를 Firestore에 저장 (모든 연결된 기기에 실시간 반영됨)
 async function saveStudent(s){
-  if(!db){ showToast('Firebase 설정이 필요합니다'); return; }
+  if(!db){ showToast('Firebase 설정이 필요합니다'); return false; }
   const clean = {};
   Object.keys(s).forEach(k=>{ if(!k.startsWith('_')) clean[k]=s[k]; });
-  try{ await db.collection('students').doc(s.id).set(clean); }
-  catch(err){ showToast('저장 실패: '+err.message); }
+  try{ await db.collection('students').doc(s.id).set(clean); return true; }
+  catch(err){ showToast('저장 실패: '+err.message); return false; }
 }
 
 // ---- 수업일지 (코치 전용, 학생과 무관한 별도 컬렉션) ----
