@@ -808,11 +808,18 @@ function buildStudentCardsHTML(filtered){
 function getFilteredStudents(){
   const q = (document.getElementById('searchInput')?.value || '').trim();
   const branch = state.sidebarBranchFilter;
-  return state.students.filter(s=>{
+  const filtered = state.students.filter(s=>{
     if(!s.name.includes(q)) return false;
     if(!branch) return true;
     if(branch==='__unassigned__') return !s.branch;
     return s.branch===branch;
+  });
+  const today = todayStr();
+  return filtered.slice().sort((a,b)=>{
+    const aLogged = a.fatigue.some(f=>f.date===today) ? 0 : 1;
+    const bLogged = b.fatigue.some(f=>f.date===today) ? 0 : 1;
+    if(aLogged !== bLogged) return aLogged - bLogged;
+    return a.name.localeCompare(b.name, 'ko');
   });
 }
 function filterStudentList(){
@@ -1410,11 +1417,13 @@ function filterStudentPickList(){
   const listEl = document.querySelector('.student-pick-list');
   if(!listEl) return;
   const q = (document.getElementById('studentPickSearch')?.value || '').trim();
-  listEl.innerHTML = buildStudentPickCardsHTML(state.students.filter(s=>s.name.includes(q)));
+  const list = state.students.filter(s=>s.name.includes(q)).sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+  listEl.innerHTML = buildStudentPickCardsHTML(list);
 }
 function renderStudentPicker(){
   const q = (document.getElementById('studentPickSearch')?.value || '').trim();
-  const cards = buildStudentPickCardsHTML(state.students.filter(s=>s.name.includes(q)));
+  const list = state.students.filter(s=>s.name.includes(q)).sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+  const cards = buildStudentPickCardsHTML(list);
 
   return `
     <div class="student-self-wrap">
