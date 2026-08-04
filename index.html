@@ -456,6 +456,10 @@
   .record-board{ margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); }
   .record-board-row{ display:flex; justify-content:space-between; font-size:13px; padding:4px 2px; color:var(--text-muted); }
   .record-board-row.me{ color:var(--lime); font-weight:800; }
+  .pb-badge{
+    display:inline-block; font-size:10.5px; font-weight:800; color:var(--warn);
+    background:rgba(255,176,32,0.14); padding:2px 8px; border-radius:20px; vertical-align:middle;
+  }
   .log-textarea{
     background:var(--surface-2); border:1px solid var(--line); color:var(--text);
     border-radius:10px; padding:14px 14px; font-size:15px; line-height:1.6;
@@ -559,6 +563,16 @@ const EVENT_UNIT = {
   "사이드 스텝":"회","핸드볼 던지기":"m"
 };
 const LOWER_IS_BETTER = ["10m 왕복달리기","20m 왕복달리기","Z-런","25m 왕복달리기","중량 달리기","100m"];
+
+// 가장 최근 기록이 그 학생의 해당 종목 역대 최고 기록인지 (최소 2회 이상 기록이 있어야 의미 있음)
+function isPersonalBest(s, ev){
+  const recs = (s.records[ev]||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
+  if(recs.length<2) return false;
+  const lower = LOWER_IS_BETTER.includes(ev);
+  const latest = recs[recs.length-1].value;
+  const best = lower ? Math.min(...recs.map(r=>r.value)) : Math.max(...recs.map(r=>r.value));
+  return latest === best;
+}
 
 /* ---- 점프 기록 기반 피로도 (제자리멀리뛰기 / CMJ) ----
    정의: 평소 점프 수행능력(최근 14일 평균 = 기준선) 대비 오늘 기록이
@@ -1369,7 +1383,7 @@ function computeStudentRecordStats(s){
       })
       .sort((a,b)=> lower ? a.value-b.value : b.value-a.value);
     const rank = board.findIndex(b=>b.isMe) + 1;
-    return { ev, latest, target, pct, rank, total: board.length, board, unit: (EVENT_UNIT[ev]||'').split(' ')[0]||'' };
+    return { ev, latest, target, pct, rank, total: board.length, board, unit: (EVENT_UNIT[ev]||'').split(' ')[0]||'', isPB: isPersonalBest(s, ev) };
   }).filter(Boolean);
 }
 
@@ -1569,7 +1583,7 @@ function renderStudentHome(s){
           return `
           <div class="record-row">
             <div class="record-row-head">
-              <span class="record-ev-name">${esc(r.ev)}</span>
+              <span class="record-ev-name">${esc(r.ev)}${r.isPB?' <span class="pb-badge">🏅 개인 최고</span>':''}</span>
               <span class="record-ev-value">${r.latest}${r.unit} ${r.target?`<span class="stat-note" style="font-size:11.5px;">/ 목표 ${r.target}${r.unit}</span>`:''}</span>
             </div>
             ${r.target ? `
@@ -1731,7 +1745,7 @@ async function submitStudentRecord(e){
   const tg = f.get('target');
   if(tg!==null && tg!=='') s.targets[ev] = Number(tg);
   const ok = await saveStudent(s);
-  if(ok) showToast(`${ev} 기록이 저장되었어요 👍`);
+  if(ok) showToast(isPersonalBest(s,ev) ? `🏅 ${ev} 개인 최고 기록 경신! 축하해요` : `${ev} 기록이 저장되었어요 👍`);
   else showToast('저장에 실패했어요. 다시 시도해주세요.');
 }
 
@@ -2053,9 +2067,10 @@ function renderOverview(s){
       if(!isFinite(pct)) pct = null;
     }
     const tone = pct===null? '' : pct>=100? 'good' : pct>=85? '' : 'warn';
+    const pb = latest!==null && isPersonalBest(s, ev);
     return `
       <div class="card stat-tile ${tone}">
-        <h3>${esc(ev)}</h3>
+        <h3>${esc(ev)}${pb?' <span class="pb-badge">🏅 개인 최고</span>':''}</h3>
         <div class="stat">${latest!==null? latest : '—'}<span style="font-size:14px;color:var(--text-dim);"> ${EVENT_UNIT[ev]?.split(' ')[0]||''}</span></div>
         <div class="stat-note">${target? `목표 ${target} · 달성률 ${pct!==null? pct.toFixed(0)+'%':'-'}`:'목표 미설정'}</div>
       </div>`;
@@ -2661,7 +2676,7 @@ async function addRecord(e, sid, ev){
   const tg = f.get('target');
   if(tg) s.targets[ev]=Number(tg);
   const ok = await saveStudent(s);
-  if(ok) showToast(`${ev} 기록이 저장되었습니다`);
+  if(ok) showToast(isPersonalBest(s,ev) ? `🏅 ${ev} 개인 최고 기록 경신!` : `${ev} 기록이 저장되었습니다`);
   else showToast('저장에 실패했어요. 다시 시도해주세요.');
 }
 function deleteRecord(sid, ev, idx){
