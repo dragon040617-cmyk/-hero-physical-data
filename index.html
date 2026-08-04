@@ -440,6 +440,22 @@
   .log-form-grid input, .log-form-grid select{ font-size:15px; padding:11px 12px; }
   .log-textarea-field{ margin-bottom:18px; }
   .chk-pill-row{ display:flex; gap:8px; flex-wrap:wrap; padding-top:6px; }
+
+  .record-row{ margin-bottom:16px; }
+  .record-row:last-child{ margin-bottom:0; }
+  .record-row-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+  .record-ev-name{ font-weight:800; font-size:14.5px; }
+  .record-ev-value{ font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--text); }
+  .record-progress-bar{ height:8px; border-radius:5px; background:var(--surface-2); overflow:hidden; }
+  .record-progress-fill{ height:100%; border-radius:5px; transition:width .3s ease; }
+  .record-rank-badge{
+    display:inline-block; margin-top:6px; font-size:11.5px; font-weight:700;
+    color:var(--lime); background:var(--lime-soft); padding:2px 10px; border-radius:20px;
+    cursor:pointer;
+  }
+  .record-board{ margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); }
+  .record-board-row{ display:flex; justify-content:space-between; font-size:13px; padding:4px 2px; color:var(--text-muted); }
+  .record-board-row.me{ color:var(--lime); font-weight:800; }
   .log-textarea{
     background:var(--surface-2); border:1px solid var(--line); color:var(--text);
     border-radius:10px; padding:14px 14px; font-size:15px; line-height:1.6;
@@ -1325,6 +1341,31 @@ function computeTodayTrend(s){
   return { diff: Number(today.score)-avg, avg, today: Number(today.score) };
 }
 
+// 종목별 목표 달성률 + 팀 내 순위 (숫자로 바로 확인되는 형태)
+function computeStudentRecordStats(s){
+  return s.events.map(ev=>{
+    const recs = (s.records[ev]||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
+    if(!recs.length) return null;
+    const latest = recs[recs.length-1].value;
+    const target = s.targets[ev];
+    const lower = LOWER_IS_BETTER.includes(ev);
+    let pct = null;
+    if(target){
+      pct = lower ? (target/latest*100) : (latest/target*100);
+      if(!isFinite(pct)) pct = null;
+    }
+    const board = state.students
+      .filter(st=> st.events.includes(ev) && (st.records[ev]||[]).length)
+      .map(st=>{
+        const r = st.records[ev].slice().sort((a,b)=>a.date.localeCompare(b.date));
+        return { name: st.name, value: r[r.length-1].value, isMe: st.id===s.id };
+      })
+      .sort((a,b)=> lower ? a.value-b.value : b.value-a.value);
+    const rank = board.findIndex(b=>b.isMe) + 1;
+    return { ev, latest, target, pct, rank, total: board.length, board, unit: (EVENT_UNIT[ev]||'').split(' ')[0]||'' };
+  }).filter(Boolean);
+}
+
 function computeStudentFeedback(s){
   const m = computeFatigueMetrics(s);
   const rec = computeTrainingRecommendation(s);
@@ -1426,7 +1467,7 @@ function openPinModal(id, mode){
     </div>`);
   setTimeout(()=> document.getElementById('pinInput')?.focus(), 50);
 }
-function submitSetPin(e, id){
+async function submitSetPin(e, id){
   e.preventDefault();
   const f = new FormData(e.target);
   const pin = (f.get('pin')||'').trim();
@@ -1438,9 +1479,13 @@ function submitSetPin(e, id){
   if(!s){ closeModal(); showToast('학생을 찾을 수 없습니다 (삭제되었을 수 있어요)'); return; }
   s.selfPin = pin;
   closeModal();
-  state.studentSelfId = id;
-  showToast('비밀번호가 설정되었어요');
-  saveStudent(s);
+  const ok = await saveStudent(s);
+  if(ok){
+    state.studentSelfId = id;
+    showToast('비밀번호가 설정되었어요');
+  }else{
+    showToast('저장에 실패했어요. 다시 시도해주세요.');
+  }
   rerender();
 }
 function submitCheckPin(e, id){
@@ -1465,6 +1510,7 @@ function renderStudentHome(s){
   const already = s.fatigue.find(f=>f.date===todayStr());
 
   const monthly = computeMonthlyLogStats(s);
+  const recordStats = computeStudentRecordStats(s);
   const trend = computeTodayTrend(s);
   let trendArrow='—', trendLabel='비교할 기록 없음', trendColor='var(--text-dim)';
   if(trend){
@@ -1503,6 +1549,31 @@ function renderStudentHome(s){
         <div class="stat-note" style="font-size:13.5px;">${fb.msg}</div>
       </div>
       ${fb.notes.length ? fb.notes.map(n=>`<div class="insight-box flag" style="margin-bottom:12px;">${n}</div>`).join('') : ''}
+
+      ${recordStats.length ? `
+      <div class="card" style="margin-bottom:16px;">
+        <h3 style="margin-bottom:14px;">내 기록</h3>
+        ${recordStats.map(r=>{
+          const pctDisplay = r.pct!==null ? Math.round(r.pct) : null;
+          const barWidth = r.pct!==null ? Math.min(r.pct,100) : 0;
+          const barColor = r.pct===null ? 'var(--text-dim)' : r.pct>=100 ? 'var(--lime)' : r.pct>=85 ? 'var(--warn)' : 'var(--accent)';
+          return `
+          <div class="record-row">
+            <div class="record-row-head">
+              <span class="record-ev-name">${esc(r.ev)}</span>
+              <span class="record-ev-value">${r.latest}${r.unit} ${r.target?`<span class="stat-note" style="font-size:11.5px;">/ 목표 ${r.target}${r.unit}</span>`:''}</span>
+            </div>
+            ${r.target ? `
+            <div class="record-progress-bar"><div class="record-progress-fill" style="width:${barWidth}%; background:${barColor};"></div></div>
+            <div class="stat-note" style="margin-top:3px; font-size:11.5px;">목표 달성률 ${pctDisplay}%</div>` : ''}
+            ${r.total>1 ? `
+            <div class="record-rank-badge" onclick="toggleRecordBoard(this)">팀 내 ${r.rank}위 / ${r.total}명 중 · 순위 보기</div>
+            <div class="record-board" style="display:none;">
+              ${r.board.map((b,i)=>`<div class="record-board-row ${b.isMe?'me':''}">${i+1}. ${esc(b.name)} <span class="mono">${b.value}${r.unit}</span></div>`).join('')}
+            </div>` : ''}
+          </div>`;
+        }).join('')}
+      </div>` : ''}
 
       <div class="card" style="margin-bottom:16px;">
         <h3 style="margin-bottom:10px;">최근 7일 피로도</h3>
@@ -1558,12 +1629,13 @@ function renderStudentHome(s){
           <div class="grid" style="grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:12px; align-items:end;">
             <div class="field" style="grid-column:1 / -1;">
               <label>종목</label>
-              <select name="event" id="studentRecordEvent" onchange="updateStudentRecordUnit()">
-                ${s.events.map(ev=>`<option value="${esc(ev)}">${esc(ev)}</option>`).join('')}
+              <select name="event" id="studentRecordEvent" onchange="updateStudentRecordFields(this)">
+                ${s.events.map(ev=>`<option value="${esc(ev)}" data-target="${s.targets[ev]||''}">${esc(ev)}</option>`).join('')}
               </select>
             </div>
             <div class="field"><label>날짜</label><input type="date" name="date" value="${todayStr()}"></div>
             <div class="field"><label>기록 (<span id="studentRecordUnit">${EVENT_UNIT[s.events[0]]||''}</span>)</label><input type="number" step="any" name="value" required placeholder="기록 값"></div>
+            <div class="field"><label>목표 기록</label><input type="number" step="any" name="target" id="studentRecordTarget" placeholder="목표 값" value="${s.targets[s.events[0]]||''}"></div>
           </div>
           <button class="submit-btn" type="submit" style="width:100%; margin-top:14px; height:46px; font-size:14px;">기록 저장</button>
         </form>` : ''}
@@ -1592,7 +1664,7 @@ function renderStudentHome(s){
   `;
 }
 
-function submitStudentEntry(e){
+async function submitStudentEntry(e){
   e.preventDefault();
   const f = new FormData(e.target);
   const s = getStudent(state.studentSelfId);
@@ -1612,16 +1684,28 @@ function submitStudentEntry(e){
   };
   if(existingIdx>=0) s.fatigue[existingIdx]=entry; else s.fatigue.push(entry);
   s.fatigue.sort((a,b)=>a.date.localeCompare(b.date));
-  showToast('오늘 기록이 저장되었어요 👍');
-  saveStudent(s);
+  const ok = await saveStudent(s);
+  if(ok) showToast('오늘 기록이 저장되었어요 👍');
+  else showToast('저장에 실패했어요. 인터넷 연결을 확인하고 다시 눌러주세요.');
 }
 
-function updateStudentRecordUnit(){
-  const sel = document.getElementById('studentRecordEvent');
-  const unitEl = document.getElementById('studentRecordUnit');
-  if(sel && unitEl) unitEl.textContent = EVENT_UNIT[sel.value] || '';
+function toggleRecordBoard(el){
+  const board = el.nextElementSibling;
+  if(!board) return;
+  const showing = board.style.display !== 'none';
+  board.style.display = showing ? 'none' : '';
+  el.textContent = el.textContent.replace(showing ? '숨기기' : '순위 보기', showing ? '순위 보기' : '숨기기');
 }
-function submitStudentRecord(e){
+function updateStudentRecordFields(sel){
+  const unitEl = document.getElementById('studentRecordUnit');
+  if(unitEl) unitEl.textContent = EVENT_UNIT[sel.value] || '';
+  const targetEl = document.getElementById('studentRecordTarget');
+  if(targetEl){
+    const opt = sel.selectedOptions && sel.selectedOptions[0];
+    targetEl.value = opt ? (opt.dataset.target || '') : '';
+  }
+}
+async function submitStudentRecord(e){
   e.preventDefault();
   const f = new FormData(e.target);
   const ev = f.get('event');
@@ -1635,8 +1719,11 @@ function submitStudentRecord(e){
   const entry = { date, value:Number(f.get('value')) };
   if(existingIdx>=0) s.records[ev][existingIdx]=entry; else s.records[ev].push(entry);
   s.records[ev].sort((a,b)=>a.date.localeCompare(b.date));
-  showToast(`${ev} 기록이 저장되었어요 👍`);
-  saveStudent(s);
+  const tg = f.get('target');
+  if(tg!==null && tg!=='') s.targets[ev] = Number(tg);
+  const ok = await saveStudent(s);
+  if(ok) showToast(`${ev} 기록이 저장되었어요 👍`);
+  else showToast('저장에 실패했어요. 다시 시도해주세요.');
 }
 
 function drawStudentChart(){
@@ -1791,7 +1878,7 @@ function toggleCustomClassType(sel){
   if(!field) return;
   field.style.display = sel.value==='__custom__' ? '' : 'none';
 }
-function submitClassLog(e){
+async function submitClassLog(e){
   e.preventDefault();
   const f = new FormData(e.target);
   const rawType = f.get('classType');
@@ -1813,8 +1900,9 @@ function submitClassLog(e){
     createdAt: Date.now(),
     createdBy: currentCoachEmail||''
   };
+  const ok = await saveClassLog(logObj);
+  if(!ok){ showToast('저장에 실패했어요. 다시 시도해주세요.'); return; }
   showToast('수업일지가 저장되었습니다');
-  saveClassLog(logObj);
   e.target.reset();
   const dateInput = e.target.querySelector('input[name="date"]');
   if(dateInput) dateInput.value = todayStr();
@@ -2518,7 +2606,7 @@ function toggleRehabNote(cb){
   if(!cb.checked){ const inp=field.querySelector('input'); if(inp) inp.value=''; }
 }
 
-function addFatigue(e, sid){
+async function addFatigue(e, sid){
   e.preventDefault();
   const f = new FormData(e.target);
   const s = getStudent(sid);
@@ -2539,8 +2627,9 @@ function addFatigue(e, sid){
   };
   if(existingIdx>=0) s.fatigue[existingIdx]=entry; else s.fatigue.push(entry);
   s.fatigue.sort((a,b)=>a.date.localeCompare(b.date));
-  showToast('피로도 기록이 저장되었습니다');
-  saveStudent(s);
+  const ok = await saveStudent(s);
+  if(ok) showToast('피로도 기록이 저장되었습니다');
+  else showToast('저장에 실패했어요. 다시 시도해주세요.');
 }
 function deleteFatigue(sid, idx){
   const s = getStudent(sid);
@@ -2548,7 +2637,7 @@ function deleteFatigue(sid, idx){
   s.fatigue.splice(idx,1);
   saveStudent(s);
 }
-function addRecord(e, sid, ev){
+async function addRecord(e, sid, ev){
   e.preventDefault();
   const f = new FormData(e.target);
   const s = getStudent(sid);
@@ -2562,8 +2651,9 @@ function addRecord(e, sid, ev){
   s.records[ev].sort((a,b)=>a.date.localeCompare(b.date));
   const tg = f.get('target');
   if(tg) s.targets[ev]=Number(tg);
-  showToast(`${ev} 기록이 저장되었습니다`);
-  saveStudent(s);
+  const ok = await saveStudent(s);
+  if(ok) showToast(`${ev} 기록이 저장되었습니다`);
+  else showToast('저장에 실패했어요. 다시 시도해주세요.');
 }
 function deleteRecord(sid, ev, idx){
   const s = getStudent(sid);
@@ -2636,8 +2726,9 @@ async function submitAddStudent(e){
   state.selectedId = ns.id;
   state.activeTab='overview';
   closeModal();
-  showToast('학생이 등록되었습니다');
-  await saveStudent(ns);
+  const ok = await saveStudent(ns);
+  if(ok) showToast('학생이 등록되었습니다');
+  else showToast('등록에 실패했어요. 다시 시도해주세요.');
 }
 
 function openEditStudentModal(sid){
@@ -2678,16 +2769,17 @@ function openEditStudentModal(sid){
       </form>
     </div>`);
 }
-function resetStudentPin(sid){
+async function resetStudentPin(sid){
   const s = getStudent(sid);
   if(!s) return;
   if(!confirm(`${s.name} 학생의 비밀번호를 초기화할까요? 다음 접속 시 새 비밀번호를 설정하게 됩니다.`)) return;
   s.selfPin = '';
-  showToast('비밀번호가 초기화되었습니다');
-  saveStudent(s);
   closeModal();
+  const ok = await saveStudent(s);
+  if(ok) showToast('비밀번호가 초기화되었습니다');
+  else showToast('저장에 실패했어요. 다시 시도해주세요.');
 }
-function submitEditStudent(e, sid){
+async function submitEditStudent(e, sid){
   e.preventDefault();
   const f = new FormData(e.target);
   const s = getStudent(sid);
@@ -2698,8 +2790,9 @@ function submitEditStudent(e, sid){
   s.target = f.get('target')||'';
   s.rehabHistory = f.get('rehabHistory')==='true';
   closeModal();
-  showToast('학생 정보가 수정되었습니다');
-  saveStudent(s);
+  const ok = await saveStudent(s);
+  if(ok) showToast('학생 정보가 수정되었습니다');
+  else showToast('저장에 실패했어요. 다시 시도해주세요.');
 }
 
 function openAddEventModal(sid){
@@ -2835,6 +2928,7 @@ function importData(e){
       const parsed = JSON.parse(ev.target.result);
       if(!parsed.students || !Array.isArray(parsed.students)) throw new Error('invalid');
       showToast('데이터를 서버에 업로드하는 중...');
+      let imported=0, failed=0;
       for(const item of parsed.students){
         if(!item.id) item.id = uid();
         if(!item.name) continue; // 이름 없는 항목은 건너뜀
@@ -2842,9 +2936,10 @@ function importData(e){
         item.events = Array.isArray(item.events) ? item.events : [];
         item.records = (item.records && typeof item.records==='object') ? item.records : {};
         item.targets = (item.targets && typeof item.targets==='object') ? item.targets : {};
-        await saveStudent(item);
+        const ok = await saveStudent(item);
+        if(ok) imported++; else failed++;
       }
-      showToast('데이터를 불러와 모든 코치에게 동기화했습니다');
+      showToast(failed===0 ? `${imported}명 불러오기 완료, 모든 코치에게 동기화했습니다` : `${imported}명 완료, ${failed}명 실패 — 다시 시도해주세요`);
     }catch(err){
       showToast('파일을 읽는 중 오류가 발생했습니다');
     }
@@ -3034,9 +3129,9 @@ function subscribeClassLogs(){
   });
 }
 async function saveClassLog(logObj){
-  if(!db){ showToast('Firebase 설정이 필요합니다'); return; }
-  try{ await db.collection('classLogs').doc(logObj.id).set(logObj); }
-  catch(err){ showToast('저장 실패: '+err.message); }
+  if(!db){ showToast('Firebase 설정이 필요합니다'); return false; }
+  try{ await db.collection('classLogs').doc(logObj.id).set(logObj); return true; }
+  catch(err){ showToast('저장 실패: '+err.message); return false; }
 }
 async function deleteClassLog(id){
   if(!confirm('이 수업일지를 삭제할까요?')) return;
