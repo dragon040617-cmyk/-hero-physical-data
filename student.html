@@ -21,11 +21,17 @@
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-app-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-auth-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-firestore-compat.min.js"></script>
 </head>
 <body>
 
+<!-- 화면 0: 로딩 (로그인 확인 중) -->
+<section id="screen-loading" class="screen">
+  <p>확인하는 중...</p>
+</section>
+
 <!-- 화면 1: 로그인 -->
-<section id="screen-login" class="screen">
+<section id="screen-login" class="screen hidden">
   <h1>HERO 체크인</h1>
   <p>오늘 컨디션을 기록하려면 먼저 로그인하세요.</p>
   <button onclick="loginWithGoogle()">Google로 로그인</button>
@@ -38,15 +44,17 @@
   <p id="user-email" style="color:var(--lime); margin-bottom:8px;"></p>
   <p>코치님께 받은 코드를 입력하면 내 기록과 연결돼요. 처음 한 번만 하면 됩니다.</p>
   <input id="code-input" maxlength="6" placeholder="코드 6자리">
-  <button onclick="show('screen-checkin')">연결하기</button>
+  <button id="link-btn" onclick="linkStudent()">연결하기</button>
+  <div id="code-error" class="err"></div>
   <button class="link" onclick="logout()">다른 계정으로 로그인</button>
 </section>
 
 <!-- 화면 3: 체크인 (2단계에서 채울 자리) -->
 <section id="screen-checkin" class="screen hidden">
-  <h1>오늘 체크인</h1>
+  <h1 id="checkin-title">오늘 체크인</h1>
   <p>여기에 체크인 질문이 들어갈 예정이에요.</p>
   <div class="box">2단계에서 만들 영역</div>
+  <button class="link" onclick="logout()">로그아웃</button>
 </section>
 
 <script>
@@ -76,13 +84,68 @@
 
   function logout(){ auth.signOut(); }
 
-  // 로그인 상태가 바뀔 때마다 자동 실행: 로그인됨 -> 코드 화면, 아님 -> 로그인 화면
-  auth.onAuthStateChanged(user => {
-    if(user){
-      document.getElementById('user-email').textContent = user.email;
+  // ---- Firestore 연결 ----
+  const db = firebase.firestore();
+  let myStudent = null; // 연결된 내 학생 정보 {id, name}
+
+  // 이 계정(uid)이 이미 연결된 학생 문서를 찾는다
+  async function findMyStudent(uid){
+    const snap = await db.collection('students').where('uid', '==', uid).limit(1).get();
+    if(snap.empty) return null;
+    const doc = snap.docs[0];
+    return { id: doc.id, name: doc.data().name };
+  }
+
+  function enterCheckin(student){
+    myStudent = student;
+    document.getElementById('checkin-title').textContent = student.name + '님, 오늘 체크인';
+    show('screen-checkin');
+  }
+
+  // 초대 코드로 학생과 이 계정을 연결한다
+  async function linkStudent(){
+    const errBox = document.getElementById('code-error');
+    const btn = document.getElementById('link-btn');
+    const code = document.getElementById('code-input').value.trim().toUpperCase();
+    errBox.textContent = '';
+    if(!code){ errBox.textContent = '코드를 입력해 주세요.'; return; }
+    btn.disabled = true;
+    try{
+      const uid = auth.currentUser.uid;
+      const inviteRef = db.collection('invites').doc(code);
+      const invite = await inviteRef.get();
+      if(!invite.exists){ errBox.textContent = '없는 코드예요. 코치님께 다시 확인해 보세요.'; return; }
+      const inv = invite.data();
+      if(inv.usedBy && inv.usedBy !== uid){ errBox.textContent = '이미 사용된 코드예요.'; return; }
+
+      const studentRef = db.collection('students').doc(inv.studentId);
+      const student = await studentRef.get();
+      if(!student.exists){ errBox.textContent = '학생 정보를 찾을 수 없어요. 코치님께 알려주세요.'; return; }
+      const sd = student.data();
+      if(sd.uid && sd.uid !== uid){ errBox.textContent = '이미 다른 계정과 연결된 학생이에요.'; return; }
+
+      await studentRef.update({ uid: uid });      // 학생 문서에 내 UID를 붙인다 = 연결 확정
+      await inviteRef.update({ usedBy: uid });    // 코드에 사용 표시
+      enterCheckin({ id: student.id, name: sd.name });
+    }catch(err){
+      errBox.textContent = '연결 실패: ' + (err.code || err.message);
+    }finally{
+      btn.disabled = false;
+    }
+  }
+
+  // 로그인 상태가 바뀔 때마다 자동 실행
+  // 로그아웃 -> 로그인 화면 / 로그인 + 연결된 학생 있음 -> 체크인 / 로그인 + 연결 없음 -> 코드 입력
+  auth.onAuthStateChanged(async user => {
+    if(!user){ myStudent = null; show('screen-login'); return; }
+    document.getElementById('user-email').textContent = user.email;
+    show('screen-loading');
+    try{
+      const mine = await findMyStudent(user.uid);
+      if(mine) enterCheckin(mine); else show('screen-code');
+    }catch(err){
       show('screen-code');
-    }else{
-      show('screen-login');
+      document.getElementById('code-error').textContent = '확인 실패: ' + (err.code || err.message);
     }
   });
 </script>
