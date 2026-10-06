@@ -3,151 +3,468 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12151c">
 <title>HERO 체크인</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
-  /* 코치용 사이트와 같은 색을 써서 같은 서비스라는 느낌을 준다 */
-  :root{ --bg:#12151c; --surface:#1a1f29; --line:#2b3242; --text:#fff; --muted:#aab2c5; --lime:#c6ff3d; }
+  :root{
+    --bg:#12151c; --surface:#1a1f29; --surface2:#222836; --line:#2b3242;
+    --text:#fff; --muted:#aab2c5; --dim:#828ba0;
+    --lime:#c6ff3d; --lime-soft:rgba(198,255,61,.14);
+    --coral:#ff4b33; --coral-soft:rgba(255,75,51,.14);
+  }
   *{ box-sizing:border-box; }
-  body{ margin:0; background:var(--bg); color:var(--text); font-family:-apple-system, 'Apple SD Gothic Neo', sans-serif; }
-  .screen{ max-width:420px; margin:0 auto; padding:calc(48px + env(safe-area-inset-top)) 20px 32px; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{ margin:0; background:var(--bg); color:var(--text); line-height:1.5; font-variant-numeric:tabular-nums;
+        font-family:'Pretendard Variable',Pretendard,-apple-system,'Apple SD Gothic Neo',sans-serif; }
+  button,select,textarea{ font-family:inherit; }
+  .screen{ max-width:480px; margin:0 auto; padding:calc(28px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom)); }
   .hidden{ display:none; }
-  h1{ font-size:24px; margin:0 0 8px; }
-  p{ color:var(--muted); line-height:1.6; margin:0 0 24px; }
-  button{ width:100%; height:52px; border:none; border-radius:12px; background:var(--lime); color:#0d1a03; font-size:16px; font-weight:700; cursor:pointer; }
-  input{ width:100%; height:52px; margin-bottom:12px; padding:0 14px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:18px; letter-spacing:4px; text-align:center; }
+  h1{ font-size:24px; margin:0 0 6px; font-weight:700; }
+  h2{ font-size:17px; margin:0 0 4px; font-weight:700; }
+  p{ color:var(--muted); margin:0 0 20px; }
+  b{ font-weight:700; color:var(--text); }
+  .btn{ width:100%; height:52px; border:0; border-radius:12px; background:var(--lime); color:#0d1a03; font-size:16px; font-weight:700; cursor:pointer; }
+  .btn:disabled{ opacity:.5; }
+  .link{ background:none; border:0; color:var(--muted); font-size:14px; text-decoration:underline; padding:8px 0; cursor:pointer; }
   .err{ color:#ff6b5a; font-size:14px; min-height:20px; margin-top:12px; }
-  .link{ background:none; height:auto; color:var(--muted); font-size:14px; font-weight:400; margin-top:16px; text-decoration:underline; }
-  .box{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; color:var(--muted); }
+  .note{ font-size:13px; color:var(--dim); }
+  input.code{ width:100%; height:52px; margin-bottom:12px; padding:0 14px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:18px; letter-spacing:4px; text-align:center; }
+
+  /* 헤더 */
+  .head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px; }
+  .head .date{ font-size:14px; color:var(--dim); }
+  .head-actions{ display:flex; gap:14px; flex-shrink:0; }
+  .head-actions .link{ font-size:13px; }
+
+  /* 체크인 폼 */
+  .q{ padding:22px 0; border-top:1px solid var(--line); }
+  .q-title{ font-size:16px; font-weight:600; margin-bottom:2px; }
+  .q-hint{ font-size:13px; color:var(--dim); margin-bottom:12px; }
+  .scale{ display:grid; grid-template-columns:repeat(11,1fr); gap:3px; }
+  .scale button{ height:44px; padding:0; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--muted); font-size:15px; font-weight:600; cursor:pointer; }
+  .scale button.on{ background:var(--lime); border-color:var(--lime); color:#0d1a03; }
+  .scale.pain button.on{ background:var(--coral); border-color:var(--coral); color:#fff; }
+  .anchors{ display:flex; justify-content:space-between; font-size:12px; color:var(--dim); margin-top:6px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .chip{ height:40px; padding:0 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--muted); font-size:14px; font-weight:500; cursor:pointer; }
+  .chip.on{ border-color:var(--lime); color:var(--lime); background:var(--lime-soft); }
+  .chip.pain.on{ border-color:var(--coral); color:var(--coral); background:var(--coral-soft); }
+  .sub-q{ margin-top:16px; font-size:14px; color:var(--muted); }
+  .sleep-row{ display:flex; gap:10px; }
+  .sleep-row select{ flex:1; height:52px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:16px; padding:0 12px; }
+  textarea.memo{ width:100%; margin-top:12px; min-height:72px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:16px; padding:12px; resize:vertical; }
+  .submit-bar{ position:sticky; bottom:0; background:var(--bg); border-top:1px solid var(--line); padding:12px 0 calc(12px + env(safe-area-inset-bottom)); margin-top:8px; }
+  .progress{ height:3px; background:var(--line); border-radius:2px; margin-bottom:10px; overflow:hidden; }
+  .progress i{ display:block; height:100%; background:var(--lime); }
+
+  /* 결과 화면 */
+  .pain-card{ border:1px solid var(--coral); background:var(--coral-soft); border-radius:12px; padding:14px 16px; margin:12px 0 4px; }
+  .pain-card p{ margin:6px 0 0; font-size:14px; }
+  .row{ padding:16px 0; border-top:1px solid var(--line); }
+  .row-top{ display:flex; justify-content:space-between; align-items:baseline; }
+  .row-label{ font-weight:600; }
+  .row-val{ font-size:18px; font-weight:700; }
+  .dv{ position:relative; height:8px; border-radius:4px; background:var(--surface2); margin:10px 0 6px; overflow:hidden; }
+  .dv-mid{ position:absolute; left:50%; top:0; bottom:0; width:2px; margin-left:-1px; background:var(--dim); z-index:2; }
+  .dv-fill{ position:absolute; top:0; bottom:0; }
+  .dv-fill.better{ background:var(--lime); } .dv-fill.worse{ background:var(--coral); } .dv-fill.same{ background:var(--dim); }
+  .pb{ height:8px; border-radius:4px; background:var(--surface2); margin:10px 0 6px; overflow:hidden; }
+  .pb i{ display:block; height:100%; background:var(--muted); }
+  .row-sub{ display:flex; justify-content:space-between; gap:12px; font-size:13px; color:var(--muted); }
+  .row-sub .tag-better{ color:var(--lime); } .row-sub .tag-worse{ color:var(--coral); }
+  .row-ctx{ font-size:13px; color:var(--dim); margin-top:2px; }
+  .advice{ border-top:1px solid var(--line); padding:20px 0; }
+  .advice .tag{ display:inline-block; font-size:12px; color:var(--dim); border:1px solid var(--line); border-radius:999px; padding:1px 10px; margin-bottom:10px; }
+  .advice p{ color:var(--text); margin:0 0 8px; font-size:16px; }
+  .range{ display:flex; gap:8px; justify-content:flex-end; margin-bottom:8px; }
+  .chart-box{ position:relative; height:220px; margin-top:12px; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-app-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-auth-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-firestore-compat.min.js"></script>
 </head>
 <body>
 
-<!-- 화면 0: 로딩 (로그인 확인 중) -->
 <section id="screen-loading" class="screen">
-  <p>확인하는 중...</p>
+  <p id="load-msg">확인하는 중...</p>
 </section>
 
-<!-- 화면 1: 로그인 -->
 <section id="screen-login" class="screen hidden">
   <h1>HERO 체크인</h1>
-  <p>오늘 컨디션을 기록하려면 먼저 로그인하세요.</p>
-  <button onclick="loginWithGoogle()">Google로 로그인</button>
+  <p>오늘 컨디션을 기록하고, 내 상태가 평소와 어떻게 다른지 바로 확인하세요.</p>
+  <button class="btn" onclick="loginWithGoogle()">Google로 로그인</button>
   <div id="login-error" class="err"></div>
 </section>
 
-<!-- 화면 2: 초대 코드 입력 (처음 한 번만) -->
 <section id="screen-code" class="screen hidden">
   <h1>초대 코드 입력</h1>
   <p id="user-email" style="color:var(--lime); margin-bottom:8px;"></p>
   <p>코치님께 받은 코드를 입력하면 내 기록과 연결돼요. 처음 한 번만 하면 됩니다.</p>
-  <input id="code-input" maxlength="6" placeholder="코드 6자리">
-  <button id="link-btn" onclick="linkStudent()">연결하기</button>
+  <input id="code-input" class="code" maxlength="6" placeholder="코드 6자리" autocapitalize="characters" autocomplete="off">
+  <button id="link-btn" class="btn" onclick="linkStudent()">연결하기</button>
   <div id="code-error" class="err"></div>
+  <p class="note" style="margin-top:12px;">입력한 컨디션·통증 기록은 본인과 코치님만 볼 수 있고, 훈련 관리에만 쓰여요.</p>
   <button class="link" onclick="logout()">다른 계정으로 로그인</button>
 </section>
 
-<!-- 화면 3: 체크인 (2단계에서 채울 자리) -->
-<section id="screen-checkin" class="screen hidden">
-  <h1 id="checkin-title">오늘 체크인</h1>
-  <p>여기에 체크인 질문이 들어갈 예정이에요.</p>
-  <div class="box">2단계에서 만들 영역</div>
-  <button class="link" onclick="logout()">로그아웃</button>
-</section>
+<section id="screen-form" class="screen hidden"></section>
+<section id="screen-result" class="screen hidden"></section>
 
 <script>
-  // 화면 전환: 모든 화면을 숨긴 뒤, 보여줄 화면 하나만 보이게 한다
-  function show(screenId){
-    document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
-    document.getElementById(screenId).classList.remove('hidden');
-  }
+/* ============ 설정값 ============ */
+const BASELINE_MIN_DAYS = 7;      // 평소 비교를 시작하는 최소 기록 일수 (개발 중 조정)
+const BASELINE_WINDOW_DAYS = 14;  // 평소 = 오늘 이전 최근 14일
+const BODY_PARTS = ["허리","무릎","발목","어깨","종아리","허벅지","정강이","손목","목","기타"];
+const STRESS_CAUSES = ["학교","시험","입시","훈련","인간관계","수면 부족","기타"];
+const IMPACTS = ["없음","약간","훈련에 영향","훈련 어려움"];
+const METRICS = [
+  {key:'sleepMin',     label:'수면',     good:'up',   floor:45},   // floor: 이 정도 차이는 있어야 '달라졌다'고 본다
+  {key:'sleepQuality', label:'수면의 질', good:'up',   floor:1.5},
+  {key:'fatigue',      label:'피로',     good:'down', floor:1.5},
+  {key:'soreness',     label:'근육통',   good:'down', floor:1.5},
+  {key:'stress',       label:'스트레스', good:'down', floor:1.5},
+  {key:'readiness',    label:'준비도',   good:'up',   floor:1.5},
+];
 
-  // ---- Firebase 연결 (코치용 사이트와 같은 프로젝트) ----
-  firebase.initializeApp({
-    apiKey: "AIzaSyAWKsdEXjM0vMT06wYht5kPmD6R9i1d0yA",
-    authDomain: "hero-sports-academy.firebaseapp.com",
-    projectId: "hero-sports-academy",
-    appId: "1:505238936070:web:ab01e5164d03c44de0c187"
+/* PURE:START  (화면과 무관한 계산 - 따로 테스트 가능) */
+function pad(n){ return String(n).padStart(2,'0'); }
+function ymd(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function todayStr(){ return ymd(new Date()); }
+function addDays(s,n){ const [y,m,d]=s.split('-').map(Number); return ymd(new Date(y,m-1,d+n)); }
+function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function fmtSleep(min){ const h=Math.floor(min/60), m=Math.round(min%60); return m? h+'시간 '+m+'분' : h+'시간'; }
+function fmtValue(key,v){ return key==='sleepMin' ? fmtSleep(v) : v+'/10'; }
+function fmtDelta(key,d){
+  if(key==='sleepMin'){
+    const a=Math.abs(Math.round(d)); if(a<1) return '차이 없음';
+    return (a>=60 ? fmtSleep(a) : a+'분')+(d>0?' 증가':' 감소');
+  }
+  const a=Math.abs(d); if(a<0.05) return '차이 없음';
+  return a.toFixed(1)+(d>0?' 증가':' 감소');
+}
+
+// 평균과 표준편차 (표준편차 = 평소에도 이 정도는 흔들린다는 뜻)
+function baselineStats(history,key){
+  const v=history.map(h=>h[key]).filter(x=>typeof x==='number');
+  if(v.length<BASELINE_MIN_DAYS) return null;
+  const mean=v.reduce((a,b)=>a+b,0)/v.length;
+  const sd=Math.sqrt(v.reduce((a,b)=>a+(b-mean)**2,0)/(v.length-1));
+  return {mean,sd,n:v.length};
+}
+
+// 항목마다: 오늘 값, 평소 평균, 차이, '얼마나 달라졌나' 점수, 좋아졌나/나빠졌나
+function analyze(today,history){
+  const ready=history.length>=BASELINE_MIN_DAYS;
+  const rows=METRICS.map(m=>{
+    const value=today[m.key];
+    const st=ready?baselineStats(history,m.key):null;
+    if(!st) return {m,value,st:null,tone:'none',score:0,delta:0};
+    const delta=value-st.mean;
+    const score=delta/Math.max(st.sd,m.floor);          // 평소 흔들림(또는 최소 기준)의 몇 배만큼 벗어났나
+    const sign=Math.sign(delta)*(m.good==='up'?1:-1);
+    const tone=Math.abs(score)<1?'same':(sign>0?'better':'worse');
+    return {m,value,st,delta,score,tone};
   });
-  const auth = firebase.auth();
+  if(ready) rows.sort((a,b)=>Math.abs(b.score)-Math.abs(a.score));
+  return {ready,rows};
+}
 
-  // Google 로그인 팝업을 띄운다
-  function loginWithGoogle(){
-    document.getElementById('login-error').textContent = '';
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(err => {
-      document.getElementById('login-error').textContent = '로그인 실패: ' + err.code;
-    });
+// 규칙 기반 '참고' 문장 (진단처럼 읽히지 않게)
+function buildAdvice(today,an){
+  const out=[];
+  const get=k=>an.rows.find(r=>r.m.key===k);
+  const is=(k,t)=>get(k)&&get(k).tone===t;
+  if(!an.ready){
+    out.push('기록이 쌓이는 중이라 아직 평소와 비교하지 못해요. '+BASELINE_MIN_DAYS+'일 기록이 모이면 비교가 시작돼요.');
+    if(today.fatigue>=8||today.soreness>=8) out.push('피로나 근육통이 높게 느껴지는 날이에요. 훈련 강도는 코치님과 이야기해 보세요.');
+    return out.slice(0,2);
   }
-
-  function logout(){ auth.signOut(); }
-
-  // ---- Firestore 연결 ----
-  const db = firebase.firestore();
-  let myStudent = null; // 연결된 내 학생 정보 {id, name}
-
-  // 이 계정(uid)이 이미 연결된 학생 문서를 찾는다
-  async function findMyStudent(uid){
-    const snap = await db.collection('students').where('uid', '==', uid).limit(1).get();
-    if(snap.empty) return null;
-    const doc = snap.docs[0];
-    return { id: doc.id, name: doc.data().name };
+  if(is('sleepMin','worse')&&(is('fatigue','worse')||is('readiness','worse')))
+    out.push('수면이 평소보다 짧고 피로·준비도에도 영향이 보여요. 워밍업을 충분히 하고 몸 반응을 보면서 강도를 정해 보세요.');
+  else if(is('sleepMin','worse')) out.push('수면이 평소보다 짧았어요. 오늘은 컨디션을 살피면서 시작해 보세요.');
+  if(is('soreness','worse')){
+    const area=today.sorenessAreas&&today.sorenessAreas.length?today.sorenessAreas.join('·')+' ':'';
+    out.push(area+'근육통이 평소보다 높아요. 해당 부위 강도는 코치님과 상의해 보세요.');
   }
+  if(is('stress','worse')) out.push('스트레스가 평소보다 높은 날이에요. 훈련 전에 가볍게 몸을 풀며 호흡을 가다듬어 보세요.');
+  if(is('fatigue','worse')&&!is('sleepMin','worse')) out.push('피로가 평소보다 높아요. 무리하지 말고 훈련 중 몸 반응을 확인해 보세요.');
+  if(!out.length&&(is('readiness','better')||is('fatigue','better')||is('sleepMin','better')))
+    out.push('컨디션이 평소보다 좋은 편이에요. 오늘 훈련에 잘 활용해 보세요.');
+  if(!out.length) out.push('평소와 큰 차이가 없어요. 평소 루틴대로 진행해 보세요.');
+  return out.slice(0,2);
+}
+/* PURE:END */
 
-  function enterCheckin(student){
-    myStudent = student;
-    document.getElementById('checkin-title').textContent = student.name + '님, 오늘 체크인';
-    show('screen-checkin');
-  }
+/* ============ Firebase ============ */
+firebase.initializeApp({
+  apiKey:"AIzaSyAWKsdEXjM0vMT06wYht5kPmD6R9i1d0yA",
+  authDomain:"hero-sports-academy.firebaseapp.com",
+  projectId:"hero-sports-academy",
+  appId:"1:505238936070:web:ab01e5164d03c44de0c187"
+});
+const auth=firebase.auth();
+const db=firebase.firestore();
+const $=id=>document.getElementById(id);
 
-  // 초대 코드로 학생과 이 계정을 연결한다
-  async function linkStudent(){
-    const errBox = document.getElementById('code-error');
-    const btn = document.getElementById('link-btn');
-    const code = document.getElementById('code-input').value.trim().toUpperCase();
-    errBox.textContent = '';
-    if(!code){ errBox.textContent = '코드를 입력해 주세요.'; return; }
-    btn.disabled = true;
-    try{
-      const uid = auth.currentUser.uid;
-      const inviteRef = db.collection('invites').doc(code);
-      const invite = await inviteRef.get();
-      if(!invite.exists){ errBox.textContent = '없는 코드예요. 코치님께 다시 확인해 보세요.'; return; }
-      const inv = invite.data();
-      if(inv.usedBy && inv.usedBy !== uid){ errBox.textContent = '이미 사용된 코드예요.'; return; }
+function show(id){
+  document.querySelectorAll('.screen').forEach(el=>el.classList.add('hidden'));
+  $(id).classList.remove('hidden');
+  window.scrollTo(0,0);
+}
 
-      const studentRef = db.collection('students').doc(inv.studentId);
-      const student = await studentRef.get();
-      if(!student.exists){ errBox.textContent = '학생 정보를 찾을 수 없어요. 코치님께 알려주세요.'; return; }
-      const sd = student.data();
-      if(sd.uid && sd.uid !== uid){ errBox.textContent = '이미 다른 계정과 연결된 학생이에요.'; return; }
+let myStudent=null, myCheckins=[], form=null, trendChart=null, trendKey='fatigue', trendRange=14;
 
-      await studentRef.update({ uid: uid });      // 학생 문서에 내 UID를 붙인다 = 연결 확정
-      await inviteRef.update({ usedBy: uid });    // 코드에 사용 표시
-      enterCheckin({ id: student.id, name: sd.name });
-    }catch(err){
-      errBox.textContent = '연결 실패: ' + (err.code || err.message);
-    }finally{
-      btn.disabled = false;
+function loginWithGoogle(){
+  $('login-error').textContent='';
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+    .catch(err=>{ $('login-error').textContent='로그인 실패: '+err.code; });
+}
+function logout(){ auth.signOut(); }
+
+async function findMyStudent(uid){
+  const snap=await db.collection('students').where('uid','==',uid).limit(1).get();
+  if(snap.empty) return null;
+  const d=snap.docs[0];
+  return {id:d.id,name:d.data().name};
+}
+
+// 초대 코드로 학생과 이 계정을 연결
+async function linkStudent(){
+  const errBox=$('code-error'), btn=$('link-btn');
+  const code=$('code-input').value.trim().toUpperCase();
+  errBox.textContent='';
+  if(!code){ errBox.textContent='코드를 입력해 주세요.'; return; }
+  btn.disabled=true;
+  try{
+    const uid=auth.currentUser.uid;
+    const inviteRef=db.collection('invites').doc(code);
+    const invite=await inviteRef.get();
+    if(!invite.exists){ errBox.textContent='없는 코드예요. 코치님께 다시 확인해 보세요.'; return; }
+    const inv=invite.data();
+    if(inv.usedBy&&inv.usedBy!==uid){ errBox.textContent='이미 사용된 코드예요.'; return; }
+    const studentRef=db.collection('students').doc(inv.studentId);
+    try{ await studentRef.update({uid:uid}); }
+    catch(e){
+      if(e.code==='permission-denied'){ errBox.textContent='연결할 수 없어요. 이미 다른 계정과 연결된 학생이에요.'; return; }
+      throw e;
     }
-  }
+    if(!inv.usedBy){ try{ await inviteRef.update({usedBy:uid}); }catch(e){} }
+    const s=await studentRef.get();
+    await enterApp({id:s.id,name:s.data().name});
+  }catch(err){
+    errBox.textContent='연결 실패: '+(err.code||err.message);
+  }finally{ btn.disabled=false; }
+}
 
-  // 로그인 상태가 바뀔 때마다 자동 실행
-  // 로그아웃 -> 로그인 화면 / 로그인 + 연결된 학생 있음 -> 체크인 / 로그인 + 연결 없음 -> 코드 입력
-  auth.onAuthStateChanged(async user => {
-    if(!user){ myStudent = null; show('screen-login'); return; }
-    document.getElementById('user-email').textContent = user.email;
+auth.onAuthStateChanged(async user=>{
+  if(!user){ myStudent=null; myCheckins=[]; show('screen-login'); return; }
+  $('user-email').textContent=user.email;
+  $('load-msg').textContent='확인하는 중...';
+  show('screen-loading');
+  try{
+    const mine=await findMyStudent(user.uid);
+    if(mine) await enterApp(mine); else show('screen-code');
+  }catch(err){
+    $('load-msg').innerHTML='불러오지 못했어요: '+esc(err.code||err.message)+'<br><button class="link" onclick="location.reload()">다시 시도</button>';
     show('screen-loading');
-    try{
-      const mine = await findMyStudent(user.uid);
-      if(mine) enterCheckin(mine); else show('screen-code');
-    }catch(err){
-      show('screen-code');
-      document.getElementById('code-error').textContent = '확인 실패: ' + (err.code || err.message);
-    }
-  });
+  }
+});
+
+async function enterApp(student){
+  myStudent=student;
+  const snap=await db.collection('students').doc(student.id).collection('checkins')
+    .orderBy(firebase.firestore.FieldPath.documentId(),'desc').limit(30).get();
+  myCheckins=snap.docs.map(d=>({...d.data(),date:d.id})).sort((a,b)=>a.date.localeCompare(b.date));
+  showResult();
+}
+
+/* ============ 체크인 폼 ============ */
+function emptyForm(){
+  return {sleepH:null,sleepM:0,sleepQuality:null,fatigue:null,soreness:null,sorenessAreas:[],sorenessImpact:null,
+          stress:null,stressCauses:[],readiness:null,pain:null,painAreas:[],painLevel:null,painNote:''};
+}
+function formFromDoc(c){
+  return {sleepH:Math.floor(c.sleepMin/60),sleepM:Math.round(c.sleepMin%60/10)*10%60,sleepQuality:c.sleepQuality,fatigue:c.fatigue,
+          soreness:c.soreness,sorenessAreas:c.sorenessAreas||[],sorenessImpact:c.sorenessImpact,stress:c.stress,
+          stressCauses:c.stressCauses||[],readiness:c.readiness,pain:c.pain,painAreas:c.painAreas||[],
+          painLevel:c.painLevel,painNote:c.painNote||''};
+}
+function openForm(){
+  const t=myCheckins.find(c=>c.date===todayStr());
+  form=t?formFromDoc(t):emptyForm();
+  renderForm(); show('screen-form');
+}
+
+function scale(key,lo,hi,cls){
+  let b=''; for(let i=0;i<=10;i++) b+=`<button class="${form[key]===i?'on':''}" data-a="set" data-k="${key}" data-v="${i}">${i}</button>`;
+  return `<div class="scale ${cls||''}">${b}</div><div class="anchors"><span>${lo}</span><span>${hi}</span></div>`;
+}
+function chips(key,list,cls){
+  return `<div class="chips">`+list.map(x=>`<button class="chip ${cls||''} ${form[key].includes(x)?'on':''}" data-a="toggle" data-k="${key}" data-v="${x}">${x}</button>`).join('')+`</div>`;
+}
+function missing(){
+  const m=[];
+  if(form.sleepH===null) m.push(['q-sleep','수면 시간']);
+  if(form.sleepQuality===null) m.push(['q-sq','수면의 질']);
+  if(form.fatigue===null) m.push(['q-fa','피로']);
+  if(form.soreness===null) m.push(['q-so','근육통']);
+  else if(form.soreness>0&&form.sorenessImpact===null) m.push(['q-so','근육통 동작 영향']);
+  if(form.stress===null) m.push(['q-st','스트레스']);
+  if(form.readiness===null) m.push(['q-re','준비도']);
+  if(form.pain===null) m.push(['q-pa','통증']);
+  else if(form.pain&&(!form.painAreas.length||form.painLevel===null)) m.push(['q-pa','통증 부위와 강도']);
+  return m;
+}
+function answeredCount(){
+  return [form.sleepH,form.sleepQuality,form.fatigue,form.soreness,form.stress,form.readiness,form.pain].filter(v=>v!==null).length;
+}
+function renderForm(){
+  const y=window.scrollY;
+  const hOpts='<option value="">시간</option>'+Array.from({length:15},(_,i)=>`<option value="${i}" ${form.sleepH===i?'selected':''}>${i}시간</option>`).join('');
+  const mOpts=[0,10,20,30,40,50].map(i=>`<option value="${i}" ${form.sleepM===i?'selected':''}>${i}분</option>`).join('');
+  const n=answeredCount();
+  $('screen-form').innerHTML=`
+    <div class="head"><div><h1>${esc(myStudent.name)}님, 오늘 체크인</h1>
+      <div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})} · 1분이면 끝나요</div></div>
+      ${myCheckins.some(c=>c.date===todayStr())?'<div class="head-actions"><button class="link" data-a="back">취소</button></div>':''}</div>
+
+    <div class="q" id="q-sleep"><div class="q-title">어젯밤 실제로 얼마나 잤나요?</div><div class="q-hint">침대에 누운 시간이 아니라 잠든 시간</div>
+      <div class="sleep-row"><select data-a="sleep" data-k="sleepH">${hOpts}</select><select data-a="sleep" data-k="sleepM">${mOpts}</select></div></div>
+
+    <div class="q" id="q-sq"><div class="q-title">일어난 뒤 수면의 질을 어떻게 평가하나요?</div>${scale('sleepQuality','최악','최고')}</div>
+
+    <div class="q" id="q-fa"><div class="q-title">지금 전반적으로 느끼는 신체 피로는?</div>${scale('fatigue','전혀 피곤하지 않음','극심')}</div>
+
+    <div class="q" id="q-so"><div class="q-title">오늘 근육의 뻐근함/통증은?</div><div class="q-hint">훈련 후 근육이 당기고 뻐근한 정도</div>${scale('soreness','없음','매우 심함')}
+      ${form.soreness>0?`<div class="sub-q">어느 부위인가요? (여러 개 선택 가능)</div>${chips('sorenessAreas',BODY_PARTS)}
+      <div class="sub-q">움직임에 얼마나 영향을 주나요?</div><div class="chips">${IMPACTS.map((x,i)=>`<button class="chip ${form.sorenessImpact===i?'on':''}" data-a="set" data-k="sorenessImpact" data-v="${i}">${x}</button>`).join('')}</div>`:''}</div>
+
+    <div class="q" id="q-st"><div class="q-title">오늘 심리적 스트레스는?</div>${scale('stress','없음','매우 심함')}
+      ${form.stress>0?`<div class="sub-q">원인이 있다면 골라 주세요 (선택)</div>${chips('stressCauses',STRESS_CAUSES)}`:''}</div>
+
+    <div class="q" id="q-re"><div class="q-title">훈련을 시작한다고 생각하면 몸이 얼마나 준비된 느낌인가요?</div>${scale('readiness','전혀 준비 안 됨','완벽히 준비됨')}</div>
+
+    <div class="q" id="q-pa"><div class="q-title">아픈 곳이 있나요?</div><div class="q-hint">근육 뻐근함과 별개로, 관절·뼈 등 평소와 다른 아픔</div>
+      <div class="chips" style="margin-top:0"><button class="chip ${form.pain===false?'on':''}" data-a="pain" data-v="0">없음</button><button class="chip pain ${form.pain===true?'on':''}" data-a="pain" data-v="1">있음</button></div>
+      ${form.pain?`<div class="sub-q">어느 부위인가요?</div>${chips('painAreas',BODY_PARTS,'pain')}
+      <div class="sub-q">아픈 정도는?</div>${scale('painLevel','약함','매우 심함','pain')}
+      <textarea class="memo" data-a="memo" maxlength="200" placeholder="언제부터, 어떤 동작에서 아픈지 적어 주세요 (선택)">${esc(form.painNote)}</textarea>`:''}</div>
+
+    <div class="submit-bar"><div class="progress"><i style="width:${Math.round(n/7*100)}%"></i></div>
+      <button class="btn" data-a="submit">${n<7?'저장하기 ('+(7-n)+'개 남음)':'저장하고 내 상태 보기'}</button>
+      <div id="form-err" class="err"></div></div>`;
+  window.scrollTo(0,y);
+}
+
+$('screen-form').addEventListener('click',e=>{
+  const el=e.target.closest('[data-a]'); if(!el) return;
+  const a=el.dataset.a, k=el.dataset.k, v=el.dataset.v;
+  if(a==='set'){ form[k]=Number(v); if(k==='soreness'&&form.soreness===0){ form.sorenessAreas=[]; form.sorenessImpact=null; } if(k==='stress'&&form.stress===0) form.stressCauses=[]; renderForm(); }
+  else if(a==='toggle'){ const arr=form[k], i=arr.indexOf(v); if(i>=0) arr.splice(i,1); else arr.push(v); renderForm(); }
+  else if(a==='pain'){ form.pain=v==='1'; if(!form.pain){ form.painAreas=[]; form.painLevel=null; form.painNote=''; } renderForm(); }
+  else if(a==='back'){ showResult(); }
+  else if(a==='submit'){ submitCheckin(); }
+});
+$('screen-form').addEventListener('change',e=>{
+  const el=e.target; if(el.dataset.a!=='sleep') return;
+  form[el.dataset.k]=el.value===''?null:Number(el.value); renderForm();
+});
+$('screen-form').addEventListener('input',e=>{ if(e.target.dataset.a==='memo') form.painNote=e.target.value; });
+
+async function submitCheckin(){
+  const miss=missing(), err=$('form-err');
+  if(miss.length){
+    err.textContent='아직 답하지 않은 항목이 있어요: '+miss.map(x=>x[1]).join(', ');
+    $(miss[0][0]).scrollIntoView({behavior:'smooth',block:'center'}); return;
+  }
+  const date=todayStr(), s=form.soreness>0, st=form.stress>0, p=form.pain;
+  const data={
+    date, sleepMin:form.sleepH*60+form.sleepM, sleepQuality:form.sleepQuality, fatigue:form.fatigue,
+    soreness:form.soreness, sorenessAreas:s?form.sorenessAreas:[], sorenessImpact:s?form.sorenessImpact:null,
+    stress:form.stress, stressCauses:st?form.stressCauses:[], readiness:form.readiness,
+    pain:p, painAreas:p?form.painAreas:[], painLevel:p?form.painLevel:null, painNote:p?form.painNote.trim().slice(0,200):''
+  };
+  const btn=document.querySelector('[data-a="submit"]'); btn.disabled=true; err.textContent='';
+  try{
+    await db.collection('students').doc(myStudent.id).collection('checkins').doc(date)
+      .set({...data,checkedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    myCheckins=myCheckins.filter(c=>c.date!==date).concat([data]).sort((a,b)=>a.date.localeCompare(b.date));
+    showResult();
+  }catch(e){ err.textContent='저장 실패: '+(e.code||e.message); btn.disabled=false; }
+}
+
+/* ============ 결과 화면 ============ */
+function historyFor(date){
+  const from=addDays(date,-BASELINE_WINDOW_DAYS);
+  return myCheckins.filter(c=>c.date<date&&c.date>=from);
+}
+function rowHTML(r,today,ready){
+  const m=r.m, ctx=[];
+  if(m.key==='soreness'&&today.soreness>0){ if(today.sorenessAreas.length) ctx.push(today.sorenessAreas.join('·')); if(today.sorenessImpact!=null) ctx.push(IMPACTS[today.sorenessImpact]); }
+  if(m.key==='stress'&&today.stressCauses.length) ctx.push(today.stressCauses.join('·'));
+  const ctxH=ctx.length?`<div class="row-ctx">${esc(ctx.join(' · '))}</div>`:'';
+  if(!ready){
+    const pct=m.key==='sleepMin'?Math.min(100,r.value/600*100):r.value*10;
+    return `<div class="row"><div class="row-top"><span class="row-label">${m.label}</span><span class="row-val">${fmtValue(m.key,r.value)}</span></div>
+      <div class="pb"><i style="width:${pct}%"></i></div>${ctxH}</div>`;
+  }
+  const w=Math.min(Math.abs(r.score),3)/3*50, left=r.delta<0?50-w:50;
+  const tagCls=r.tone==='better'?'tag-better':r.tone==='worse'?'tag-worse':'';
+  const tagTxt=r.tone==='better'?'평소보다 좋음':r.tone==='worse'?'평소보다 주의':'평소와 비슷';
+  return `<div class="row"><div class="row-top"><span class="row-label">${m.label}</span><span class="row-val">${fmtValue(m.key,r.value)}</span></div>
+    <div class="dv"><div class="dv-mid"></div><div class="dv-fill ${r.tone}" style="left:${left}%;width:${w}%"></div></div>
+    <div class="row-sub"><span>${fmtDelta(m.key,r.delta)}</span><span class="${tagCls}">${tagTxt}</span></div>${ctxH}</div>`;
+}
+function showResult(){
+  const date=todayStr(), today=myCheckins.find(c=>c.date===date);
+  if(!today){ openForm(); return; }
+  const hist=historyFor(date), an=analyze(today,hist), advice=buildAdvice(today,an);
+  const top=an.ready?an.rows[0]:null;
+  const pain=today.pain?`<div class="pain-card"><b>통증 신호</b> · ${esc(today.painAreas.join('·'))} · 강도 ${today.painLevel}/10
+      <p>이 앱은 진단하지 않아요. 아픈 곳이 있다면 코치님께 직접 꼭 말씀해 주세요.</p></div>`:'';
+  $('screen-result').innerHTML=`
+    <div class="head"><div><h1>${esc(myStudent.name)}님, 오늘 상태</h1>
+      <div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})}</div></div>
+      <div class="head-actions"><button class="link" data-a="edit">기록 수정</button><button class="link" data-a="logout">로그아웃</button></div></div>
+    ${pain}
+    <p style="margin:12px 0 4px;">${an.ready?(top&&top.tone!=='same'?'평소와 가장 달라진 항목 · <b>'+top.m.label+'</b>':'오늘은 평소와 큰 차이가 없어요'):'평소 기준을 만드는 중 · <b>'+hist.length+'/'+BASELINE_MIN_DAYS+'일</b>'}</p>
+    ${an.rows.map(r=>rowHTML(r,today,an.ready)).join('')}
+    <div class="advice"><span class="tag">오늘 훈련 참고</span>${advice.map(t=>`<p>${esc(t)}</p>`).join('')}</div>
+    <div class="q" style="padding-bottom:0"><h2>최근 추이</h2>
+      <div class="chips" id="trend-chips">${METRICS.map(m=>`<button class="chip ${trendKey===m.key?'on':''}" data-trend="${m.key}">${m.label}</button>`).join('')}</div>
+      <div class="range"><button class="chip ${trendRange===7?'on':''}" data-range="7">7일</button><button class="chip ${trendRange===14?'on':''}" data-range="14">14일</button></div>
+      <div class="chart-box"><canvas id="trend"></canvas></div>
+      <p class="note" style="margin-top:8px;">점선은 최근 평소 평균이에요.</p></div>`;
+  show('screen-result'); drawTrend();
+}
+$('screen-result').addEventListener('click',e=>{
+  const el=e.target.closest('[data-a],[data-trend],[data-range]'); if(!el) return;
+  if(el.dataset.a==='edit') openForm();
+  else if(el.dataset.a==='logout') logout();
+  else if(el.dataset.trend){ trendKey=el.dataset.trend; showResultKeepScroll(); }
+  else if(el.dataset.range){ trendRange=Number(el.dataset.range); showResultKeepScroll(); }
+});
+function showResultKeepScroll(){ const y=window.scrollY; showResult(); window.scrollTo(0,y); }
+
+function drawTrend(){
+  const canvas=$('trend'); if(!canvas) return;
+  const m=METRICS.find(x=>x.key===trendKey), sleep=m.key==='sleepMin', end=todayStr();
+  const days=[]; for(let i=trendRange-1;i>=0;i--) days.push(addDays(end,-i));
+  const by=Object.fromEntries(myCheckins.map(c=>[c.date,c]));
+  const conv=v=>sleep?v/60:v;
+  const vals=days.map(d=>by[d]&&typeof by[d][m.key]==='number'?conv(by[d][m.key]):null);
+  const st=baselineStats(historyFor(end),m.key);
+  const sets=[{data:vals,borderColor:'#c6ff3d',backgroundColor:'#c6ff3d',borderWidth:2,tension:.25,spanGaps:true,pointRadius:vals.map((_,i)=>i===vals.length-1?5:3)}];
+  if(st) sets.push({data:days.map(()=>conv(st.mean)),borderColor:'#828ba0',borderDash:[5,5],borderWidth:1,pointRadius:0});
+  if(trendChart) trendChart.destroy();
+  trendChart=new Chart(canvas,{type:'line',data:{labels:days.map(d=>d.slice(5).replace('-','/')),datasets:sets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:sleep?{grid:{color:'#2b3242'},ticks:{color:'#828ba0'}}:{min:0,max:10,grid:{color:'#2b3242'},ticks:{color:'#828ba0',stepSize:2}},
+              x:{grid:{display:false},ticks:{color:'#828ba0',maxTicksLimit:7}}}}});
+}
 </script>
 </body>
 </html>
