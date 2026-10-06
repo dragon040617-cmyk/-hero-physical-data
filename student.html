@@ -268,15 +268,17 @@ auth.onAuthStateChanged(async user=>{
     const mine=await findMyStudent(user.uid);
     if(mine) await enterApp(mine); else show('screen-code');
   }catch(err){
-    $('load-msg').innerHTML='불러오지 못했어요: '+esc(err.code||err.message)+'<br><button class="link" onclick="location.reload()">다시 시도</button>';
+    $('load-msg').innerHTML='불러오지 못했어요: '+esc(err.code||'')+'<br><span class="note">'+esc(err.message||'')+'</span><br><button class="link" onclick="location.reload()">다시 시도</button>';
     show('screen-loading');
   }
 });
 
 async function enterApp(student){
   myStudent=student;
+  // 최근 30일만 날짜 범위로 조회 (문서 ID = 날짜라서 색인 없이 가능). 정렬은 아래에서 화면 쪽이 한다.
+  const from=addDays(todayStr(),-30);
   const snap=await db.collection('students').doc(student.id).collection('checkins')
-    .orderBy(firebase.firestore.FieldPath.documentId(),'desc').limit(30).get();
+    .where(firebase.firestore.FieldPath.documentId(),'>=',from).get();
   myCheckins=snap.docs.map(d=>({...d.data(),date:d.id})).sort((a,b)=>a.date.localeCompare(b.date));
   showResult();
 }
