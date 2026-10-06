@@ -61,7 +61,8 @@
   /* 결과 화면 */
   .pain-card{ border:1px solid var(--coral); background:var(--coral-soft); border-radius:12px; padding:14px 16px; margin:12px 0 4px; }
   .pain-card p{ margin:6px 0 0; font-size:14px; }
-  .row{ padding:16px 0; border-top:1px solid var(--line); }
+  .row{ padding:14px 0; border-top:1px solid var(--line); }
+  .sec .row:first-of-type{ border-top:0; padding-top:4px; }
   .row-top{ display:flex; justify-content:space-between; align-items:baseline; }
   .row-label{ font-weight:600; }
   .row-val{ font-size:18px; font-weight:700; }
@@ -79,6 +80,22 @@
   .advice p{ color:var(--text); margin:0 0 8px; font-size:16px; }
   .range{ display:flex; gap:8px; justify-content:flex-end; margin-bottom:8px; }
   .chart-box{ position:relative; height:220px; margin-top:12px; }
+
+  /* 결과 화면 v2 */
+  .status{ border:1px solid; border-radius:14px; padding:16px; margin:12px 0 0; }
+  .badge{ font-size:13px; font-weight:700; }
+  .headline{ font-size:19px; font-weight:700; line-height:1.45; margin-top:4px; }
+  .reasons{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .reasons span{ font-size:13px; padding:3px 10px; border-radius:999px; border:1px solid var(--line); color:var(--muted); }
+  .pain-note{ font-size:14px; color:#ff8a7a; margin:10px 0 0; }
+  .sec{ border-top:1px solid var(--line); padding:20px 0; margin-top:20px; }
+  .sec + .sec{ margin-top:0; }
+  .sec-t{ font-size:13px; color:var(--dim); margin-bottom:8px; }
+  .sec p{ color:var(--text); margin:0; font-size:16px; }
+  .talk{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px; font-size:16px; line-height:1.6; }
+  .care{ display:grid; grid-template-columns:44px minmax(0,1fr); gap:10px; padding:10px 0; font-size:15px; line-height:1.55; }
+  .care + .care{ border-top:1px solid var(--line); }
+  .care b{ color:var(--dim); font-weight:600; font-size:14px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-app-compat.min.js"></script>
@@ -169,32 +186,96 @@ function analyze(today,history){
     return {m,value,st,delta,score,tone};
   });
   if(ready) rows.sort((a,b)=>Math.abs(b.score)-Math.abs(a.score));
-  return {ready,rows};
+  return {ready,rows,n:history.length};
 }
 
-// 규칙 기반 '참고' 문장 (진단처럼 읽히지 않게)
-function buildAdvice(today,an){
-  const out=[];
+// 받침에 따라 조사 고르기 (예: 무릎이 / 허리가)
+function josa(w,a,b){ const c=w.charCodeAt(w.length-1); if(c<0xAC00||c>0xD7A3) return w+b; return w+(((c-0xAC00)%28)?a:b); }
+function absSleep(d){ const a=Math.abs(Math.round(d)); return a>=60?fmtSleep(a):a+'분'; }
+function chipFor(r){ return r.m.label+' '+(r.m.key==='sleepMin'?(r.delta>0?'+':'-')+absSleep(r.delta):(r.delta>0?'+':'')+r.delta.toFixed(1)); }
+const PHRASE={
+  sleepMin:r=>'평소보다 잠을 '+absSleep(r.delta)+' 덜 잤어요',
+  sleepQuality:()=>'평소보다 잠을 푹 못 잤어요',
+  fatigue:()=>'평소보다 많이 피곤한 상태예요',
+  soreness:()=>'평소보다 근육통이 심해요',
+  stress:()=>'평소보다 스트레스가 많은 날이에요',
+  readiness:()=>'평소보다 몸이 덜 준비된 느낌이에요'
+};
+const STATUS_UI={
+  GREEN:{label:'좋음',color:'#c6ff3d',bg:'rgba(198,255,61,.10)'},
+  YELLOW:{label:'주의',color:'#ffd23f',bg:'rgba(255,210,63,.10)'},
+  AMBER:{label:'경고',color:'#ff9f1c',bg:'rgba(255,159,28,.12)'},
+  RED:{label:'위험',color:'#ff4b33',bg:'rgba(255,75,51,.14)'},
+  BASE:{label:'기준 만드는 중',color:'#aab2c5',bg:'rgba(170,178,197,.08)'}
+};
+
+// 오늘 상태 판정: 위에서부터 먼저 걸리는 조건이 등급이 된다 (안전 우선)
+function judge(t,an){
+  const worse=an.ready?an.rows.filter(r=>r.tone==='worse'):[];
+  const better=an.ready?an.rows.filter(r=>r.tone==='better'):[];
   const get=k=>an.rows.find(r=>r.m.key===k);
-  const is=(k,t)=>get(k)&&get(k).tone===t;
-  if(!an.ready){
-    out.push('기록이 쌓이는 중이라 아직 평소와 비교하지 못해요. '+BASELINE_MIN_DAYS+'일 기록이 모이면 비교가 시작돼요.');
-    if(today.fatigue>=8||today.soreness>=8) out.push('피로나 근육통이 높게 느껴지는 날이에요. 훈련 강도는 코치님과 이야기해 보세요.');
-    return out.slice(0,2);
-  }
-  if(is('sleepMin','worse')&&(is('fatigue','worse')||is('readiness','worse')))
-    out.push('수면이 평소보다 짧고 피로·준비도에도 영향이 보여요. 워밍업을 충분히 하고 몸 반응을 보면서 강도를 정해 보세요.');
-  else if(is('sleepMin','worse')) out.push('수면이 평소보다 짧았어요. 오늘은 컨디션을 살피면서 시작해 보세요.');
-  if(is('soreness','worse')){
-    const area=today.sorenessAreas&&today.sorenessAreas.length?today.sorenessAreas.join('·')+' ':'';
-    out.push(area+'근육통이 평소보다 높아요. 해당 부위 강도는 코치님과 상의해 보세요.');
-  }
-  if(is('stress','worse')) out.push('스트레스가 평소보다 높은 날이에요. 훈련 전에 가볍게 몸을 풀며 호흡을 가다듬어 보세요.');
-  if(is('fatigue','worse')&&!is('sleepMin','worse')) out.push('피로가 평소보다 높아요. 무리하지 말고 훈련 중 몸 반응을 확인해 보세요.');
-  if(!out.length&&(is('readiness','better')||is('fatigue','better')||is('sleepMin','better')))
-    out.push('컨디션이 평소보다 좋은 편이에요. 오늘 훈련에 잘 활용해 보세요.');
-  if(!out.length) out.push('평소와 큰 차이가 없어요. 평소 루틴대로 진행해 보세요.');
-  return out.slice(0,2);
+  const isW=k=>worse.includes(get(k));
+  const bad=r=>Math.abs(r.score);
+  const areas=(t.painAreas||[]).join('·'), sAreas=(t.sorenessAreas||[]).join('·');
+  const painHigh=t.pain&&t.painLevel>=4, painLow=t.pain&&!painHigh;
+  const sleepLow=t.sleepMin<300, follow=t.painFollowUp;
+  const special=[]; let status, headline;
+
+  if(painHigh){ status='RED'; headline=areas+' 통증이 있어요. 훈련 전에 코치님께 먼저 말해 주세요.'; special.push(areas+' 통증 '+t.painLevel+'/10'); }
+  else if(t.sorenessImpact===3){ status='RED'; headline='근육통 때문에 움직이기 힘든 상태예요. 훈련 전에 코치님께 말해 주세요.'; special.push((sAreas||'근육통')+' · 훈련 어려움'); }
+  else if(t.readiness<=2){ status='RED'; headline='오늘 몸이 많이 무거워요. 훈련 전에 코치님께 말해 주세요.'; special.push('준비도 '+t.readiness+'/10'); }
+  else if(worse.some(r=>bad(r)>=2)){ const r=worse.find(r=>bad(r)>=2); status='RED'; headline=PHRASE[r.m.key](r)+'. 훈련 전에 코치님께 말해 주세요.'; }
+  else if(painLow){ status='AMBER'; headline=areas+'에 약한 통증이 있어요. 코치님께 미리 말해 두세요.'; special.push(areas+' 통증 '+t.painLevel+'/10'); }
+  else if(follow===2){ status='AMBER'; headline='어제 아팠던 곳이 오늘 아침 더 아팠어요. 코치님께 말해 주세요.'; special.push('아침 통증 증가'); }
+  else if(sleepLow){ status='AMBER'; headline='어젯밤 '+fmtSleep(t.sleepMin)+'밖에 못 잤어요.'; special.push('수면 '+fmtSleep(t.sleepMin)); }
+  else if(isW('sleepMin')&&(isW('fatigue')||isW('readiness'))){ status='AMBER'; headline='잠이 부족하고 몸도 무거운 날이에요.'; }
+  else if(worse.filter(r=>bad(r)>=1.5).length>=2){ status='AMBER'; headline=PHRASE[worse[0].m.key](worse[0])+'.'; }
+  else if(t.sorenessImpact===2){ status='AMBER'; headline=(sAreas?josa(sAreas,'이','가'):'근육통이')+' 훈련에 영향을 주는 상태예요.'; special.push((sAreas||'근육통')+' · 훈련에 영향'); }
+  else if(!an.ready){ status='BASE'; headline='평소 기준을 만드는 중이에요 ('+an.n+'/'+BASELINE_MIN_DAYS+'일)'; }
+  else if(worse.length||(['무릎','정강이','허리'].some(a=>(t.sorenessAreas||[]).includes(a))&&t.sorenessImpact===1)){
+    status='YELLOW'; headline=worse.length?PHRASE[worse[0].m.key](worse[0])+'.':josa(sAreas,'이','가')+' 조금 불편한 상태예요.'; }
+  else { status='GREEN'; headline=better.length?'평소보다 컨디션이 좋아요.':'평소랑 비슷한 컨디션이에요.'; }
+  if(follow===1) special.push('아침 통증 그대로');
+
+  let reasons=special.concat(worse.map(chipFor)).slice(0,3);
+  if(!reasons.length&&an.ready) reasons=better.length?better.slice(0,2).map(chipFor):['평소와 비슷'];
+
+  // 오늘 훈련 참고 (부하 처방은 코치 화면에만)
+  let train;
+  if(status==='RED') train='오늘 훈련은 코치님이 상태를 보고 정해 줄 거예요. 혼자 무리하지 마세요.';
+  else if(status==='AMBER') train=(t.pain||follow===2)?'아픈 곳에 무리가 가는 동작은 코치님과 먼저 이야기하고 하세요.'
+    :t.sorenessImpact===2?'불편한 동작이 있으면 참지 말고 바로 코치님께 말하세요.'
+    :'몸이 평소보다 무거운 날이에요. 웜업을 충분히 하고, 훈련 중에 이상하면 바로 말하세요.';
+  else if(status==='YELLOW') train=isW('stress')?'훈련 전에 숨을 길게 내쉬면서 몸을 풀고 시작하세요.':(isW('soreness')||t.sorenessImpact===1)?'뻐근한 곳은 웜업으로 충분히 풀고 시작하세요.':'훈련 초반에 몸 상태를 먼저 확인하고 시작하세요.';
+  else if(status==='GREEN') train=better.length?'측정이나 강한 훈련을 하기 좋은 상태예요.':'평소대로 훈련하면 돼요.';
+  else train='아직 오늘 값만 보고 있어요. 평소와 다르게 느껴지면 코치님께 말하세요.';
+
+  // 코치님께 할 말
+  const talk=[];
+  if(t.pain) talk.push(josa(areas,'이','가')+' 아파요. 10점 중 '+t.painLevel+'점 정도예요.'+(t.painNote?' ('+t.painNote+')':''));
+  if(follow===2) talk.push('어제 아팠던 곳이 오늘 아침에 더 아팠어요.');
+  if(follow===1) talk.push('어제 아팠던 곳이 아침에도 비슷하게 아팠어요.');
+  if(t.sorenessImpact>=2) talk.push((sAreas?josa(sAreas,'이','가'):'근육이')+' 뻐근해서 움직일 때 불편해요.');
+  if(sleepLow||isW('sleepMin')) talk.push('어젯밤 '+fmtSleep(t.sleepMin)+' 잤어요.');
+  if(isW('fatigue')||isW('readiness')||t.readiness<=2) talk.push('몸이 평소보다 무거워요.');
+  const showTalk=talk.length&&(status==='RED'||status==='AMBER'||t.pain||t.sorenessImpact>=2||follow);
+  const coachTalk=showTalk?'코치님, '+talk.join(' '):null;
+
+  // 오늘 몸관리 3가지
+  const tired=sleepLow||isW('sleepMin')||isW('fatigue')||isW('readiness');
+  const nutrition=tired?'점심 먹고 훈련까지 굶지 않게, 훈련 1~2시간 전에 바나나나 떡 같은 간식을 꼭 먹어요.'
+    :'훈련 1~2시간 전에 가벼운 간식, 끝나고 1시간 안에 우유나 초코우유를 마셔요.';
+  const sleep=(sleepLow||isW('sleepMin')||isW('sleepQuality'))?'오늘은 평소보다 30분 일찍 누워요. 폰은 침대에서 멀리 두세요.'
+    :'자기 1시간 전에 따뜻한 물로 샤워하면 잠드는 데 도움이 돼요.';
+  const shin=(t.painAreas||[]).includes('정강이')||(t.sorenessAreas||[]).includes('정강이');
+  let action;
+  if(t.pain) action='아픈 곳은 세게 누르거나 문지르지 마세요. 내일 아침 첫 발 디딜 때 통증을 다시 확인해요.';
+  else if(shin) action='정강이 앞쪽 뼈는 폼롤러로 밀지 말고, 종아리 뒤쪽만 풀어요.';
+  else if(t.soreness>0&&sAreas) action=josa(sAreas,'은','는')+' 폼롤러로 1분 정도 가볍게 풀어요.';
+  else if(isW('stress')) action='훈련 전에 숨을 두 번 들이마시고 길게 내쉬기를 3번 해 보세요.';
+  else action='훈련 끝나고 5분 정도 가볍게 스트레칭하고 마무리해요.';
+
+  return {status,headline,reasons,train,coachTalk,care:{nutrition,sleep,action}};
 }
 /* PURE:END */
 
@@ -286,13 +367,13 @@ async function enterApp(student){
 /* ============ 체크인 폼 ============ */
 function emptyForm(){
   return {sleepH:null,sleepM:0,sleepQuality:null,fatigue:null,soreness:null,sorenessAreas:[],sorenessImpact:null,
-          stress:null,stressCauses:[],readiness:null,pain:null,painAreas:[],painLevel:null,painNote:''};
+          stress:null,stressCauses:[],readiness:null,pain:null,painAreas:[],painLevel:null,painNote:'',painFollowUp:null};
 }
 function formFromDoc(c){
   return {sleepH:Math.floor(c.sleepMin/60),sleepM:Math.round(c.sleepMin%60/10)*10%60,sleepQuality:c.sleepQuality,fatigue:c.fatigue,
           soreness:c.soreness,sorenessAreas:c.sorenessAreas||[],sorenessImpact:c.sorenessImpact,stress:c.stress,
           stressCauses:c.stressCauses||[],readiness:c.readiness,pain:c.pain,painAreas:c.painAreas||[],
-          painLevel:c.painLevel,painNote:c.painNote||''};
+          painLevel:c.painLevel,painNote:c.painNote||'',painFollowUp:c.painFollowUp??null};
 }
 function openForm(){
   const t=myCheckins.find(c=>c.date===todayStr());
@@ -307,8 +388,10 @@ function scale(key,lo,hi,cls){
 function chips(key,list,cls){
   return `<div class="chips">`+list.map(x=>`<button class="chip ${cls||''} ${form[key].includes(x)?'on':''}" data-a="toggle" data-k="${key}" data-v="${x}">${x}</button>`).join('')+`</div>`;
 }
+function yesterdayPain(){ const y=myCheckins.find(c=>c.date===addDays(todayStr(),-1)); return y&&y.pain?y:null; }
 function missing(){
   const m=[];
+  if(yesterdayPain()&&form.painFollowUp===null) m.push(['q-fu','어제 통증 확인']);
   if(form.sleepH===null) m.push(['q-sleep','수면 시간']);
   if(form.sleepQuality===null) m.push(['q-sq','수면의 질']);
   if(form.fatigue===null) m.push(['q-fa','피로']);
@@ -333,6 +416,8 @@ function renderForm(){
       <div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})} · 1분이면 끝나요</div></div>
       ${myCheckins.some(c=>c.date===todayStr())?'<div class="head-actions"><button class="link" data-a="back">취소</button></div>':''}</div>
 
+    ${yesterdayPain()?`<div class="q" id="q-fu"><div class="q-title">어제 아팠던 ${esc(yesterdayPain().painAreas.join('·'))}, 오늘 아침 첫 발 디딜 때 어땠나요?</div>
+      <div class="chips">${['괜찮아졌어요','비슷해요','더 아파요'].map((x,i)=>`<button class="chip ${i===2?'pain':''} ${form.painFollowUp===i?'on':''}" data-a="set" data-k="painFollowUp" data-v="${i}">${x}</button>`).join('')}</div></div>`:''}
     <div class="q" id="q-sleep"><div class="q-title">어젯밤 실제로 얼마나 잤나요?</div><div class="q-hint">침대에 누운 시간이 아니라 잠든 시간</div>
       <div class="sleep-row"><select data-a="sleep" data-k="sleepH">${hOpts}</select><select data-a="sleep" data-k="sleepM">${mOpts}</select></div></div>
 
@@ -387,8 +472,11 @@ async function submitCheckin(){
     date, sleepMin:form.sleepH*60+form.sleepM, sleepQuality:form.sleepQuality, fatigue:form.fatigue,
     soreness:form.soreness, sorenessAreas:s?form.sorenessAreas:[], sorenessImpact:s?form.sorenessImpact:null,
     stress:form.stress, stressCauses:st?form.stressCauses:[], readiness:form.readiness,
-    pain:p, painAreas:p?form.painAreas:[], painLevel:p?form.painLevel:null, painNote:p?form.painNote.trim().slice(0,200):''
+    pain:p, painAreas:p?form.painAreas:[], painLevel:p?form.painLevel:null, painNote:p?form.painNote.trim().slice(0,200):'',
+    painFollowUp:yesterdayPain()?form.painFollowUp:null
   };
+  const j=judge(data,analyze(data,historyFor(date)));
+  data.status=j.status; data.reasons=j.reasons;   // 코치 화면에서 바로 쓰도록 판정 결과도 저장
   const btn=document.querySelector('[data-a="submit"]'); btn.disabled=true; err.textContent='';
   try{
     await db.collection('students').doc(myStudent.id).collection('checkins').doc(date)
@@ -423,20 +511,30 @@ function rowHTML(r,today,ready){
 function showResult(){
   const date=todayStr(), today=myCheckins.find(c=>c.date===date);
   if(!today){ openForm(); return; }
-  const hist=historyFor(date), an=analyze(today,hist), advice=buildAdvice(today,an);
-  const top=an.ready?an.rows[0]:null;
-  const pain=today.pain?`<div class="pain-card"><b>통증 신호</b> · ${esc(today.painAreas.join('·'))} · 강도 ${today.painLevel}/10
-      <p>이 앱은 진단하지 않아요. 아픈 곳이 있다면 코치님께 직접 꼭 말씀해 주세요.</p></div>`:'';
+  const hist=historyFor(date), an=analyze(today,hist), j=judge(today,an), ui=STATUS_UI[j.status];
+  const care=[['영양',j.care.nutrition],['수면',j.care.sleep],['행동',j.care.action]];
   $('screen-result').innerHTML=`
     <div class="head"><div><h1>${esc(myStudent.name)}님, 오늘 상태</h1>
       <div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})}</div></div>
       <div class="head-actions"><button class="link" data-a="edit">기록 수정</button><button class="link" data-a="logout">로그아웃</button></div></div>
-    ${pain}
-    <p style="margin:12px 0 4px;">${an.ready?(top&&top.tone!=='same'?'평소와 가장 달라진 항목 · <b>'+top.m.label+'</b>':'오늘은 평소와 큰 차이가 없어요'):'평소 기준을 만드는 중 · <b>'+hist.length+'/'+BASELINE_MIN_DAYS+'일</b>'}</p>
-    ${an.rows.map(r=>rowHTML(r,today,an.ready)).join('')}
-    <div class="advice"><span class="tag">오늘 훈련 참고</span>${advice.map(t=>`<p>${esc(t)}</p>`).join('')}</div>
-    <div class="q" style="padding-bottom:0"><h2>최근 추이</h2>
-      <div class="chips" id="trend-chips">${METRICS.map(m=>`<button class="chip ${trendKey===m.key?'on':''}" data-trend="${m.key}">${m.label}</button>`).join('')}</div>
+
+    <div class="status" style="border-color:${ui.color};background:${ui.bg}">
+      <div class="badge" style="color:${ui.color}">${ui.label}</div>
+      <div class="headline">${esc(j.headline)}</div>
+      ${j.reasons.length?`<div class="reasons">${j.reasons.map(r=>`<span>${esc(r)}</span>`).join('')}</div>`:''}
+    </div>
+    ${today.pain?'<p class="pain-note">관절이나 뼈 통증은 참지 말고 코치님께 직접 보여 주세요. 이 앱은 진단하지 않아요.</p>':''}
+
+    <div class="sec"><div class="sec-t">오늘 훈련 참고</div><p>${esc(j.train)}</p></div>
+    ${j.coachTalk?`<div class="sec"><div class="sec-t">코치님께 할 말</div><div class="talk" id="talk">${esc(j.coachTalk)}</div>
+      <div class="chips"><button class="chip" data-a="copy">복사하기</button></div></div>`:''}
+    <div class="sec"><div class="sec-t">오늘 몸관리</div>${care.map(c=>`<div class="care"><b>${c[0]}</b><span>${esc(c[1])}</span></div>`).join('')}</div>
+
+    <div class="sec"><div class="sec-t">${an.ready?'평소(최근 14일)와 비교':'오늘 기록 · 평소 비교는 '+BASELINE_MIN_DAYS+'일 기록 후 시작 ('+hist.length+'/'+BASELINE_MIN_DAYS+')'}</div>
+      ${an.rows.map(r=>rowHTML(r,today,an.ready)).join('')}</div>
+
+    <div class="sec" style="padding-bottom:0"><div class="sec-t">최근 추이</div>
+      <div class="chips" style="margin-top:0">${METRICS.map(m=>`<button class="chip ${trendKey===m.key?'on':''}" data-trend="${m.key}">${m.label}</button>`).join('')}</div>
       <div class="range"><button class="chip ${trendRange===7?'on':''}" data-range="7">7일</button><button class="chip ${trendRange===14?'on':''}" data-range="14">14일</button></div>
       <div class="chart-box"><canvas id="trend"></canvas></div>
       <p class="note" style="margin-top:8px;">점선은 최근 평소 평균이에요.</p></div>${DEV?devPanel():''}`;
@@ -446,6 +544,7 @@ $('screen-result').addEventListener('click',e=>{
   const el=e.target.closest('[data-a],[data-trend],[data-range]'); if(!el) return;
   if(el.dataset.a==='edit') openForm();
   else if(el.dataset.a==='logout') logout();
+  else if(el.dataset.a==='copy'){ const t=$('talk').textContent; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{ el.textContent='복사됨'; }).catch(()=>{ el.textContent='길게 눌러 직접 복사해 주세요'; }); }
   else if(el.dataset.a==='seed') seedData();
   else if(el.dataset.a==='clearseed') clearSeed();
   else if(el.dataset.trend){ trendKey=el.dataset.trend; showResultKeepScroll(); }
