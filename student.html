@@ -439,13 +439,15 @@ function showResult(){
       <div class="chips" id="trend-chips">${METRICS.map(m=>`<button class="chip ${trendKey===m.key?'on':''}" data-trend="${m.key}">${m.label}</button>`).join('')}</div>
       <div class="range"><button class="chip ${trendRange===7?'on':''}" data-range="7">7일</button><button class="chip ${trendRange===14?'on':''}" data-range="14">14일</button></div>
       <div class="chart-box"><canvas id="trend"></canvas></div>
-      <p class="note" style="margin-top:8px;">점선은 최근 평소 평균이에요.</p></div>`;
+      <p class="note" style="margin-top:8px;">점선은 최근 평소 평균이에요.</p></div>${DEV?devPanel():''}`;
   show('screen-result'); drawTrend();
 }
 $('screen-result').addEventListener('click',e=>{
   const el=e.target.closest('[data-a],[data-trend],[data-range]'); if(!el) return;
   if(el.dataset.a==='edit') openForm();
   else if(el.dataset.a==='logout') logout();
+  else if(el.dataset.a==='seed') seedData();
+  else if(el.dataset.a==='clearseed') clearSeed();
   else if(el.dataset.trend){ trendKey=el.dataset.trend; showResultKeepScroll(); }
   else if(el.dataset.range){ trendRange=Number(el.dataset.range); showResultKeepScroll(); }
 });
@@ -466,6 +468,51 @@ function drawTrend(){
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{y:sleep?{grid:{color:'#2b3242'},ticks:{color:'#828ba0'}}:{min:0,max:10,grid:{color:'#2b3242'},ticks:{color:'#828ba0',stepSize:2}},
               x:{grid:{display:false},ticks:{color:'#828ba0',maxTicksLimit:7}}}}});
+}
+
+/* ============ 개발용 테스트 데이터 (?dev=1 일 때만 화면에 나온다) ============ */
+const DEV=new URLSearchParams(location.search).get('dev')==='1';
+const SEED={
+  sleepMin:[430,415,445,420,400,435,425,410,440,420],
+  sleepQuality:[7,6,8,7,6,7,7,6,8,7],
+  fatigue:[4,5,3,4,5,4,4,5,3,4],
+  soreness:[3,4,2,3,4,3,3,4,2,3],
+  stress:[3,3,2,4,3,3,2,3,3,3],
+  readiness:[7,6,8,7,6,7,7,6,8,7]
+};
+function devPanel(){
+  return `<div class="q"><h2>개발용 테스트 데이터</h2>
+    <p class="note">어제부터 10일 전까지 가짜 기록을 넣어요. 이미 기록이 있는 날은 건드리지 않아요.</p>
+    <div class="chips"><button class="chip on" data-a="seed">10일치 넣기</button><button class="chip pain" data-a="clearseed">테스트 데이터 지우기</button></div>
+    <div id="dev-msg" class="note" style="margin-top:10px;"></div></div>`;
+}
+async function seedData(){
+  const msg=$('dev-msg'); msg.textContent='넣는 중...';
+  try{
+    const col=db.collection('students').doc(myStudent.id).collection('checkins');
+    const batch=db.batch(), today=todayStr(); let n=0;
+    for(let i=0;i<10;i++){
+      const date=addDays(today,-(10-i));
+      if(myCheckins.some(c=>c.date===date)) continue;
+      batch.set(col.doc(date),{date,sleepMin:SEED.sleepMin[i],sleepQuality:SEED.sleepQuality[i],fatigue:SEED.fatigue[i],
+        soreness:SEED.soreness[i],sorenessAreas:['허벅지'],sorenessImpact:1,stress:SEED.stress[i],stressCauses:[],
+        readiness:SEED.readiness[i],pain:false,painAreas:[],painLevel:null,painNote:'',seed:true,
+        checkedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      n++;
+    }
+    if(!n){ msg.textContent='넣을 날짜가 없어요. 이미 기록이 있어요.'; return; }
+    await batch.commit(); await enterApp(myStudent);
+  }catch(e){ msg.textContent='실패: '+(e.code||e.message); }
+}
+async function clearSeed(){
+  const msg=$('dev-msg'); msg.textContent='지우는 중...';
+  try{
+    const col=db.collection('students').doc(myStudent.id).collection('checkins');
+    const batch=db.batch(); let n=0;
+    myCheckins.filter(c=>c.seed===true).forEach(c=>{ batch.delete(col.doc(c.date)); n++; });
+    if(!n){ msg.textContent='지울 테스트 데이터가 없어요.'; return; }
+    await batch.commit(); await enterApp(myStudent);
+  }catch(e){ msg.textContent='실패: '+(e.code||e.message); }
 }
 </script>
 </body>
