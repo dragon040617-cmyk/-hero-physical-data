@@ -504,13 +504,13 @@ function buildCare(c){
 /* PURE:END */
 
 /* ============ Firebase ============ */
-// 앱 이름을 'student' 로 따로 지어서, 같은 기기의 코치 사이트와 로그인 정보가 섞이지 않게 한다
+// 코치 화면(index.html)과 같은 로그인을 쓴다. 로그인은 첫 화면에서 하고, 여기서는 학생 계정인지 확인만 한다.
 const fbApp=firebase.initializeApp({
   apiKey:"AIzaSyAWKsdEXjM0vMT06wYht5kPmD6R9i1d0yA",
   authDomain:"hero-sports-academy.firebaseapp.com",
   projectId:"hero-sports-academy",
   appId:"1:505238936070:web:ab01e5164d03c44de0c187"
-},'student');
+});
 const auth=fbApp.auth();
 const db=fbApp.firestore();
 const $=id=>document.getElementById(id);
@@ -528,7 +528,7 @@ function loginWithGoogle(){
   auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
     .catch(err=>{ $('login-error').textContent='로그인 실패: '+err.code; });
 }
-function logout(){ auth.signOut(); }
+function logout(){ auth.signOut().then(()=>location.replace('./')); }
 
 /* ============ 가입: 내 정보 → 반 코드 → 선생님 승인 ============
    joinRequests/{내 uid}  : 학생이 쓰는 가입 신청서 (코치 사이트가 읽어서 승인)
@@ -647,7 +647,9 @@ async function openMe(){
 
 auth.onAuthStateChanged(async user=>{
   stopListening();
-  if(!user){ myStudent=null; myCheckins=[]; show('screen-login'); return; }
+  // 로그인 안 됨 → 첫 화면(코치·학생 공용 로그인)으로. 코치 계정이면 코치 화면으로.
+  if(!user){ myStudent=null; myCheckins=[]; location.replace('./'); return; }
+  if(((user.providerData||[])[0]||{}).providerId!=='google.com'){ location.replace('./'); return; }
   $('user-email').textContent=user.email;
   $('load-msg').textContent='확인하는 중...';
   show('screen-loading');
