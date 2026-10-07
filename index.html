@@ -314,6 +314,25 @@
   .topbar-handle{ display:none; }
   .hamburger{ background:var(--surface-2); border:1px solid var(--line); color:var(--text); font-size:18px; width:38px;height:38px;border-radius:8px; cursor:pointer; flex-shrink:0; }
   .mobile-brand{ font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:0.03em; white-space:nowrap; }
+  .login-who{ font-size:12px; font-weight:800; color:var(--text-dim); letter-spacing:0.08em; margin-bottom:10px; }
+  .login-or{ display:flex; align-items:center; gap:10px; margin:22px 0 12px; color:var(--text-dim); font-size:12px; font-weight:800; letter-spacing:0.08em; }
+  .login-or::before,.login-or::after{ content:''; flex:1; border-top:1px solid var(--line); }
+  .google-btn{ width:100%; min-height:48px; display:flex; align-items:center; justify-content:center; gap:10px; background:#fff; color:#1f1f1f; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; }
+  /* 체크인 해석 */
+  .ck-status{ border:1px solid; border-radius:14px; padding:16px; }
+  .ck-status .ck-badge{ font-size:12px; font-weight:800; letter-spacing:0.04em; }
+  .ck-status .ck-head{ font-size:18px; font-weight:800; margin-top:4px; line-height:1.45; }
+  .ck-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .ck-chips span{ font-size:12px; padding:3px 10px; border-radius:999px; border:1px solid var(--line); color:var(--text-dim); }
+  .ck-list{ margin:0; padding-left:18px; line-height:1.75; font-size:13.5px; }
+  .ck-table td,.ck-table th{ white-space:nowrap; }
+  .ck-dot{ display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+  .brief-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+  .brief-tile{ border-radius:12px; padding:12px 14px; border:1px solid var(--line); background:var(--surface); }
+  .brief-tile .n{ font-size:26px; font-weight:800; }
+  .brief-row{ display:flex; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line); cursor:pointer; }
+  .brief-row:last-child{ border-bottom:none; }
+  @media (max-width:700px){ .brief-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
   .logout-link{ color:var(--text-dim); cursor:pointer; font-size:12.5px; white-space:nowrap; flex-shrink:0; background:none; border:1px solid var(--line); border-radius:8px; padding:8px 12px; min-height:36px; font-family:inherit; }
   .mt-btn{ background:var(--surface-2); border:1px solid var(--line); color:var(--text); font-size:13px; font-weight:700; border-radius:8px; padding:0 12px; height:38px; cursor:pointer; flex-shrink:0; font-family:inherit; }
   .mobile-topbar .mobile-brand{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
@@ -519,15 +538,22 @@
     </div>
     <div class="brand" style="justify-content:center; border-bottom:none; margin-bottom:22px;">
       <span class="mark"></span>
-      <div><h1>HERO PHYSICAL DATA</h1><span>코치 전용 로그인</span></div>
+      <div><h1>HERO PHYSICAL DATA</h1><span>로그인</span></div>
     </div>
+    <div class="login-who">코치</div>
     <form onsubmit="loginSubmit(event)">
       <div class="field" style="margin-bottom:12px;"><label>이메일</label><input type="email" name="email" required placeholder="coach@example.com"></div>
       <div class="field" style="margin-bottom:14px;"><label>비밀번호</label><input type="password" name="password" required placeholder="비밀번호"></div>
       <div id="loginError" style="color:var(--accent); font-size:12.5px; margin-bottom:10px; display:none;"></div>
       <button class="submit-btn" type="submit" style="width:100%; height:42px;">로그인</button>
     </form>
-    <div class="stat-note" style="margin-top:16px; text-align:center;">계정이 없으신가요? 관리 코치에게 계정 등록을 요청하세요.</div>
+    <div class="stat-note" style="margin-top:10px; text-align:center;">코치 계정이 없으면 관리 코치에게 등록을 요청하세요.</div>
+    <div class="login-or"><span>학생</span></div>
+    <button type="button" class="google-btn" onclick="studentGoogleLogin()">
+      <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+      학생은 구글로 로그인
+    </button>
+    <div id="studentLoginError" style="color:var(--accent); font-size:12.5px; margin-top:8px; display:none;"></div>
     <div id="firebaseConfigWarning" class="insight-box flag" style="margin-top:16px; display:none; font-size:12px;">
       Firebase 설정이 비어 있습니다. 코드 상단의 FIREBASE_CONFIG 값을 채워야 로그인이 동작합니다. (설정 가이드 문서 참고)
     </div>
@@ -725,37 +751,18 @@ function avgFatigue(list, n){
   return arr.reduce((a,b)=>a+Number(b.score),0)/arr.length;
 }
 function computeFatigueMetrics(student){
-  const th = RISK_THRESHOLDS[student.rehabHistory ? 'tight' : 'loose'];
-  const sorted = (student.fatigue||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
-  if(!sorted.length){
-    return {current:null, cumulative7:null, acute:null, chronic:null, ratio:null, riskLevel:'unknown', riskLabel:'데이터 없음', thresholds:th};
-  }
-  const current = Number(sorted[sorted.length-1].score);
-  const last7 = sorted.slice(-7);
-  const cumulative7 = last7.reduce((a,b)=>a+Number(b.score),0)/last7.length;
-  const last3 = sorted.slice(-3);
-  const acute = last3.reduce((a,b)=>a+Number(b.score),0)/last3.length;
-
-  let chronic=null, ratio=null;
-  if(sorted.length>=4){
-    const baseline = sorted.slice(0, sorted.length-3).slice(-21); // 최근 3일을 제외한 평소 기준선 (최대 21건)
-    if(baseline.length){
-      chronic = baseline.reduce((a,b)=>a+Number(b.score),0)/baseline.length;
-      ratio = chronic>0 ? acute/chronic : null;
-    }
-  }
-
-  let riskLevel='unknown', riskLabel='데이터 부족';
-  if(ratio!==null){
-    if(current>=th.absDanger || ratio>=th.danger){ riskLevel='danger'; riskLabel='위험 · 평소 대비 급격히 악화'; }
-    else if(ratio>=th.caution){ riskLevel='caution'; riskLabel='주의 · 부담 증가 중'; }
-    else{ riskLevel='stable'; riskLabel='안정 · 평소 수준'; }
-  }else{
-    if(current>=th.absDanger){ riskLevel='danger'; riskLabel='위험 · 즉시 휴식 고려'; }
-    else if(current>=th.absCaution){ riskLevel='caution'; riskLabel='주의 · 관찰 필요'; }
-    else{ riskLevel='stable'; riskLabel='양호 (기준선 데이터 축적 중)'; }
-  }
-  return {current, cumulative7, acute, chronic, ratio, riskLevel, riskLabel, thresholds:th};
+  // 학생 체크인 기준. 빨강·주황 → danger, 노랑 → caution, 초록·기준 수립 중 → stable, 미입력 → unknown
+  const th={label:'학생 체크인 기준'};
+  const hist=(state.hist[student.id]||[]);
+  const today=HC.todayStr();
+  const last7=hist.filter(c=>c.date>HC.addDays(today,-7));
+  const base=hist.filter(c=>c.date<today&&c.date>=HC.addDays(today,-14));
+  const avg=a=>a.length?a.reduce((x,c)=>x+c.fatigue,0)/a.length:null;
+  const t=state.todayCk[student.id];
+  const out={current:t?t.fatigue:null, cumulative7:avg(last7), acute:null, chronic:base.length>=HC.BASELINE_MIN_DAYS?avg(base):null, ratio:null, thresholds:th, status:t?(t.status||'BASE'):null, today:t||null};
+  if(!t) return {...out, riskLevel:'unknown', riskLabel:'오늘 체크인 없음'};
+  const lv={RED:'danger',AMBER:'danger',YELLOW:'caution',GREEN:'stable',BASE:'stable'}[out.status]||'stable';
+  return {...out, riskLevel:lv, riskLabel:STATUS_KO[out.status]||out.status};
 }
 function fatigueStatus(avg){
   if(avg===null) return {level:'good', label:'데이터 없음'};
@@ -876,7 +883,7 @@ function renderSidebar(){
       </div>
       <button class="add-btn" onclick="openAddStudentModal()">+ 학생 등록</button>
       <button class="add-btn" style="background:var(--surface-2); border:1px solid ${pendingJoins().length?'var(--lime)':'var(--line)'}; color:${pendingJoins().length?'var(--lime)':'var(--text-dim)'}; margin-top:-6px;" onclick="openJoinView()">✅ 가입 승인 대기 ${pendingJoins().length}명</button>
-      <button class="add-btn" style="background:var(--surface-2); border:1px solid var(--lime); color:var(--lime); margin-top:-6px; position:relative;" onclick="openTeamView()">🏠 팀 전체 현황${dangerCount>0?` <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:var(--accent); color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">위험 ${dangerCount}</span>`:''}</button>
+      <button class="add-btn" style="background:var(--surface-2); border:1px solid var(--lime); color:var(--lime); margin-top:-6px; position:relative;" onclick="openTeamView()">📋 오늘 브리핑${dangerCount>0?` <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:var(--accent); color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">위험 ${dangerCount}</span>`:''}</button>
       <button class="add-btn" style="background:var(--lime); color:#0d1a03; margin-top:-6px; margin-bottom:12px;" onclick="openClassLogView()">📝 수업일지</button>
       <input class="student-search" id="searchInput" placeholder="학생 이름 검색" value="${q}" oninput="filterStudentList()" style="margin-bottom:8px;">
       <select id="branchFilter" class="student-search" onchange="state.sidebarBranchFilter=this.value; filterStudentList();" style="margin-bottom:12px;">
@@ -905,7 +912,7 @@ function renderMain(){
   }
   const tabs = [
     {id:'overview', label:'종합 리포트'},
-    {id:'fatigue', label:'피로도 기록'},
+    {id:'fatigue', label:'체크인 기록'},
     {id:'records', label:'체력 기록'},
   ];
   const tabBtns = tabs.map(t=>`<button class="tab-btn ${state.activeTab===t.id?'active':''}" onclick="setTab('${t.id}')">${t.label}</button>`).join('');
@@ -946,8 +953,9 @@ function renderMain(){
 function computeTrainingRecommendation(s){
   const m = computeFatigueMetrics(s);
   const subjOrder = {stable:0, caution:1, danger:3, unknown:0};
+  const statusOrder = {GREEN:0, BASE:0, YELLOW:1, AMBER:2, RED:3};
   const jumpOrder = {normal:0, caution:1, warning:2, danger:3};
-  let combined = subjOrder[m.riskLevel] ?? 0;
+  let combined = m.status ? (statusOrder[m.status] ?? 0) : 0;
   JUMP_EVENTS.forEach(ev=>{
     if(s.events.includes(ev)){
       const jf = computeJumpFatigue(s, ev);
@@ -1140,119 +1148,69 @@ function computeWeeklyBalance(s){
 /* ---- 오늘 일괄 입력 (전체 학생 대상 빠른 피로도 입력) ---- */
 /* ---- 팀 전체 현황 (전체 학생 총괄 대시보드) ---- */
 function renderTeamOverview(){
-  const today = todayStr();
-  const total = state.students.length;
-  const loggedToday = state.students.filter(s=> s.fatigue.some(f=>f.date===today)).length;
-  const attendedToday = state.students.filter(s=>{ const f=s.fatigue.find(x=>x.date===today); return f && f.attended!==false; }).length;
-
-  const rows = state.students.map(s=>{
-    const m = computeFatigueMetrics(s);
-    const todayEntry = s.fatigue.find(f=>f.date===today);
-    const decline = detectPlateauOrDecline(s).some(f=>f.type==='decline');
-    return {s, m, todayEntry, decline};
-  });
-
-  const order = {danger:0, caution:1, unknown:2, stable:3};
-  const sorted = rows.slice().sort((a,b)=> (order[a.m.riskLevel]??2) - (order[b.m.riskLevel]??2));
-  const priorityList = sorted.filter(r=>r.m.riskLevel==='danger' || r.m.riskLevel==='caution');
-
-  const riskCounts = {danger:0, caution:0, stable:0, unknown:0};
-  rows.forEach(r=> riskCounts[r.m.riskLevel] = (riskCounts[r.m.riskLevel]||0)+1);
-
-  // 오늘 훈련 종류 분포
-  const sessionCounts = {};
-  SESSION_TYPES.forEach(t=> sessionCounts[t]=0);
-  state.students.forEach(s=>{
-    const f = s.fatigue.find(x=>x.date===today);
-    if(f && f.sessionTypes) f.sessionTypes.forEach(t=> sessionCounts[t] = (sessionCounts[t]||0)+1);
-  });
-
-  const allTeamEvents = [...new Set(state.students.flatMap(s=>s.events))];
-
-  // 지점별 현황
-  const branchGroups = {};
-  (BRANCHES.concat(['미지정'])).forEach(b=> branchGroups[b] = []);
-  rows.forEach(r=>{
-    const b = r.s.branch && BRANCHES.includes(r.s.branch) ? r.s.branch : '미지정';
-    branchGroups[b].push(r);
-  });
-  const branchCards = Object.keys(branchGroups).filter(b=> branchGroups[b].length).map(b=>{
-    const grp = branchGroups[b];
-    const grpTotal = grp.length;
-    const grpLogged = grp.filter(r=>r.todayEntry).length;
-    const grpDanger = grp.filter(r=>r.m.riskLevel==='danger').length;
-    const grpCaution = grp.filter(r=>r.m.riskLevel==='caution').length;
-    const scores = grp.filter(r=>r.todayEntry).map(r=>Number(r.todayEntry.score));
-    const grpAvg = scores.length ? (scores.reduce((a,c)=>a+c,0)/scores.length).toFixed(1) : '-';
-    const tone = grpDanger>0 ? '' : grpCaution>0 ? 'warn' : 'good';
-    return `
-      <div class="card stat-tile ${tone}" style="cursor:pointer;" onclick="filterByBranchInTeamView('${b==='미지정'?'__unassigned__':b}')">
-        <h3>${esc(b)}</h3>
-        <div class="stat">${grpTotal}<span style="font-size:14px;color:var(--text-dim);">명</span></div>
-        <div class="stat-note">입력 ${grpLogged}/${grpTotal} · 평균 피로도 ${grpAvg}${(grpDanger+grpCaution)>0?` · 위험${grpDanger} 주의${grpCaution}`:''}</div>
-      </div>`;
-  }).join('');
-
-  const priorityRows = priorityList.map(r=>`
-    <div class="insight-box ${r.m.riskLevel==='danger'?'flag':''}" style="cursor:pointer;" onclick="selectStudent('${r.s.id}')">
-      <b>${esc(r.s.name)}</b> (${esc(r.s.grade)}) — ${r.m.riskLabel}${r.todayEntry? ` · 오늘 피로도 ${r.todayEntry.score}/10`:' · 오늘 미입력'}
-    </div>`).join('') || `<div class="empty-mini">현재 주의·위험 단계인 학생이 없습니다.</div>`;
-
-  const tableRows = sorted.map(r=>{
-    const badge = r.m.riskLevel==='danger'?'bad':r.m.riskLevel==='caution'?'warn':r.m.riskLevel==='unknown'?'neutral':'good';
-    const badgeLabel = r.m.riskLevel==='danger'?'위험':r.m.riskLevel==='caution'?'주의':r.m.riskLevel==='unknown'?'데이터부족':'안정';
-    return `<tr style="cursor:pointer;" onclick="selectStudent('${r.s.id}')">
-      <td>${esc(r.s.name)}</td>
-      <td>${esc(r.s.branch)||'-'}</td>
-      <td>${esc(r.s.grade)||'-'}</td>
-      <td>${r.todayEntry? `${r.todayEntry.score}/10` : '<span style="color:var(--text-dim);">미입력</span>'}</td>
-      <td><span class="badge ${badge}">${badgeLabel}</span></td>
-      <td>${r.decline? '<span style="color:var(--accent);">⚠ 하락 신호</span>' : '-'}</td>
-      <td>${r.todayEntry? (r.todayEntry.attended!==false? '✓' : '<span style="color:var(--accent);">결석</span>') : '-'}</td>
-    </tr>`;
-  }).join('') || `<tr><td colspan="7" class="empty-mini">등록된 학생이 없습니다</td></tr>`;
-
-  const sessionBits = SESSION_TYPES.map(t=>`
-    <div class="card stat-tile">
-      <h3>${t}</h3>
-      <div class="stat">${sessionCounts[t]}<span style="font-size:14px;color:var(--text-dim);">명</span></div>
-    </div>`).join('');
-
+  // 오늘 브리핑: 훈련 전에 '손봐야 할 학생'을 먼저 보여 준다
+  const branch=state.briefBranch||'';
+  const list=state.students.filter(s=>!branch||s.branch===branch);
+  const by={RED:[],AMBER:[],YELLOW:[],GREEN:[],BASE:[],NONE:[]};
+  list.forEach(s=>{ const st=statusOf(s); by[st||'NONE'].push(s); });
+  const done=list.length-by.NONE.length;
+  const tile=(k,label)=>`<div class="brief-tile" style="border-color:${STATUS_COLOR[k]}55;"><div class="stat-note" style="color:${STATUS_COLOR[k]};">${label}</div><div class="n" style="color:${STATUS_COLOR[k]};">${by[k].length}</div></div>`;
+  const row=(s,extra)=>{ const t=state.todayCk[s.id]; const r=(t&&t.reasons)||[];
+    return `<div class="brief-row" role="button" tabindex="0" onclick="selectStudent('${s.id}')">
+      <div><b>${esc(s.name)}</b> <span class="stat-note">${esc(s.branch||'')}${s.grade?' · '+esc(s.grade):''}</span>
+      <div class="stat-note" style="margin-top:3px; color:var(--text);">${r.map(esc).join(' · ')||'-'}</div>${extra||''}</div>
+      <span class="stat-note">›</span></div>`; };
+  const painNote=s=>{ const t=state.todayCk[s.id]; return t&&t.pain&&t.painNote?`<div class="stat-note" style="margin-top:2px;">"${esc(t.painNote)}"</div>`:''; };
+  const areaCount={};
+  list.forEach(s=>{ const t=state.todayCk[s.id]; if(!t) return;
+    [...new Set([...(t.pain?t.painAreas||[]:[]),...(t.soreness>0?t.sorenessAreas||[]:[])])].forEach(a=>areaCount[a]=(areaCount[a]||0)+1); });
+  const areaRows=Object.entries(areaCount).sort((a,b)=>b[1]-a[1]);
+  const maxA=areaRows.length?areaRows[0][1]:1;
+  const allTeamEvents=[...new Set(state.students.flatMap(s=>s.events||[]))];
+  const fetched=state.ckFetchedAt?new Date(state.ckFetchedAt).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):'-';
   return `
     <main>
       <div class="topbar">
-        <div class="heading">
-          <div>
-            <h2>팀 전체 현황</h2>
-            <div class="tagline">${today} · 전체 ${total}명</div>
-          </div>
-        </div>
-        <div style="display:flex; gap:8px;">
-          <button class="ghost-btn" style="padding:9px 16px;" onclick="openBulkAddEventModal()">🏃 종목 일괄 추가</button>
-          <button class="ghost-btn" style="padding:9px 16px;" onclick="closeTeamView()">닫기</button>
+        <div class="heading"><div><h2>오늘 브리핑</h2>
+          <div class="tagline">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})} · 체크인 ${done}/${list.length}명 · ${fetched} 기준</div></div></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <select class="student-search" style="margin:0; min-height:40px;" onchange="state.briefBranch=this.value; rerender();">
+            <option value="">전체 지점</option>${BRANCHES.map(b=>`<option ${branch===b?'selected':''}>${b}</option>`).join('')}
+          </select>
+          <button class="ghost-btn" style="flex:0 0 auto; padding:8px 14px; min-height:40px;" onclick="refreshCheckins()">↻ 새로 불러오기</button>
         </div>
       </div>
-      <div class="lane-divider"></div>
+      <div class="brief-grid">${tile('RED','빨강 · 즉시 확인')}${tile('AMBER','주황 · 볼륨 조정')}${tile('YELLOW','노랑 · 주의')}${tile('GREEN','초록 · 정상')}</div>
+      ${by.BASE.length?`<div class="stat-note" style="margin-top:8px;">기준 수립 중(기록 7일 미만) ${by.BASE.length}명은 정상 그룹에 포함했어요.</div>`:''}
 
+      <div class="lane-divider"></div>
+      <div class="section-title" style="color:${STATUS_COLOR.RED};">즉시 확인 · 훈련 전 대면 확인</div>
+      <div class="card" style="padding:0;">${by.RED.map(s=>row(s,painNote(s))).join('')||'<div class="empty-mini" style="padding:14px;">해당 학생 없음</div>'}</div>
+      <div class="stat-note" style="margin-top:6px;">점프·스프린트·착지 세션 제외, 충격 없는 대체 훈련. 학생을 누르면 확인 포인트가 나와요.</div>
+
+      <div class="lane-divider"></div>
+      <div class="section-title" style="color:${STATUS_COLOR.AMBER};">볼륨 조정 · 강도 유지, 볼륨 40~50% 축소</div>
+      <div class="card" style="padding:0;">${by.AMBER.map(s=>row(s,painNote(s))).join('')||'<div class="empty-mini" style="padding:14px;">해당 학생 없음</div>'}</div>
+
+      <div class="lane-divider"></div>
+      <div class="section-title" style="color:${STATUS_COLOR.YELLOW};">주의 · 반응 관찰</div>
+      <div class="card" style="padding:0;">${by.YELLOW.map(s=>row(s)).join('')||'<div class="empty-mini" style="padding:14px;">해당 학생 없음</div>'}</div>
+
+      <div class="lane-divider"></div>
+      <div class="section-title">오늘 그룹 편성 (추천)</div>
       <div class="grid grid-3">
-        <div class="card stat-tile good"><h3>오늘 기록 입력</h3><div class="stat">${loggedToday} / ${total}</div><div class="stat-note">아직 입력하지 않은 학생 ${total-loggedToday}명</div></div>
-        <div class="card stat-tile"><h3>오늘 출석</h3><div class="stat">${attendedToday} / ${total}</div><div class="stat-note">입력된 기록 기준</div></div>
-        <div class="card stat-tile ${riskCounts.danger>0?'':'good'}"><h3>위험·주의 학생</h3><div class="stat">${riskCounts.danger+riskCounts.caution}명</div><div class="stat-note">위험 ${riskCounts.danger} · 주의 ${riskCounts.caution}</div></div>
+        <div class="card"><h3>A · 정상 부하</h3><div class="stat">${by.GREEN.length+by.BASE.length}명</div><div class="stat-note">${[...by.GREEN,...by.BASE].map(s=>esc(s.name)).join(', ')||'-'}</div></div>
+        <div class="card"><h3>B · 볼륨 축소</h3><div class="stat">${by.YELLOW.length+by.AMBER.length}명</div><div class="stat-note">${[...by.AMBER,...by.YELLOW].map(s=>esc(s.name)).join(', ')||'-'}</div></div>
+        <div class="card"><h3>C · 저충격 대체</h3><div class="stat">${by.RED.length}명</div><div class="stat-note">${by.RED.map(s=>esc(s.name)).join(', ')||'-'}</div></div>
       </div>
 
       <div class="lane-divider"></div>
-      <div class="section-title">지점별 현황</div>
-      <div class="stat-note" style="margin-bottom:10px;">카드를 누르면 그 지점 학생만 사이드바에서 볼 수 있어요.</div>
-      <div class="grid grid-3">${branchCards || `<div class="empty-mini">등록된 학생이 없습니다</div>`}</div>
+      <div class="section-title">오늘 불편 부위</div>
+      <div class="card">${areaRows.length?areaRows.map(([a,n])=>`<div style="display:grid; grid-template-columns:72px minmax(0,1fr) 36px; gap:10px; align-items:center; margin:6px 0; font-size:13px;"><span>${esc(a)}</span><div style="height:8px; background:var(--surface-2); border-radius:4px;"><div style="width:${n/maxA*100}%; height:8px; background:#ff9f1c; border-radius:4px;"></div></div><span class="stat-note">${n}명</span></div>`).join(''):'<div class="empty-mini">오늘 근육통·통증을 기록한 학생이 없어요.</div>'}</div>
 
       <div class="lane-divider"></div>
-      <div class="section-title">우선 확인 필요 학생</div>
-      <div class="insight-list">${priorityRows}</div>
-
-      <div class="lane-divider"></div>
-      <div class="section-title">오늘 미입력 학생</div>
+      <div class="section-title">체크인 미입력 (${by.NONE.length}명)</div>
       <div class="card">
-        <div class="stat-note" style="margin-bottom:10px;">단톡방 등에 바로 공유할 수 있는 문구를 만들어 클립보드에 복사합니다.</div>
         <div id="missingListPreview" class="stat-note" style="margin-bottom:12px; color:var(--text); font-size:13px; line-height:1.6;"></div>
         <button class="ghost-btn" style="padding:9px 16px;" onclick="copyMissingList()">📋 미입력 학생 명단 복사하기</button>
       </div>
@@ -1267,23 +1225,6 @@ function renderTeamOverview(){
           </select>
         </div>
         <div id="teamRankList"></div>
-      </div>
-
-      <div class="lane-divider"></div>
-      <div class="section-title">팀 평균 피로도 추이 (최근 14일)</div>
-      <div class="card"><div class="chart-wrap"><canvas id="teamTrendChart"></canvas></div></div>
-
-      <div class="lane-divider"></div>
-      <div class="section-title">오늘 훈련 종류 분포</div>
-      <div class="grid grid-3">${sessionBits}</div>
-
-      <div class="lane-divider"></div>
-      <div class="section-title">전체 학생 현황</div>
-      <div class="card" style="padding:8px 0; overflow-x:auto;">
-        <table>
-          <thead><tr><th>이름</th><th>지점</th><th>학년</th><th>오늘 피로도</th><th>위험도</th><th>기록 추세</th><th>출석</th></tr></thead>
-          <tbody>${tableRows}</tbody>
-        </table>
       </div>
     </main>`;
 }
@@ -2014,14 +1955,12 @@ function renderOverview(s){
   const avgSleep = sleepArr.length ? (sleepArr.reduce((a,b)=>a+b,0)/sleepArr.length).toFixed(1) : '-';
 
   const conditionInsights = [];
-  if(m.riskLevel==='danger'){
+  if(false){
     conditionInsights.push({flag:true, html:`평소 대비 피로도가 급격히 높아졌습니다${m.ratio? ` (급성:만성 비율 <b>${m.ratio.toFixed(2)}</b>)`:''}. 부상 위험 신호이므로 훈련 강도를 낮추고 휴식을 우선하세요.`});
   }else if(m.riskLevel==='caution'){
     conditionInsights.push({flag:false, html:`최근 부담이 평소보다 늘고 있습니다${m.ratio? ` (급성:만성 비율 <b>${m.ratio.toFixed(2)}</b>)`:''}. 훈련 강도를 주시하며 회복을 챙겨주세요.`});
   }else if(m.riskLevel==='stable' && m.ratio!==null){
     conditionInsights.push({flag:false, html:`피로도가 개인 평소 기준 대비 <b>안정적인 범위</b>입니다. 현재 훈련 루틴을 유지해도 좋습니다.`});
-  }else{
-    conditionInsights.push({flag:false, html:`아직 기준선(평소 상태)을 계산할 데이터가 부족합니다. 최소 1~2주간 꾸준히 기록하면 위험도 판단이 정확해집니다.`});
   }
   if(m.cumulative7!==null && m.cumulative7>=6.5){
     conditionInsights.push({flag:true, html:`최근 7일 누적 피로도가 <b>${m.cumulative7.toFixed(1)}</b>점으로 높은 편입니다. 훈련량 배분을 점검해보세요.`});
@@ -2096,24 +2035,7 @@ function renderOverview(s){
       <div class="stat-note" style="margin-top:4px;">${rec.desc}</div>
     </div>
 
-    <div class="grid grid-3">
-      <div class="card stat-tile good">
-        <h3>현재 피로도 (오늘)</h3>
-        <div class="stat">${m.current!==null? m.current.toFixed(0):'—'} <span style="font-size:14px;color:var(--text-dim);">/ 10</span></div>
-        <div class="stat-note">가장 최근 입력 기준</div>
-      </div>
-      <div class="card stat-tile">
-        <h3>누적 피로도 (7일 평균)</h3>
-        <div class="stat">${m.cumulative7!==null? m.cumulative7.toFixed(1):'—'} <span style="font-size:14px;color:var(--text-dim);">/ 10</span></div>
-        <div class="stat-note">최근 일주일간 쌓인 부담</div>
-      </div>
-      <div class="card stat-tile ${riskTone}">
-        <h3>위험 피로도 (급성:만성 비율) <span class="rubric-hint" onclick="toggleRiskGuide()" title="기준 보기">ⓘ 기준</span></h3>
-        <div class="stat">${m.ratio!==null? m.ratio.toFixed(2)+'x':'—'}</div>
-        <div class="stat-note">${m.riskLabel} · <span style="color:var(--text-dim);">${m.thresholds.label}</span></div>
-      </div>
-    </div>
-    ${renderRiskGuide()}
+    ${renderCheckinCard(s)}
 
     <div class="lane-divider"></div>
     <div class="section-title">종목별 최신 현황</div>
@@ -2141,7 +2063,7 @@ function renderOverview(s){
     <div class="lane-divider"></div>
     <div class="section-title">회복 · 훈련 밸런스</div>
     <div class="insight-list">
-      ${balanceInsights.length ? balanceInsights.map(i=>`<div class="insight-box ${i.flag?'flag':''}">${i.html}</div>`).join('') : `<div class="empty-mini">피로도 기록이 더 쌓이면 회복 패턴과 훈련 밸런스가 표시됩니다.</div>`}
+      ${balanceInsights.length ? balanceInsights.map(i=>`<div class="insight-box ${i.flag?'flag':''}">${i.html}</div>`).join('') : `<div class="empty-mini">학생 체크인이 더 쌓이면 회복 패턴과 훈련 밸런스가 표시됩니다.</div>`}
     </div>
 
     <div class="lane-divider"></div>
@@ -2155,175 +2077,39 @@ function renderOverview(s){
 
 /* ---- Fatigue tab ---- */
 function renderFatigueTab(s){
-  const m = computeFatigueMetrics(s);
-  const riskTone = m.riskLevel==='danger'?'':m.riskLevel==='caution'?'warn':'good';
-  const rows = s.fatigue.slice().reverse().map((f,idx)=>{
-    const realIdx = s.fatigue.length-1-idx;
-    const badge = f.score>=7?'bad':f.score>=5?'warn':'good';
-    const envBits = [];
-    if(f.attended===false) envBits.push(`<span style="color:var(--accent);">결석</span>`);
-    if(f.sessionTypes && f.sessionTypes.length) envBits.push(f.sessionTypes.join('/'));
-    if(f.rehabNote) envBits.push(`재활메모: ${esc(f.rehabNote)}`);
-    if(f.weather) envBits.push(f.weather + (f.temp!==''&&f.temp!==undefined && f.temp!==null? ` ${f.temp}°C`:''));
-    if(f.mealBefore!==undefined) envBits.push(`운동 전 식사${f.mealBefore?'✓':'✗'}`);
-    const envText = envBits.length ? envBits.join(' · ') : '-';
-    const stressBadge = f.stress ? `<span class="badge ${Number(f.stress)>=4?'bad':Number(f.stress)>=3?'warn':'good'}" style="margin-left:6px;">스트레스 ${f.stress}</span>` : '';
-    const painDisplay = (f.painAreas && f.painAreas.length)
-      ? `${f.painAreas.join('/')}${f.painSeverity? ` (강도 ${f.painSeverity})`:''}`
-      : (esc(f.area) || '-');
+  // 코치는 입력하지 않는다. 학생이 입력한 체크인을 보기만 한다.
+  const hist=(state.hist[s.id]||[]).slice().reverse();
+  const yes=v=>v?'있음':'-';
+  const rows=hist.map(c=>{
+    const st=c.status||'BASE';
     return `<tr>
-      <td class="mono">${f.date}</td>
-      <td><span class="badge ${badge}">${f.score} / 10</span></td>
-      <td class="mono">${f.sleep!==''&&f.sleep!==undefined? f.sleep+'h':'-'}</td>
-      <td>${painDisplay}</td>
-      <td style="font-size:12px; color:var(--text-muted);">${envText}${stressBadge}</td>
-      <td>${esc(f.memo)||'-'}</td>
-      <td><button class="row-del" onclick="deleteFatigue('${s.id}',${realIdx})">삭제</button></td>
+      <td class="mono">${c.date.slice(5)}</td>
+      <td><span class="ck-dot" style="background:${STATUS_COLOR[st]};"></span>${(STATUS_KO[st]||st).split(' · ')[0]}</td>
+      <td class="mono">${HC.fmtSleep(c.sleepMin)}</td><td class="mono">${c.sleepQuality}</td><td class="mono">${c.fatigue}</td>
+      <td class="mono">${c.soreness}${c.soreness>0&&(c.sorenessAreas||[]).length?' · '+esc(c.sorenessAreas.join('·')):''}</td>
+      <td class="mono">${c.stress}</td><td class="mono">${c.readiness}</td>
+      <td>${c.pain?`<span style="color:#ff4b33;">${esc((c.painAreas||[]).join('·'))} ${c.painLevel}/10</span>`:'-'}</td>
     </tr>`;
-  }).join('') || `<tr><td colspan="7" class="empty-mini">기록이 없습니다</td></tr>`;
-
+  }).join('');
   return `
-    <div class="insight-box" style="margin-bottom:18px;">
-      피로도란 <b>현재 훈련 부하에 몸이 충분히 회복하지 못해 수행능력이 떨어지고 부상 위험이 커지는 상태</b>를 뜻합니다.
-      절대 점수보다 <b>학생 개인의 평소 상태 대비 변화</b>를 기준으로 판단하며, 아래 세 지표를 함께 봅니다.
-      위험 판단 기준은 <b>재활이 필요했던 부상 이력이 있는 학생은 타이트하게, 없으면 느슨하게</b> 자동 적용됩니다 (상단 '정보 수정'에서 변경 가능).
+    <div class="stat-note" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+      <span>학생이 직접 입력한 기록이에요 (최근 28일). 코치는 수정하지 않아요.</span>
+      <button class="ghost-btn" style="flex:0 0 auto; padding:8px 14px;" onclick="refreshCheckins()">↻ 새로 불러오기</button>
     </div>
-
-    <div class="grid grid-3" style="margin-bottom:18px;">
-      <div class="card stat-tile good">
-        <h3>현재 피로도</h3>
-        <div class="stat">${m.current!==null? m.current.toFixed(0):'—'} <span style="font-size:14px;color:var(--text-dim);">/ 10</span></div>
-        <div class="stat-note">오늘 종합 컨디션</div>
-      </div>
-      <div class="card stat-tile">
-        <h3>누적 피로도</h3>
-        <div class="stat">${m.cumulative7!==null? m.cumulative7.toFixed(1):'—'}</div>
-        <div class="stat-note">최근 7일 평균 부담</div>
-      </div>
-      <div class="card stat-tile ${riskTone}">
-        <h3>위험 피로도 <span class="rubric-hint" onclick="toggleRiskGuide()" title="기준 보기">ⓘ 기준</span></h3>
-        <div class="stat">${m.ratio!==null? m.ratio.toFixed(2)+'x':'—'}</div>
-        <div class="stat-note">${m.riskLabel} · <span style="color:var(--text-dim);">${m.thresholds.label}</span></div>
-      </div>
-    </div>
-    ${renderRiskGuide()}
-
-    <div class="card" style="margin-bottom:18px;">
-      <h3 style="margin-bottom:2px;">오늘의 피로도 입력</h3>
-      <div class="stat-note" style="margin-bottom:12px;">필수 항목만 빠르게 입력하거나, 세부 항목을 펼쳐 더 자세히 기록할 수 있습니다.</div>
-      <form class="entry-form" onsubmit="addFatigue(event,'${s.id}')" id="fatigueForm">
-        <div class="field"><label>날짜</label><input type="date" name="date" value="${todayStr()}" required></div>
-        <div class="field"><label>피로도 (1~10) <span class="rubric-hint" onclick="event.preventDefault(); toggleRubric();" title="채점 기준 보기">ⓘ 기준표</span></label><input type="number" name="score" min="1" max="10" placeholder="예: 5" required></div>
-        <div class="field"><label>수면시간</label><input type="number" step="any" name="sleep" placeholder="예: 7"></div>
-        <div class="field">
-          <label>오늘 출석</label>
-          <div style="display:flex; align-items:center; height:38px;">
-            <label style="display:flex; align-items:center; gap:5px; font-size:12.5px; color:var(--text-muted); font-weight:600; text-transform:none; cursor:pointer;"><input type="checkbox" name="attended" checked style="width:15px;height:15px;accent-color:var(--lime);"> 출석함</label>
-          </div>
-        </div>
-
-        <div style="grid-column:1 / -1;">
-          <span class="rubric-hint" onclick="event.preventDefault(); toggleAdvancedFields(this);" style="font-size:12.5px;">＋ 세부 항목 펼치기 (통증·운동종류·환경 등)</span>
-        </div>
-
-        <div id="advancedFatigueFields" style="display:none; grid-column:1 / -1;">
-          <div class="grid" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px; align-items:end;">
-            <div class="field" style="grid-column:1 / -1;">
-              <label>통증·근육통 부위 (중복 선택 가능)</label>
-              <div style="display:flex; gap:8px; flex-wrap:wrap; padding-top:4px;">
-                ${BODY_PARTS.map(p=>`<label class="chk-pill"><input type="checkbox" name="painArea" value="${p}"> ${p}</label>`).join('')}
-              </div>
-            </div>
-            <div class="field"><label>통증 강도 (0~10, 없으면 0)</label><input type="number" name="painSeverity" min="0" max="10" placeholder="예: 3"></div>
-            <div class="field" style="grid-column:span 2;"><label>부위 관련 메모</label><input type="text" name="area" placeholder="예: 웨이트 중 허리 삐끗"></div>
-
-            <div class="field" style="grid-column:1 / -1;">
-              <label>운동 종류 (중복 선택 가능)</label>
-              <div style="display:flex; gap:8px; flex-wrap:wrap; padding-top:4px;">
-                ${SESSION_TYPES.map(t=>`
-                  <label class="chk-pill">
-                    <input type="checkbox" name="sessionType" value="${t}" ${t==='재활'?'onchange="toggleRehabNote(this)"':''}>
-                    ${t}
-                  </label>`).join('')}
-              </div>
-            </div>
-            <div class="field" id="rehabNoteField" style="grid-column:1 / -1; display:none;">
-              <label>재활 특이사항</label>
-              <input type="text" name="rehabNote" placeholder="예: 발목 테이핑 후 진행, 통증 부위 등">
-            </div>
-
-            <div class="field" style="grid-column:1 / -1; margin-top:4px; padding-top:10px; border-top:1px dashed var(--line); font-size:11px; color:var(--text-dim); font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">환경 · 생활 요인</div>
-            <div class="field" style="grid-column:span 2;">
-              <label>날씨</label>
-              <select name="weather">
-                <option value="">선택 안함</option>
-                <option>맑음</option><option>흐림</option><option>비</option><option>눈</option><option>폭염</option><option>한파</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>운동 전 식사</label>
-              <div style="display:flex; align-items:center; height:38px;">
-                <label style="display:flex; align-items:center; gap:5px; font-size:12.5px; color:var(--text-muted); font-weight:600; text-transform:none; cursor:pointer;"><input type="checkbox" name="mealBefore" style="width:15px;height:15px;accent-color:var(--lime);"> 식사함</label>
-              </div>
-            </div>
-            <div class="field"><label>심리상태(스트레스 1~5) <span class="rubric-hint" onclick="event.preventDefault(); toggleStressGuide();" title="기준 보기">ⓘ 기준</span></label><input type="number" name="stress" min="1" max="5" placeholder="1 편안 ~ 5 매우 스트레스"></div>
-            <div class="field" style="grid-column:span 2;"><label>컨디션 메모</label><input type="text" name="memo" placeholder="특이사항"></div>
-          </div>
-        </div>
-
-        <button class="submit-btn" type="submit">기록 추가</button>
-      </form>
-    </div>
-
-    <div class="card rubric-card" id="stressGuideCard" style="margin-bottom:18px; ${state.showStressGuide?'':'display:none;'}">
-      <h3 style="margin-bottom:2px;">심리상태(스트레스) 채점 기준</h3>
-      <div class="stat-note" style="margin-bottom:12px;">입시·학업·교우관계 등 사회적 스트레스가 훈련에 영향을 주는 경우가 많아 간단히 체크합니다. 원인까지 캐묻기보다, 코치가 오늘 컨디션을 이해하는 참고 지표로 활용하세요.</div>
-      <div class="rubric-grid">
-        <div class="rubric-row"><span class="badge good">1</span><div><b>매우 편안</b><div class="stat-note">특별한 스트레스 없음</div></div></div>
-        <div class="rubric-row"><span class="badge good">2</span><div><b>편안</b><div class="stat-note">경미한 걱정 정도</div></div></div>
-        <div class="rubric-row"><span class="badge warn">3</span><div><b>보통</b><div class="stat-note">학업·입시 압박 등 일반적인 스트레스</div></div></div>
-        <div class="rubric-row"><span class="badge orange">4</span><div><b>스트레스 있음</b><div class="stat-note">집중력 저하, 훈련 의욕 감소 동반 가능</div></div></div>
-        <div class="rubric-row"><span class="badge bad">5</span><div><b>매우 스트레스</b><div class="stat-note">컨디션·수행능력에 뚜렷한 영향 가능, 대화 필요</div></div></div>
-      </div>
-    </div>
-
-    <div class="card rubric-card ${state.showRubric?'open':''}" id="rubricCard" style="margin-bottom:18px; ${state.showRubric?'':'display:none;'}">
-      <h3 style="margin-bottom:2px;">'현재 피로도' 채점 기준 · 종합 컨디션(수면·근육통·회복) 기준</h3>
-      <div class="stat-note" style="margin-bottom:12px;">아래 기준을 참고해 수면 상태, 근육통 정도, 회복 여부를 종합적으로 고려하여 오늘 점수를 매기세요. '누적'과 '위험'은 이 점수들을 바탕으로 자동 계산됩니다.</div>
-      <div class="rubric-grid">
-        ${FATIGUE_RUBRIC.map(r=>{
-          const tone = r.range==="1~2"||r.range==="3~4" ? 'good' : r.range==="5~6" ? 'warn' : 'bad';
-          return `<div class="rubric-row">
-            <span class="badge ${tone}">${r.range}</span>
-            <div><b>${r.label}</b><div class="stat-note">${r.desc}</div></div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>
-
-    <div class="grid grid-2">
-      <div class="card">
-        <h3 style="margin-bottom:10px;">피로도 추이 <span style="text-transform:none; color:var(--text-dim); font-weight:400;">(점선 = 평소 기준선)</span></h3>
-        <div class="chart-wrap"><canvas id="fatigueChart"></canvas></div>
-      </div>
-      <div class="card">
-        <h3 style="margin-bottom:10px;">수면시간 추이</h3>
-        <div class="chart-wrap"><canvas id="sleepChart"></canvas></div>
-      </div>
-    </div>
-
+    ${renderCheckinCard(s)}
     <div class="lane-divider"></div>
-    <div class="section-title">기록 목록</div>
-    <div class="card" style="padding:8px 0; overflow-x:auto;">
-      <table>
-        <thead><tr><th>날짜</th><th>피로도</th><th>수면</th><th>근육통</th><th>환경·생활</th><th>메모</th><th></th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
+    <div class="grid grid-2">
+      <div class="card"><h3>피로 추이</h3><div class="chart-wrap"><canvas id="fatigueChart"></canvas></div></div>
+      <div class="card"><h3>수면 시간 추이</h3><div class="chart-wrap"><canvas id="sleepChart"></canvas></div></div>
     </div>
-  `;
+    <div class="lane-divider"></div>
+    <div class="section-title">체크인 기록</div>
+    <div class="card" style="padding:8px 0; overflow-x:auto;">
+      ${rows?`<table class="ck-table"><thead><tr><th>날짜</th><th>판정</th><th>수면</th><th>수면 질</th><th>피로</th><th>근육통</th><th>스트레스</th><th>준비도</th><th>통증</th></tr></thead><tbody>${rows}</tbody></table>`
+            :'<div class="empty-mini" style="padding:16px;">아직 체크인 기록이 없어요.</div>'}
+    </div>`;
 }
 
-/* ---- Records tab ---- */
 function renderJumpFatiguePanel(s, ev){
   const jf = computeJumpFatigue(s, ev);
   if(jf.level==='unknown'){
@@ -2441,7 +2227,7 @@ function drawCharts(){
     if(fc){
       try{
         const m = computeFatigueMetrics(s);
-        const datasets = [{ label:'피로도', data:s.fatigue.map(f=>f.score), borderColor:'#ff4b33', backgroundColor:'rgba(255,75,51,0.15)', fill:true, tension:0.35, pointRadius:3 }];
+        const datasets = [{ label:'피로', data:s.fatigue.map(f=>f.score), borderColor:'#ff4b33', backgroundColor:'rgba(255,75,51,0.15)', fill:true, tension:0.35, pointRadius:3 }];
         if(m.chronic!==null){
           datasets.push({ label:'평소 기준선', data:s.fatigue.map(()=>m.chronic), borderColor:'#c6ff3d', borderDash:[6,4], pointRadius:0, fill:false });
         }
@@ -2539,7 +2325,7 @@ function rerenderInner(){
     </div>` + renderSidebar() + (state.joinOpen ? renderJoinView() : state.teamViewOpen ? renderTeamOverview() : state.classLogOpen ? renderClassLogView() : renderMain())
     + renderBottomNav();
   destroyCharts();
-  if(state.teamViewOpen){ drawTeamChart(); updateMissingListPreview(); renderTeamRankList(); }
+  if(state.teamViewOpen){ updateMissingListPreview(); renderTeamRankList(); }
   else if(!state.classLogOpen) drawCharts();
   document.getElementById('sidebarBackdrop')?.classList.toggle('show', state.mobileSidebarOpen);
 }
@@ -2551,7 +2337,7 @@ function renderBottomNav(){
         <span class="bn-icon">🧑‍🎓</span><span>학생</span>
       </button>
       <button class="bn-item ${tab==='team'?'active':''}" onclick="bottomNavGo('team')">
-        <span class="bn-icon">🏠</span><span>팀 현황</span>
+        <span class="bn-icon">📋</span><span>브리핑</span>
       </button>
       <button class="bn-item ${tab==='log'?'active':''}" onclick="bottomNavGo('log')">
         <span class="bn-icon">📝</span><span>수업일지</span>
@@ -2580,10 +2366,10 @@ function toggleSidebar(){
   state.mobileSidebarOpen = !state.mobileSidebarOpen;
   rerender();
 }
-function selectStudent(id){ state.joinOpen=false; state.selectedId=id; state.activeTab='overview'; state.classLogOpen=false; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
+function selectStudent(id){ loadHistory(id); state.joinOpen=false; state.selectedId=id; state.activeTab='overview'; state.classLogOpen=false; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
 function openClassLogView(){ state.joinOpen=false; state.classLogOpen=true; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
 function closeClassLogView(){ state.classLogOpen=false; rerender(); }
-function openTeamView(){ state.joinOpen=false; state.teamViewOpen=true; state.classLogOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
+function openTeamView(){ loadTodayCheckins(); state.joinOpen=false; state.teamViewOpen=true; state.classLogOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
 function closeTeamView(){ state.teamViewOpen=false; rerender(); }
 function setTab(tab){ state.activeTab=tab; rerender(); }
 function selectEvent(sid, ev){ state.selectedEventByStudent[sid]=ev; rerender(); }
@@ -3067,10 +2853,9 @@ function initFirebase(){
       if(user){
         // 코치는 '이메일+비밀번호' 계정만. 학생 구글 계정이나 옛 학생 공용 계정이면 막고 안내한다.
         const provider = (user.providerData[0]||{}).providerId || '';
+        if(provider==='google.com'){ location.replace('student.html'); return; }   // 학생 → 학생 화면
         if(provider!=='password' || isStudentAccount(user.email||'')){
-          showAccountProblem(provider==='password'
-            ? '옛 학생 공용 계정('+(user.email||'')+')은 더 이상 쓰지 않아요. 학생은 새 체크인 사이트를 이용해 주세요.'
-            : '지금 이 기기는 학생용 구글 계정('+(user.email||'')+')으로 로그인돼 있어요. 코치 계정으로 다시 로그인해 주세요.');
+          showAccountProblem('옛 학생 공용 계정('+(user.email||'')+')은 더 이상 쓰지 않아요. 학생은 아래 "학생은 구글로 로그인"을 이용해 주세요.');
           return;
         }
         currentCoachEmail = user.email || '';
@@ -3121,6 +2906,15 @@ function loginSubmit(e){
     });
 }
 function logout(){ if(auth) auth.signOut(); }
+function studentGoogleLogin(){
+  const box=document.getElementById('studentLoginError'); box.style.display='none';
+  if(!auth){ box.textContent='Firebase 설정이 완료되지 않았습니다.'; box.style.display='block'; return; }
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err=>{
+    if(err.code==='auth/popup-closed-by-user') return;
+    box.textContent='구글 로그인 실패: '+(err.code==='auth/popup-blocked'?'팝업이 차단됐어요. Safari 설정에서 팝업 차단을 꺼 주세요.':err.code);
+    box.style.display='block';
+  });
+}
 function showAccountProblem(msg){
   document.getElementById('loginScreen').style.display='none';
   const app=document.getElementById('app'); app.style.display='';
@@ -3147,7 +2941,7 @@ function subscribeStudents(){
         id: doc.id,
         ...d,
         name: d.name || '(이름 없음)',
-        fatigue: Array.isArray(d.fatigue) ? d.fatigue : [],
+        fatigue: [],   // 코치 입력 피로도는 쓰지 않음 → 아래 applyCheckins 가 학생 체크인으로 채운다
         events: Array.isArray(d.events) ? d.events : [],
         records: (d.records && typeof d.records==='object') ? d.records : {},
         targets: (d.targets && typeof d.targets==='object') ? d.targets : {}
@@ -3157,7 +2951,11 @@ function subscribeStudents(){
     if(!state.selectedId || !list.find(s=>s.id===state.selectedId)){
       state.selectedId = list[0]?.id || null;
     }
+    applyCheckins();
     rerender();
+    const key=list.map(x=>x.id).sort().join(',');
+    if(key!==ckStudentKey){ ckStudentKey=key; loadTodayCheckins(true); }   // 학생 명단이 바뀌면 오늘 체크인 다시 읽기
+    if(state.selectedId) loadHistory(state.selectedId);
   }, err=>{
     if(err && err.code==='permission-denied'){
       showAccountProblem('이 계정('+currentCoachEmail+')은 코치로 등록되어 있지 않아요. Firebase 보안 규칙의 코치 이메일 목록에 이 이메일이 있는지 확인해 주세요.');
@@ -3165,6 +2963,434 @@ function subscribeStudents(){
       showToast('실시간 동기화 오류: '+(err&&err.message||''));
     }
   });
+}
+
+
+/* ============ HC: 학생 체크인 판정 엔진 (student.html 과 같은 코드) ============
+   학생 화면과 코치 화면이 '똑같은 기준'으로 판단하도록 학생 사이트의 계산 부분을 그대로 가져왔다.
+   다른 코드와 이름이 겹치지 않게 HC 라는 상자 안에 넣었다. */
+const HC=(function(){
+
+/* ============ 설정값 ============ */
+const BASELINE_MIN_DAYS = 7;      // 평소 비교를 시작하는 최소 기록 일수 (개발 중 조정)
+const BASELINE_WINDOW_DAYS = 14;  // 평소 = 오늘 이전 최근 14일
+const BODY_PARTS = ["정강이","종아리","무릎","허벅지 앞","허벅지 뒤","엉덩이","허리","발목","발바닥","어깨","등","목","손목","기타"];
+const STRESS_CAUSES = ["학교","시험","입시","훈련","인간관계","수면 부족","기타"];
+const IMPACTS = ["없음","약간","훈련에 영향","훈련 어려움"];
+const METRICS = [
+  {key:'sleepMin',     label:'수면',     good:'up',   floor:45},   // floor: 이 정도 차이는 있어야 '달라졌다'고 본다
+  {key:'sleepQuality', label:'수면의 질', good:'up',   floor:1.5},
+  {key:'fatigue',      label:'피로',     good:'down', floor:1.5},
+  {key:'soreness',     label:'근육통',   good:'down', floor:1.5},
+  {key:'stress',       label:'스트레스', good:'down', floor:1.5},
+  {key:'readiness',    label:'준비도',   good:'up',   floor:1.5},
+];
+
+
+function pad(n){ return String(n).padStart(2,'0'); }
+function ymd(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function todayStr(){ return ymd(new Date()); }
+function addDays(s,n){ const [y,m,d]=s.split('-').map(Number); return ymd(new Date(y,m-1,d+n)); }
+function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function fmtSleep(min){ const h=Math.floor(min/60), m=Math.round(min%60); return m? h+'시간 '+m+'분' : h+'시간'; }
+function fmtValue(key,v){ return key==='sleepMin' ? fmtSleep(v) : v+'/10'; }
+function fmtDelta(key,d){
+  if(key==='sleepMin'){
+    const a=Math.abs(Math.round(d)); if(a<1) return '차이 없음';
+    return (a>=60 ? fmtSleep(a) : a+'분')+(d>0?' 증가':' 감소');
+  }
+  const a=Math.abs(d); if(a<0.05) return '차이 없음';
+  return a.toFixed(1)+(d>0?' 증가':' 감소');
+}
+
+// 평균과 표준편차 (표준편차 = 평소에도 이 정도는 흔들린다는 뜻)
+function baselineStats(history,key){
+  const v=history.map(h=>h[key]).filter(x=>typeof x==='number');
+  if(v.length<BASELINE_MIN_DAYS) return null;
+  const mean=v.reduce((a,b)=>a+b,0)/v.length;
+  const sd=Math.sqrt(v.reduce((a,b)=>a+(b-mean)**2,0)/(v.length-1));
+  return {mean,sd,n:v.length};
+}
+
+// 항목마다: 오늘 값, 평소 평균, 차이, '얼마나 달라졌나' 점수, 좋아졌나/나빠졌나
+function analyze(today,history){
+  const ready=history.length>=BASELINE_MIN_DAYS;
+  const rows=METRICS.map(m=>{
+    const value=today[m.key];
+    const st=ready?baselineStats(history,m.key):null;
+    if(!st) return {m,value,st:null,tone:'none',score:0,delta:0};
+    const delta=value-st.mean;
+    const score=delta/Math.max(st.sd,m.floor);          // 평소 흔들림(또는 최소 기준)의 몇 배만큼 벗어났나
+    const sign=Math.sign(delta)*(m.good==='up'?1:-1);
+    const tone=Math.abs(score)<1?'same':(sign>0?'better':'worse');
+    return {m,value,st,delta,score,tone};
+  });
+  if(ready) rows.sort((a,b)=>Math.abs(b.score)-Math.abs(a.score));
+  return {ready,rows,n:history.length};
+}
+
+// 받침에 따라 조사 고르기 (예: 무릎이 / 허리가)
+function josa(w,a,b){ const c=w.charCodeAt(w.length-1); if(c<0xAC00||c>0xD7A3) return w+b; return w+(((c-0xAC00)%28)?a:b); }
+function absSleep(d){ const a=Math.abs(Math.round(d)); return a>=60?fmtSleep(a):a+'분'; }
+function chipFor(r){ return r.m.label+' '+(r.m.key==='sleepMin'?(r.delta>0?'+':'-')+absSleep(r.delta):(r.delta>0?'+':'')+r.delta.toFixed(1)); }
+const PHRASE={
+  sleepMin:r=>'평소보다 잠을 '+absSleep(r.delta)+' 덜 잤어요',
+  sleepQuality:()=>'평소보다 잠을 푹 못 잤어요',
+  fatigue:()=>'평소보다 많이 피곤한 상태예요',
+  soreness:()=>'평소보다 근육통이 심해요',
+  stress:()=>'평소보다 스트레스가 많은 날이에요',
+  readiness:()=>'평소보다 몸이 덜 준비된 느낌이에요'
+};
+const STATUS_UI={
+  GREEN:{label:'좋음',color:'#c6ff3d',bg:'rgba(198,255,61,.10)'},
+  YELLOW:{label:'주의',color:'#ffd23f',bg:'rgba(255,210,63,.10)'},
+  AMBER:{label:'경고',color:'#ff9f1c',bg:'rgba(255,159,28,.12)'},
+  RED:{label:'위험',color:'#ff4b33',bg:'rgba(255,75,51,.14)'},
+  BASE:{label:'기준 만드는 중',color:'#aab2c5',bg:'rgba(170,178,197,.08)'}
+};
+
+// 빨강(평소보다 2.0 이상 악화)은 몸 지표에만 적용. 스트레스·수면의 질은 주황까지만.
+const BODY_KEYS=['sleepMin','fatigue','soreness','readiness'];
+// 오늘 상태 판정: 위에서부터 먼저 걸리는 조건이 등급이 된다 (안전 우선)
+function judge(t,an){
+  const worse=an.ready?an.rows.filter(r=>r.tone==='worse'):[];
+  const better=an.ready?an.rows.filter(r=>r.tone==='better'):[];
+  const get=k=>an.rows.find(r=>r.m.key===k);
+  const isW=k=>worse.includes(get(k));
+  const bad=r=>Math.abs(r.score);
+  const areas=(t.painAreas||[]).join('·'), sAreas=(t.sorenessAreas||[]).join('·');
+  const painHigh=t.pain&&t.painLevel>=4, painLow=t.pain&&!painHigh;
+  const sleepLow=t.sleepMin<300, follow=t.painFollowUp;
+  const special=[]; let status, headline;
+
+  if(painHigh){ status='RED'; headline=areas+' 통증이 있어요. 훈련 전에 코치님께 먼저 말해 주세요.'; special.push(areas+' 통증 '+t.painLevel+'/10'); }
+  else if(t.sorenessImpact===3){ status='RED'; headline='근육통 때문에 움직이기 힘든 상태예요. 훈련 전에 코치님께 말해 주세요.'; special.push((sAreas||'근육통')+' · 훈련 어려움'); }
+  else if(t.readiness<=2){ status='RED'; headline='오늘 몸이 많이 무거워요. 훈련 전에 코치님께 말해 주세요.'; special.push('준비도 '+t.readiness+'/10'); }
+  else if(worse.some(r=>bad(r)>=2&&BODY_KEYS.includes(r.m.key))){ const r=worse.find(r=>bad(r)>=2&&BODY_KEYS.includes(r.m.key)); status='RED'; headline=PHRASE[r.m.key](r)+'. 훈련 전에 코치님께 말해 주세요.'; }
+  else if(painLow){ status='AMBER'; headline=areas+'에 약한 통증이 있어요. 코치님께 미리 말해 두세요.'; special.push(areas+' 통증 '+t.painLevel+'/10'); }
+  else if(follow===2){ status='AMBER'; headline='어제 아팠던 곳이 오늘 아침 더 아팠어요. 코치님께 말해 주세요.'; special.push('아침 통증 증가'); }
+  else if(sleepLow){ status='AMBER'; headline='어젯밤 '+fmtSleep(t.sleepMin)+'밖에 못 잤어요.'; special.push('수면 '+fmtSleep(t.sleepMin)); }
+  else if(isW('sleepMin')&&(isW('fatigue')||isW('readiness'))){ status='AMBER'; headline='잠이 부족하고 몸도 무거운 날이에요.'; }
+  else if(worse.filter(r=>bad(r)>=1.5).length>=2){ status='AMBER'; headline=PHRASE[worse[0].m.key](worse[0])+'.'; }
+  else if(t.sorenessImpact===2){ status='AMBER'; headline=(sAreas?josa(sAreas,'이','가'):'근육통이')+' 훈련에 영향을 주는 상태예요.'; special.push((sAreas||'근육통')+' · 훈련에 영향'); }
+  else if(!an.ready){ status='BASE'; headline='평소 기준을 만드는 중이에요 ('+an.n+'/'+BASELINE_MIN_DAYS+'일)'; }
+  else if(worse.length||(['무릎','정강이','허리'].some(a=>(t.sorenessAreas||[]).includes(a))&&t.sorenessImpact===1)){
+    status='YELLOW'; headline=worse.length?PHRASE[worse[0].m.key](worse[0])+'.':josa(sAreas,'이','가')+' 조금 불편한 상태예요.'; }
+  else { status='GREEN'; headline=better.length?'평소보다 컨디션이 좋아요.':'평소랑 비슷한 컨디션이에요.'; }
+  if(follow===1) special.push('아침 통증 그대로');
+
+  let reasons=special.concat(worse.map(chipFor)).slice(0,3);
+  if(!reasons.length&&an.ready) reasons=better.length?better.slice(0,2).map(chipFor):['평소와 비슷'];
+
+  // 오늘 훈련 참고 (부하 처방은 코치 화면에만)
+  let train;
+  if(status==='RED') train='오늘 훈련은 코치님이 상태를 보고 정해 줄 거예요. 혼자 무리하지 마세요.';
+  else if(status==='AMBER') train=(t.pain||follow===2)?'아픈 곳에 무리가 가는 동작은 코치님과 먼저 이야기하고 하세요.'
+    :t.sorenessImpact===2?'불편한 동작이 있으면 참지 말고 바로 코치님께 말하세요.'
+    :'몸이 평소보다 무거운 날이에요. 웜업을 충분히 하고, 훈련 중에 이상하면 바로 말하세요.';
+  else if(status==='YELLOW') train=isW('stress')?'훈련 전에 숨을 길게 내쉬면서 몸을 풀고 시작하세요.':(isW('soreness')||t.sorenessImpact===1)?'뻐근한 곳은 웜업으로 충분히 풀고 시작하세요.':'훈련 초반에 몸 상태를 먼저 확인하고 시작하세요.';
+  else if(status==='GREEN') train=better.length?'측정이나 강한 훈련을 하기 좋은 상태예요.':'평소대로 훈련하면 돼요.';
+  else train='아직 오늘 값만 보고 있어요. 평소와 다르게 느껴지면 코치님께 말하세요.';
+
+  // 몸관리용 '신호': 평소보다 나빠졌거나, 평소 기준이 아직 없을 땐(첫 7일) 점수 자체가 높거나 낮으면
+  const ABS={sleepMin:v=>v<360,sleepQuality:v=>v<=3,fatigue:v=>v>=7,soreness:v=>v>=7,stress:v=>v>=7,readiness:v=>v<=3};
+  const flag=k=>isW(k)||(!an.ready&&ABS[k](t[k]));
+  const ctx={t,isW,flag,areas,sAreas,painHigh,sleepLow,follow,status,
+    tired:sleepLow||flag('sleepMin')||flag('fatigue')||flag('readiness')||t.readiness<=2};
+  return {status,headline,reasons,train,coachTalk:coachMessage(ctx),care:buildCare(ctx)};
+}
+
+/* ---- 코치님께 드릴 말 (정중한 형식, 데이터에 따라 바뀜) ---- */
+function coachMessage(c){
+  const t=c.t, facts=[];
+  let main=null, ask=null, usedSleep=false;
+  if(t.pain){
+    main='선생님, 오늘 '+josa(c.areas,'이','가')+' 아픕니다';
+    facts.push('10점 중 '+t.painLevel+'점');
+    if(t.painNote) facts.push(t.painNote.length>40?t.painNote.slice(0,40)+'…':t.painNote);
+    ask=c.painHigh?'훈련 전에 한번 봐 주실 수 있을까요?':'해당 부위에 무리가 가는 운동은 조절해도 될까요?';
+  }else if(c.follow===2){
+    main='선생님, 어제 아팠던 곳이 오늘 아침에 더 아픕니다'; ask='훈련 전에 한번 봐 주실 수 있을까요?';
+  }else if(c.status==='RED'){
+    main='선생님, 오늘 컨디션이 많이 좋지 않습니다'; ask='오늘 운동을 조절해도 될까요?';
+  }else if(c.status==='AMBER'){
+    if(t.sorenessImpact===2){ main='선생님, 오늘 '+(c.sAreas?c.sAreas+' ':'')+'근육통 때문에 움직이기가 불편합니다'; ask='불편한 동작은 조절해도 될까요?'; }
+    else if(c.sleepLow||c.isW('sleepMin')){ main='선생님, 어젯밤 '+fmtSleep(t.sleepMin)+'밖에 못 자서 컨디션이 저조합니다'; usedSleep=true; ask='오늘 운동량을 조절해도 될까요?'; }
+    else { main='선생님, 오늘 컨디션이 저조합니다'; ask='오늘 운동량을 조절해도 될까요?'; }
+  }else if(c.status==='YELLOW'){
+    if(t.sorenessImpact>=1&&c.sAreas){ main='선생님, 오늘 '+josa(c.sAreas,'이','가')+' 조금 뻐근합니다'; }
+    else main='선생님, 오늘 컨디션이 평소보다 조금 저조합니다';
+    ask='훈련할 때 참고 부탁드립니다.';
+  }
+  if(!main) return null;
+  if(!usedSleep&&(c.sleepLow||c.isW('sleepMin'))) facts.push('수면 '+fmtSleep(t.sleepMin));
+  if(c.isW('fatigue')) facts.push('피로 높음');
+  if(c.isW('readiness')||t.readiness<=2) facts.push('몸 무거움');
+  if(t.pain&&t.sorenessImpact>=1&&c.sAreas) facts.push(c.sAreas+' 뻐근함');
+  if(c.follow===1) facts.push('어제 통증이 아침에도 비슷함');
+  return main+(facts.length?'('+facts.join(', ')+')':'')+'. '+ask;
+}
+
+/* ---- 오늘 몸관리: 영양 / 수면 / 회복 프로토콜 ----
+   위에서부터 조건이 맞는 첫 프로토콜을 고른다. tag 가 겹치면 건너뛰어서 같은 조언이 두 번 나오지 않게 한다.
+   메뉴는 날짜에 따라 돌아가며 바뀐다. 수치는 일반 제품 기준 대략값. */
+function pickByDate(arr,date){ const n=Number(date.slice(5,7))*31+Number(date.slice(8,10)); return arr[n%arr.length]; }
+const LEGACY_AREA={'허벅지':'허벅지 앞'};          // 예전 선택지 '허벅지' 는 '허벅지 앞' 으로 본다
+function normAreas(a){ return [...new Set((a||[]).map(x=>LEGACY_AREA[x]||x))]; }
+// 근육통 부위가 여러 곳이면 부상 위험이 큰 순서로 하나만 보여 준다
+const AREA_ORDER=['정강이','무릎','허벅지 앞','허벅지 뒤','허리','엉덩이','종아리','발목','발바닥','어깨','등','목','손목','기타'];
+// strength:true = 강화 동작 (동작 영향이 '훈련에 영향' 이상이면 숨긴다), alt = 마사지볼이 없을 때
+const CARE_SHIN={name:'정강이 관리',lines:[
+  {v:'까치발 들기: 벽 짚고 무릎을 살짝 굽힌 채 올릴 때 2초, 내릴 때 3초, 15회 × 3세트',strength:true},
+  {v:'마사지볼: 종아리 뒤쪽(알)에만 대고 30~60초 지그시 누르기',alt:'앉아서 양손으로 종아리 알을 아래에서 위로 쥐었다 놓으며 1~2분 (정강이 앞 뼈는 잡지 않기)'},
+  {v:'피할 것: 정강이 앞쪽 뼈는 마사지볼·마사지건·폼롤러로 문지르지 않기'},
+  {v:'한 점이 콕 집히게 아프거나 밤에 욱신거리면 훈련 전에 선생님께 말하기'}]};
+const CARE_KNEE={name:'무릎·허벅지 앞 관리',lines:[
+  {v:'벽 스쿼트 버티기: 벽에 등을 대고 무릎 60~90도, 45초 × 3세트 (아프지 않은 각도까지만)',strength:true},
+  {v:'카우치 스트레칭: 한쪽 무릎을 바닥에 대고 뒷발을 소파나 벽에 올려 골반을 앞으로 밀기, 좌우 1분'},
+  {v:'피할 것: 무릎뼈 바로 아래 튀어나온 뼈는 누르거나 두드리지 않기'}]};
+const CARE_HAM={name:'허벅지 뒤 관리',lines:[
+  {v:'브릿지 버티기: 누워서 무릎을 45~60도 굽히고 뒤꿈치로 바닥을 누르며 엉덩이 들기, 30초 × 4세트'},
+  {v:'피할 것: 당기는 느낌이 있을 때 다리 찢기나 상체 숙여 늘리는 스트레칭 하지 않기'}]};
+const CARE_BACK={name:'허리 관리',lines:[
+  {v:'누워서 무릎 껴안기 30초 × 3세트'},
+  {v:'마사지볼: 엉덩이 바깥쪽 아래에 깔고 앉아 30~60초 (허리뼈 위는 직접 누르지 않기)',alt:'누워서 한쪽 발목을 반대쪽 무릎 위에 올려 4자를 만들고, 아래 다리를 가슴 쪽으로 당겨 30초 × 양쪽 2회'},
+  {v:'피할 것: 허리를 뒤로 크게 젖히는 스트레칭과 동작'}]};
+const CARE_GLUTE={name:'엉덩이 관리',lines:[
+  {v:'마사지볼: 엉덩이 바깥쪽 아래에 깔고 앉아 가장 결리는 곳에서 30~60초 체중으로 누르기',alt:'누워서 한쪽 무릎을 세워 반대쪽 바닥으로 넘기고 어깨는 바닥에 붙인 채 30초 × 양쪽 2회'},
+  {v:'비둘기 자세 스트레칭: 한쪽 다리를 ㄱ자로 접어 바닥에 두고 상체 숙이기, 좌우 1분'},
+  {v:'클램셸: 옆으로 누워 무릎 굽히고 위쪽 무릎 벌렸다 모으기, 15회 × 2세트',strength:true}]};
+const CARE_CALF={name:'종아리 관리',lines:[
+  {v:'2단계 스트레칭: 벽 밀고 뒷다리 무릎 편 채 30초 → 그대로 무릎 살짝 굽혀 30초, 양쪽'},
+  {v:'마사지볼: 앉아서 종아리 아래 공을 두고 반대 다리를 올려 가장 뭉친 곳에서 30~60초 버티기',alt:'바닥에 앉아 반대쪽 무릎을 세우고, 그 무릎 위에 종아리 알을 올려 지그시 누르며 30~60초'},
+  {v:'쥐가 자주 나면 훈련 중 15~20분마다 물이나 이온음료를 조금씩 마시기'}]};
+const CARE_ANKLE={name:'발목·발바닥 관리',lines:[
+  {v:'발바닥 마사지볼: 서서 공을 발바닥 가운데와 뒤꿈치 앞쪽에 두고 체중 실어 좌우 1~2분',alt:'앉아서 엄지손가락으로 발바닥 가운데를 뒤꿈치 쪽에서 발가락 쪽으로 꾹꾹 누르기 1분, 이어서 발가락을 몸 쪽으로 젖혀 30초'},
+  {v:'발목 버티기: 발 바깥날로 벽을 밀며 30초 × 4세트',strength:true},
+  {v:'한 발 눈 감고 서기: 30초 × 양쪽 2회 (벽 옆에서)'},
+  {v:'피할 것: 삐끗한 직후 뜨거운 찜질이나 억지로 발목 돌리기'}]};
+const CARE_SHOULDER={name:'어깨·등 관리',lines:[
+  {v:'마사지볼: 벽과 날개뼈 안쪽 사이에 공을 끼우고 무릎을 굽혔다 펴며 1~2분',alt:'네발 자세에서 한 팔을 반대쪽 팔 아래로 깊게 넣어 어깨와 등을 바닥에 대고 30초 × 양쪽 2회'},
+  {v:'가슴 열기: 의자 등받이에 날개뼈 아래를 걸치고 손으로 머리를 받친 채 숨 내쉬며 가슴 젖히기 10회'},
+  {v:'피할 것: 어깨 앞쪽이 찝히는 느낌이면 팔을 뒤로 꺾는 스트레칭과 딥스 멈추기'}]};
+const AREA_CARE={
+  '정강이':CARE_SHIN,'무릎':CARE_KNEE,'허벅지 앞':CARE_KNEE,'허벅지 뒤':CARE_HAM,'허리':CARE_BACK,'엉덩이':CARE_GLUTE,
+  '종아리':CARE_CALF,'발목':CARE_ANKLE,'발바닥':CARE_ANKLE,'어깨':CARE_SHOULDER,'등':CARE_SHOULDER,
+  '목':{name:'목 관리',lines:[{v:'고개를 옆으로 기울여 30초 × 양쪽 2회'},{v:'따뜻한 수건 5분 올려 두기'}]},
+  '손목':{name:'손목 관리',lines:[{v:'손목을 앞뒤로 젖혀 30초 × 2회'}]},
+  '기타':{name:'근육 풀기',lines:[{v:'아프지 않은 범위에서 가볍게 스트레칭 30초 × 3회'}]}
+};
+
+function buildCare(c){
+  const t=c.t, d=t.date||todayStr(), used=new Set();
+  const sa=normAreas(t.sorenessAreas);
+  const primary=t.soreness>0?AREA_ORDER.find(a=>sa.includes(a)):null;
+  const limit=t.sorenessImpact>=2;
+  const areaP=primary?{name:AREA_CARE[primary].name,lines:AREA_CARE[primary].lines.filter(l=>!(limit&&l.strength))}:null;
+
+  const N=[
+    {when:t.pain||c.follow===2, name:'회복 지원', lines:[
+      {k:'끼니마다', v:'단백질 20~25g', m:'급식·집밥에서 고기·생선·계란·두부 반찬 먼저 먹기'},
+      {k:'간식', v:'단백질과 칼슘 보충', m:pickByDate(['흰우유 1팩 + 구운계란 2개','닭가슴살 1팩 + 흰우유 1팩','스트링치즈 2개 + 두유 1팩'],d)}]},
+    {when:c.tired, name:'에너지 보충', lines:[
+      {k:'훈련 1~2시간 전', v:'탄수화물 약 50g', m:pickByDate(['바나나 2개','삼각김밥 1개 + 이온음료 반 병','카스텔라 1개 + 바나나우유 1개'],d)},
+      {k:'훈련 후 1시간 안', v:'탄수화물 50g 이상, 단백질 20g 이상', m:pickByDate(['초코우유 2팩 + 구운계란 2개','김밥 1줄 + 단백질 음료 1개','삼각김밥 2개 + 구운계란 2개'],d)}]},
+    {when:c.flag('soreness')||t.soreness>=5||t.sorenessImpact>=1, name:'근육 회복', lines:[
+      {k:'훈련 후 1시간 안', v:'단백질 20~25g, 탄수화물 30~45g', m:pickByDate(['닭가슴살 1팩 + 군고구마 1개','단백질 음료 1개 + 바나나 1개','흰우유 2팩 + 구운계란 2개 + 바나나 1개'],d)},
+      {k:'자기 1~2시간 전', v:'단백질 간식', m:'흰우유 1팩 또는 스트링치즈 2개'}]},
+    {when:c.flag('stress')||c.flag('sleepQuality'), name:'안정과 숙면', lines:[
+      {k:'오후 3시 이후', v:'카페인 끊기', m:'커피·에너지드링크·콜라 대신 물이나 이온음료'},
+      {k:'자기 1~2시간 전', v:'가벼운 간식', m:'흰우유 1팩 + 바나나 반 개'}]},
+    {when:true, name:'훈련 전후 기본', lines:[
+      {k:'훈련 1~2시간 전', v:'탄수화물 30~40g', m:pickByDate(['바나나 1개 + 두유 1팩','삼각김밥 1개','카스텔라 1개 + 흰우유 1팩'],d)},
+      {k:'훈련 후 1시간 안', v:'탄수화물 약 50g, 단백질 15g 이상', m:pickByDate(['초코우유 2팩 + 구운계란 1개','김밥 1줄 + 흰우유 1팩','삼각김밥 1개 + 바나나우유 1개 + 스트링치즈 1개'],d)}]}
+  ];
+  const R=[
+    {when:t.pain||c.follow===2, name:'통증 관리', lines:[
+      {v:'아픈 곳은 세게 주무르거나 뜨거운 찜질·사우나로 데우지 않기'},
+      {v:'통증이 생기는 동작은 쉬고, 훈련 전에 선생님께 먼저 보여 드리기'},
+      {v:'내일 아침 일어났을 때 아픈 곳이 어떤지 체크인에서 기록하기'},
+      {v:'한 점이 콕 집히게 아프거나 밤에 욱신거리면 꼭 선생님께 말하기'}]},
+    {when:!!areaP, ...areaP},
+    {when:c.flag('stress'), tag:'breath', name:'호흡으로 긴장 풀기', lines:[
+      {v:'코로 두 번 들이쉬고 입으로 길게 내쉬기 3회 (훈련 전·후)'}]},
+    {when:c.tired, tag:'shower', name:'피로 회복', lines:[
+      {v:'온냉 교대 샤워: 하체에 따뜻한 물 1분 30초 → 찬물 30초, 3~4번 반복'},
+      {v:'다리를 벽에 올리고 5분 누워 있기'}]},
+    {when:true, name:'기본 정리', lines:[
+      {v:'훈련 후 맨몸 스트레칭 5~10분: 종아리 2단계, 허벅지 앞, 비둘기 자세 각 30초'},
+      {v:'훈련 중·후 물 500ml 이상 나눠 마시기'}]}
+  ];
+  const S=[
+    {when:c.sleepLow||c.flag('sleepMin'), name:'수면 보충', lines:[
+      {v:'오늘은 평소보다 30분 일찍 눕기'},{v:'낮잠은 20분 이내, 오후 4시 전에만'}]},
+    {when:c.flag('sleepQuality'), tag:'shower', name:'숙면 환경', lines:[
+      {v:'자기 1시간 전 따뜻한 물(40℃ 정도)로 10분 샤워'},{v:'방은 어둡고 시원하게, 폰은 침대 밖에서 충전'}]},
+    {when:c.flag('stress'), tag:'breath', name:'잠들기 전 긴장 풀기', lines:[
+      {v:'누워서 4초 들이쉬고 6~8초 내쉬기 5분'},{v:'내일 할 일은 자기 전에 메모로 적어 두기'}]},
+    {when:t.pain, name:'편한 자세로 자기', lines:[
+      {v:'아픈 부위가 눌리지 않게 베개로 받치고 자기'}]},
+    {when:c.flag('fatigue'), name:'회복 수면', lines:[
+      {v:'7시간 이상 잘 수 있게 오늘 취침 시간 정해 두기'},{v:'자기 2시간 전부터 야식·라면 피하기'}]},
+    {when:true, name:'수면 리듬', lines:[
+      {v:'기상 시간은 주말에도 1시간 이상 바꾸지 않기'}]}
+  ];
+  /* --- 회복: 해당되는 것을 모두. 부위가 여러 곳이면 부위마다 (같은 관리법을 쓰는 부위는 한 번만) --- */
+  const recovery=[];
+  if(R[0].when) recovery.push(R[0]);                                   // 통증 관리
+  const painSet=new Set(t.pain?normAreas(t.painAreas):[]);            // 아픈 부위는 마사지·강화 동작을 하면 안 되므로 제외
+  if(t.soreness>0){
+    const seen=new Set();
+    AREA_ORDER.filter(a=>sa.includes(a)&&!painSet.has(a)).forEach(a=>{
+      const P=AREA_CARE[a]; if(seen.has(P)) return; seen.add(P);
+      recovery.push({name:P.name,lines:P.lines.filter(l=>!(limit&&l.strength))});
+    });
+  }
+  R.slice(2,4).forEach(x=>{ if(x.when){ recovery.push(x); used.add(x.tag); } });   // 호흡, 피로 회복
+  if(!recovery.length) recovery.push(R[4]);                             // 기본 정리
+
+  /* --- 영양: 해당되는 것을 모두 합쳐 '하루 시간표' 로. 같은 시간대는 먼저 나온 것만 --- */
+  const TIME_ORDER=['끼니마다','오후 3시 이후','훈련 1~2시간 전','훈련 후 1시간 안','간식','자기 1~2시간 전'];
+  const nutHit=N.slice(0,4).filter(x=>x.when), nLines=[], nKeys=new Set();
+  nutHit.forEach(x=>x.lines.forEach(l=>{ if(!nKeys.has(l.k)){ nKeys.add(l.k); nLines.push(l); } }));
+  N[4].lines.forEach(l=>{ if(!nKeys.has(l.k)){ nKeys.add(l.k); nLines.push(l); } });   // 훈련 전·후 빠진 시간대는 기본으로 채움
+  nLines.sort((a,b)=>TIME_ORDER.indexOf(a.k)-TIME_ORDER.indexOf(b.k));
+  const nutrition={names:nutHit.length?nutHit.map(x=>x.name):[N[4].name],lines:nLines};
+
+  /* --- 수면: 해당되는 것을 모두 (회복에서 이미 나온 호흡·샤워는 제외), 최대 4줄 --- */
+  const sHit=S.slice(0,5).filter(x=>x.when&&!(x.tag&&used.has(x.tag)));
+  const sleepList=sHit.length?sHit:[S[5]];
+  const sleep={names:sleepList.map(x=>x.name),lines:sleepList.flatMap(x=>x.lines).slice(0,4)};
+
+  return {nutrition,sleep,recovery};
+}
+
+
+return {analyze,judge,METRICS,STATUS_UI,fmtSleep,fmtValue,fmtDelta,addDays,todayStr,IMPACTS,BASELINE_WINDOW_DAYS,BASELINE_MIN_DAYS,baselineStats};
+})();
+
+/* ============ 학생 체크인 → 코치 화면 ============
+   코치는 피로도를 입력하지 않는다. 학생이 입력한 students/{id}/checkins/{날짜} 를 읽기만 한다.
+   - 오늘 기록: 학생마다 1건씩 (학생 수만큼 읽기)
+   - 지난 기록: 학생을 선택할 때 그 학생만 최근 28일 */
+state.todayCk = {}; state.hist = {}; state.ckFetchedAt = 0; state.ckLoading = false;
+let ckStudentKey = '';
+function ckToFatigue(c){   // 기존 분석 기능(회복 패턴·통증 반복·그래프)이 그대로 쓰도록 예전 기록 형식으로 바꿔 준다
+  return {date:c.date, score:c.fatigue, sleep:(c.sleepMin/60).toFixed(1), painAreas:c.pain?(c.painAreas||[]):[],
+    painSeverity:c.pain&&c.painLevel!=null?String(c.painLevel):'', attended:true, stress:String(c.stress),
+    memo:c.painNote||'', sessionTypes:[], area:'', mealBefore:false, weather:'', temp:'', rehabNote:'', _ck:c};
+}
+function applyCheckins(){
+  state.students.forEach(s=>{
+    const map={};
+    (state.hist[s.id]||[]).forEach(c=>map[c.date]=c);
+    const t=state.todayCk[s.id]; if(t) map[t.date]=t;
+    s.fatigue=Object.values(map).sort((a,b)=>a.date.localeCompare(b.date)).map(ckToFatigue);
+  });
+}
+async function loadTodayCheckins(force){
+  if(!db || state.ckLoading) return;
+  if(!force && Date.now()-state.ckFetchedAt<60000) return;
+  state.ckLoading=true;
+  const d=HC.todayStr();
+  try{
+    const res=await Promise.all(state.students.map(s=>db.collection('students').doc(s.id).collection('checkins').doc(d).get()
+      .then(x=>[s.id, x.exists?{...x.data(),date:x.id}:null]).catch(()=>[s.id,null])));
+    state.todayCk=Object.fromEntries(res); state.ckFetchedAt=Date.now();
+  }catch(e){ showToast('체크인을 불러오지 못했어요: '+(e&&e.message||'')); return; }
+  finally{ state.ckLoading=false; }
+  applyCheckins(); rerender();
+}
+async function loadHistory(sid, force){
+  if(!db || !sid || (state.hist[sid] && !force)) return;
+  const from=HC.addDays(HC.todayStr(),-28);
+  try{
+    const snap=await db.collection('students').doc(sid).collection('checkins').where(firebase.firestore.FieldPath.documentId(),'>=',from).get();
+    state.hist[sid]=snap.docs.map(d=>({...d.data(),date:d.id})).sort((a,b)=>a.date.localeCompare(b.date));
+  }catch(e){ state.hist[sid]=[]; }
+  applyCheckins(); rerender();
+}
+function refreshCheckins(){ state.hist={}; loadTodayCheckins(true); if(state.selectedId) loadHistory(state.selectedId,true); showToast('체크인을 새로 불러왔어요'); }
+
+/* ---- 코치용 해석: 학생이 본 판정 + 코치만 보는 훈련 조정·확인 포인트 ---- */
+const STATUS_KO={RED:'빨강 · 위험',AMBER:'주황 · 경고',YELLOW:'노랑 · 주의',GREEN:'초록 · 양호',BASE:'기준 수립 중'};
+const STATUS_COLOR={RED:'#ff4b33',AMBER:'#ff9f1c',YELLOW:'#ffd23f',GREEN:'#c6ff3d',BASE:'#8b93a6'};
+const COACH_LOAD={
+  RED:['점프·스프린트·착지 세션에서 제외','상체 웨이트·코어(버드독, 사이드 플랭크) 등 충격 없는 대체 훈련','훈련 시작 전 대면 확인 후 진행 여부 결정','통증이 이어지면 보호자 연락 및 진료 권고, 48시간 추적'],
+  AMBER:['강도·속도는 유지, 볼륨 40~50% 축소 (예: 점프 40회 → 20회)','세트 사이 휴식 2~3분 이상','웜업 10분 연장 (등척성 버티기 위주)','착지 자세가 무너지면 즉시 그 세트 종료'],
+  YELLOW:['계획대로 진행하되 볼륨 최대 30% 축소 고려','불편 부위 착지 횟수 제한, 훈련 중 반응 확인','웜업 5~10분 연장'],
+  GREEN:['계획한 훈련 100% 진행','실기 기록 측정·고강도 훈련에 적합'],
+  BASE:['기록 7일 미만 · 절대값 기준으로만 판단 중','평소대로 진행하며 학생 반응 관찰']
+};
+const AREA_CHECK={
+  '정강이':'한 점이 콕 집히게 아픈지, 밤에 욱신거리는지, 한 발 깽깽이 착지가 아픈지 확인 → 하나라도 해당하면 피로골절 가능성, 착지 중단 후 진료 권고',
+  '무릎':'무릎뼈 바로 아래 튀어나온 뼈의 압통 확인 → 있으면 착지·깊은 스쿼트 제한 (성장기 견인성 통증 가능)',
+  '허리':'뒤로 젖힐 때 아픈지 / 앞으로 숙일 때 아픈지 확인 → 젖힐 때 한쪽이 날카롭게 아프면 신전·회전 동작 금지 후 진료 권고. 다리 저림이 있으면 즉시 진료',
+  '허벅지 뒤':'전력 질주 중 갑자기 생긴 통증인지 확인 → 그렇다면 스트레칭 금지, 질주 제외, 진료 고려',
+  '발목':'부종·멍, 체중을 실을 수 있는지 확인 → 체중 지지가 어려우면 진료',
+  '발바닥':'아침 첫 발 통증인지 확인 → 지속되면 착지 볼륨 축소',
+  '종아리':'쥐가 자주 나는지 확인 → 수분·전해질 섭취 점검',
+  '어깨':'어깨 앞쪽이 찝히는 느낌인지 확인 → 그렇다면 메디신볼 투구·딥스 제한',
+  '허벅지 앞':'무릎 위·아래 통증으로 번지는지 확인',
+  '엉덩이':'착지 때 무릎이 안쪽으로 무너지는지 관찰'
+};
+function checkinHistBefore(sid,date){
+  const from=HC.addDays(date,-HC.BASELINE_WINDOW_DAYS);
+  return (state.hist[sid]||[]).filter(c=>c.date<date && c.date>=from);
+}
+function interpretCheckin(s,t){
+  const an=HC.analyze(t,checkinHistBefore(s.id,t.date)), j=HC.judge(t,an);
+  const status=t.status||j.status;
+  const areas=[...new Set([...(t.pain?t.painAreas||[]:[]), ...((t.soreness>0)?t.sorenessAreas||[]:[])])].map(a=>a==='허벅지'?'허벅지 앞':a);
+  const checks=areas.filter(a=>AREA_CHECK[a]).map(a=>({area:a,text:AREA_CHECK[a],pain:t.pain&&(t.painAreas||[]).includes(a)}));
+  const notes=[];
+  if(t.painFollowUp===2) notes.push('어제 통증 부위가 오늘 아침 더 아팠어요 → 전날 부하가 회복 한계를 넘은 신호. 해당 부위 부하를 한 단계 낮추세요.');
+  if(t.painFollowUp===1) notes.push('어제 통증이 아침에도 비슷하게 남아 있어요 → 오늘 훈련 후에도 같은지 다시 확인하세요.');
+  const h=(state.hist[s.id]||[]).filter(c=>c.date>HC.addDays(t.date,-7)&&c.date<=t.date);
+  if(h.length>=5){ const sum=h.reduce((a,c)=>a+c.sleepMin,0)/60*7/h.length; if(sum<42) notes.push('최근 7일 수면이 주당 약 '+sum.toFixed(0)+'시간 수준이에요 (42시간 미만) → 누적 수면 부족, 고강도 볼륨을 줄이세요.'); }
+  const rep14={}; (state.hist[s.id]||[]).filter(c=>c.date>HC.addDays(t.date,-14)).forEach(c=>[...(c.pain?c.painAreas||[]:[]),...(c.soreness>0?c.sorenessAreas||[]:[])].forEach(a=>rep14[a]=(rep14[a]||0)+1));
+  Object.entries(rep14).filter(([a,n])=>n>=3).forEach(([a,n])=>notes.push(a+' 불편을 최근 14일 동안 '+n+'번 기록했어요 → 일시적인 근육통보다 과사용 신호일 수 있어요.'));
+  if((t.stressCauses||[]).length&&(an.rows.find(r=>r.m.key==='stress')||{}).tone==='worse') notes.push('스트레스 원인: '+t.stressCauses.join('·')+' → 동작 지시는 단순하게, "바닥을 부순다" 같은 외적 큐 사용.');
+  return {status,j,an,checks,notes};
+}
+function statusOf(s){ const t=state.todayCk[s.id]; return t?(t.status||'BASE'):null; }
+
+function renderCheckinCard(s){
+  const t=state.todayCk[s.id];
+  if(!t){
+    const last=(state.hist[s.id]||[]).slice(-1)[0];
+    return `<div class="card"><h3>오늘 체크인</h3><div class="stat" style="font-size:20px;">아직 입력하지 않았어요</div>
+      <div class="stat-note">${last?'마지막 체크인: '+last.date:'체크인 기록이 없어요'}${s.studentUid?'':' · 학생 앱과 연결되지 않은 학생이에요 (가입 승인 시 연결돼요)'}</div></div>`;
+  }
+  const I=interpretCheckin(s,t), c=STATUS_COLOR[I.status];
+  const reasons=(t.reasons&&t.reasons.length?t.reasons:I.j.reasons)||[];
+  const rows=I.an.rows.slice().sort((a,b)=>HC.METRICS.indexOf(a.m)-HC.METRICS.indexOf(b.m)).map(r=>{
+    const tone=r.tone==='worse'?'<span style="color:#ff4b33;">평소보다 나쁨</span>':r.tone==='better'?'<span style="color:var(--lime);">평소보다 좋음</span>':r.tone==='same'?'평소와 비슷':'-';
+    return `<tr><td>${r.m.label}</td><td class="mono">${HC.fmtValue(r.m.key,r.value)}</td><td class="mono">${r.st?HC.fmtValue(r.m.key,r.m.key==='sleepMin'?Math.round(r.st.mean):Number(r.st.mean.toFixed(1))):'-'}</td><td>${tone}</td></tr>`;
+  }).join('');
+  const ctx=[];
+  if(t.soreness>0&&(t.sorenessAreas||[]).length) ctx.push('근육통 부위: '+t.sorenessAreas.join('·')+(t.sorenessImpact!=null?' ('+HC.IMPACTS[t.sorenessImpact]+')':''));
+  if(t.pain) ctx.push('통증: '+(t.painAreas||[]).join('·')+' '+t.painLevel+'/10'+(t.painNote?' · "'+esc(t.painNote)+'"':''));
+  return `
+  <div class="ck-status" style="border-color:${c}; background:${c}14;">
+    <div class="ck-badge" style="color:${c};">오늘 체크인 · ${STATUS_KO[I.status]}</div>
+    <div class="ck-head">${esc(I.j.headline)}</div>
+    ${reasons.length?`<div class="ck-chips">${reasons.map(r=>`<span>${esc(r)}</span>`).join('')}</div>`:''}
+    ${ctx.length?`<div class="stat-note" style="margin-top:10px; color:var(--text);">${ctx.join('<br>')}</div>`:''}
+  </div>
+  <div class="grid grid-2" style="margin-top:14px;">
+    <div class="card"><h3>오늘 훈련 조정 (코치용)</h3><ul class="ck-list">${COACH_LOAD[I.status].map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    <div class="card"><h3>확인할 것</h3>
+      ${I.checks.length||I.notes.length?`<ul class="ck-list">${I.checks.map(c=>`<li><b>${c.area}${c.pain?' (통증)':''}</b>: ${c.text}</li>`).join('')}${I.notes.map(n=>`<li>${n}</li>`).join('')}</ul>`:'<div class="stat-note">특별히 확인할 신호가 없어요.</div>'}
+      ${t.pain?'<div class="stat-note" style="margin-top:8px;">체중 지지 불가, 관절이 걸리거나 잠김, 밤에 욱신거림, 저림·감각 이상이 하나라도 있으면 즉시 진료로 연결하세요.</div>':''}
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px; padding:8px 0; overflow-x:auto;">
+    <div class="stat-note" style="padding:8px 16px 4px;">${I.an.ready?'평소(최근 14일 평균)와 비교':'평소 비교는 체크인 '+HC.BASELINE_MIN_DAYS+'일 이후 시작 (현재 '+I.an.n+'일)'}</div>
+    <table class="ck-table"><thead><tr><th>항목</th><th>오늘</th><th>평소</th><th>판정</th></tr></thead><tbody>${rows}</tbody></table>
+  </div>
+  ${I.j.coachTalk?`<div class="insight-box" style="margin-top:14px;"><b>학생이 받은 '선생님께 드릴 말'</b><br>${esc(I.j.coachTalk)}</div>`:''}`;
 }
 
 /* ---- 가입 승인 (학생 사이트 → joinRequests → 코치 승인) ----
@@ -3252,7 +3478,7 @@ function uid_(){ return uid(); }
 async function saveStudent(s){
   if(!db){ showToast('Firebase 설정이 필요합니다'); return false; }
   const clean = {};
-  Object.keys(s).forEach(k=>{ if(!k.startsWith('_')) clean[k]=s[k]; });
+  Object.keys(s).forEach(k=>{ if(!k.startsWith('_') && k!=='fatigue') clean[k]=s[k]; });   // fatigue 는 체크인에서 만든 값이라 저장하지 않음
   try{ await db.collection('students').doc(s.id).set(clean); return true; }
   catch(err){ showToast('저장 실패: '+err.message); return false; }
 }
