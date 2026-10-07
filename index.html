@@ -327,6 +327,13 @@
   .ck-list{ margin:0; padding-left:18px; line-height:1.75; font-size:13.5px; }
   .ck-table td,.ck-table th{ white-space:nowrap; }
   .ck-dot{ display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+  .branch-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:4px; }
+  .branch-card{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px; cursor:pointer; }
+  .branch-card:hover{ border-color:#3a4257; }
+  .branch-bar{ height:6px; background:var(--surface-2); border-radius:3px; margin:10px 0 8px; overflow:hidden; }
+  .branch-bar i{ display:block; height:100%; background:var(--lime); }
+  .branch-chips{ display:flex; flex-wrap:wrap; gap:4px 12px; font-size:13px; }
+  @media (max-width:900px){ .branch-grid{ grid-template-columns:1fr; } }
   .brief-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
   .brief-tile{ border-radius:12px; padding:12px 14px; border:1px solid var(--line); background:var(--surface); }
   .brief-tile .n{ font-size:26px; font-weight:800; }
@@ -1167,6 +1174,30 @@ function renderTeamOverview(){
   const areaRows=Object.entries(areaCount).sort((a,b)=>b[1]-a[1]);
   const maxA=areaRows.length?areaRows[0][1]:1;
   const allTeamEvents=[...new Set(state.students.flatMap(s=>s.events||[]))];
+  // ---- 지점별 현황 (전체 지점을 볼 때만) ----
+  const branchNames=[...BRANCHES, ...(state.students.some(s=>!s.branch)?['__none__']:[])];
+  const branchCards=branchNames.map(bn=>{
+    const ss=state.students.filter(s=>bn==='__none__'?!s.branch:s.branch===bn);
+    if(!ss.length) return '';
+    const c={RED:0,AMBER:0,YELLOW:0,GREEN:0,BASE:0,NONE:0}, ac={};
+    ss.forEach(s=>{ const st=statusOf(s); c[st||'NONE']++;
+      const t=state.todayCk[s.id]; if(t) [...new Set([...(t.pain?t.painAreas||[]:[]),...(t.soreness>0?t.sorenessAreas||[]:[])])].forEach(a=>ac[a]=(ac[a]||0)+1); });
+    const doneN=ss.length-c.NONE, pct=Math.round(doneN/ss.length*100);
+    const urgent=ss.filter(s=>['RED','AMBER'].includes(statusOf(s)));
+    const topArea=Object.entries(ac).sort((a,b)=>b[1]-a[1])[0];
+    const label=bn==='__none__'?'지점 미지정':bn;
+    const chip=(k,txt)=>c[k]?`<span style="color:${STATUS_COLOR[k]}; font-weight:800;">${txt} ${c[k]}</span>`:'';
+    return `<div class="branch-card" role="button" tabindex="0" onclick="state.briefBranch='${bn==='__none__'?'':bn}'; rerender();" onkeydown="if(event.key==='Enter'){state.briefBranch='${bn==='__none__'?'':bn}'; rerender();}">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
+        <b style="font-size:15px;">${esc(label)}</b><span class="stat-note">체크인 ${doneN}/${ss.length}</span>
+      </div>
+      <div class="branch-bar"><i style="width:${pct}%;"></i></div>
+      <div class="branch-chips">${chip('RED','빨강')}${chip('AMBER','주황')}${chip('YELLOW','노랑')}${c.GREEN+c.BASE?`<span style="color:${STATUS_COLOR.GREEN};">정상 ${c.GREEN+c.BASE}</span>`:''}${c.NONE?`<span class="stat-note">미입력 ${c.NONE}</span>`:''}</div>
+      ${urgent.length?`<div class="stat-note" style="margin-top:6px; color:var(--text);">확인: ${urgent.map(s=>`<span style="color:${STATUS_COLOR[statusOf(s)]};">${esc(s.name)}</span>`).join(', ')}</div>`:''}
+      ${topArea?`<div class="stat-note" style="margin-top:4px;">많은 불편 부위: ${esc(topArea[0])} ${topArea[1]}명</div>`:''}
+      ${c.NONE?`<button class="ghost-btn" style="margin-top:8px; padding:6px 10px; font-size:12px;" onclick="event.stopPropagation(); copyBranchMissing('${bn}')">📋 미입력 명단 복사</button>`:''}
+    </div>`;
+  }).join('');
   const fetched=state.ckFetchedAt?new Date(state.ckFetchedAt).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):'-';
   return `
     <main>
@@ -1180,6 +1211,8 @@ function renderTeamOverview(){
           <button class="ghost-btn" style="flex:0 0 auto; padding:8px 14px; min-height:40px;" onclick="refreshCheckins()">↻ 새로 불러오기</button>
         </div>
       </div>
+      ${!branch&&branchCards?`<div class="section-title" style="margin-top:0;">지점별 현황 <span class="stat-note" style="font-weight:400;">· 카드를 누르면 그 지점만 보여요</span></div><div class="branch-grid">${branchCards}</div><div class="lane-divider"></div>`:''}
+      ${branch?`<div style="margin-bottom:12px;"><button class="ghost-btn" style="padding:7px 12px;" onclick="state.briefBranch=''; rerender();">← 전체 지점 보기</button> <b style="margin-left:6px;">${esc(branch)}</b></div>`:''}
       <div class="brief-grid">${tile('RED','빨강 · 즉시 확인')}${tile('AMBER','주황 · 볼륨 조정')}${tile('YELLOW','노랑 · 주의')}${tile('GREEN','초록 · 정상')}</div>
       ${by.BASE.length?`<div class="stat-note" style="margin-top:8px;">기준 수립 중(기록 7일 미만) ${by.BASE.length}명은 정상 그룹에 포함했어요.</div>`:''}
 
@@ -1250,9 +1283,16 @@ function drawTeamChart(){
   }catch(err){ console.warn('팀 추이 그래프 오류:', err.message); }
 }
 
-function getMissingTodayNames(){
+function getMissingTodayNames(branch){
   const today = todayStr();
-  return state.students.filter(s=> !s.fatigue.some(f=>f.date===today)).map(s=>s.name);
+  const b = branch===undefined ? (state.briefBranch||'') : branch;
+  return state.students.filter(s=> (b==='' || (b==='__none__'?!s.branch:s.branch===b)) && !s.fatigue.some(f=>f.date===today)).map(s=>s.name);
+}
+function copyBranchMissing(b){
+  const names=getMissingTodayNames(b), label=b==='__none__'?'지점 미지정':b;
+  const text=names.length?`[${label}] 오늘 체크인 미입력: ${names.join(', ')} (총 ${names.length}명)`:`[${label}] 오늘은 전원 체크인 완료!`;
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(()=>showToast('복사했어요! 단톡방에 붙여넣기 하세요')).catch(()=>showToast('복사에 실패했습니다'));
+  else showToast('이 브라우저에서는 자동 복사가 지원되지 않아요');
 }
 function updateMissingListPreview(){
   const el = document.getElementById('missingListPreview');
@@ -1262,7 +1302,8 @@ function updateMissingListPreview(){
 }
 function copyMissingList(){
   const names = getMissingTodayNames();
-  const text = names.length ? `오늘 미입력: ${names.join(', ')} (총 ${names.length}명)` : '오늘은 전원 입력을 완료했어요!';
+  const lb = state.briefBranch ? `[${state.briefBranch}] ` : '';
+  const text = names.length ? `${lb}오늘 체크인 미입력: ${names.join(', ')} (총 ${names.length}명)` : `${lb}오늘은 전원 체크인을 완료했어요!`;
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(text).then(()=> showToast('복사했어요! 단톡방에 붙여넣기 하세요')).catch(()=> showToast('복사에 실패했습니다'));
   }else{
