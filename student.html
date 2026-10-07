@@ -26,7 +26,9 @@
   b{ font-weight:700; color:var(--text); }
   .btn{ width:100%; height:52px; border:0; border-radius:12px; background:var(--lime); color:#0d1a03; font-size:16px; font-weight:700; cursor:pointer; }
   .btn:disabled{ opacity:.5; }
-  .link{ background:none; border:0; color:var(--muted); font-size:14px; text-decoration:underline; padding:8px 0; cursor:pointer; }
+  .link{ background:none; border:0; color:var(--muted); font-size:14px; text-decoration:underline; padding:10px 0; min-height:44px; cursor:pointer; }
+  .link-row{ display:flex; flex-wrap:wrap; gap:4px 28px; margin-top:12px; }   /* 링크 두 개가 붙어 있으면 잘못 누르기 쉬워서 간격을 둔다 */
+  .offline{ border:1px solid #ffd23f; background:rgba(255,210,63,.10); color:#ffe27a; border-radius:12px; padding:10px 14px; font-size:14px; margin-bottom:12px; }
   .err{ color:#ff6b5a; font-size:14px; min-height:20px; margin-top:12px; }
   .note{ font-size:13px; color:var(--dim); }
   input.code{ width:100%; height:52px; margin-bottom:12px; padding:0 14px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:18px; letter-spacing:4px; text-align:center; }
@@ -49,10 +51,11 @@
   .reject{ border:1px solid var(--coral); background:var(--coral-soft); border-radius:12px; padding:12px 14px; margin-bottom:8px; font-size:14px; }
 
   /* 헤더 */
-  .head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px; }
+  /* 제목은 한 줄을 다 쓰고, 버튼은 그 아래 한 줄에 (좁은 화면에서 제목이 두 줄로 끊기지 않게) */
+  .head{ margin-bottom:8px; }
   .head .date{ font-size:14px; color:var(--dim); }
-  .head-actions{ display:flex; gap:4px 14px; flex-wrap:wrap; justify-content:flex-end; max-width:45%; }
-  .head-actions .link{ font-size:13px; }
+  .head-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .head-actions .link{ font-size:14px; text-decoration:none; border:1px solid var(--line); border-radius:999px; padding:0 16px; min-height:44px; color:var(--muted); background:var(--surface); }
 
   /* 체크인 폼 */
   .q{ padding:22px 0; border-top:1px solid var(--line); }
@@ -61,10 +64,10 @@
   .scale{ display:grid; grid-template-columns:repeat(11,1fr); gap:3px; }
   .scale button{ height:44px; padding:0; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--muted); font-size:15px; font-weight:600; cursor:pointer; }
   .scale button.on{ background:var(--lime); border-color:var(--lime); color:#0d1a03; }
-  .scale.pain button.on{ background:var(--coral); border-color:var(--coral); color:#fff; }
+  .scale.pain button.on{ background:var(--coral); border-color:var(--coral); color:#1a0805; }
   .anchors{ display:flex; justify-content:space-between; font-size:12px; color:var(--dim); margin-top:6px; }
   .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-  .chip{ height:40px; padding:0 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--muted); font-size:14px; font-weight:500; cursor:pointer; }
+  .chip{ height:44px; padding:0 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--muted); font-size:14px; font-weight:500; cursor:pointer; }
   .chip.on{ border-color:var(--lime); color:var(--lime); background:var(--lime-soft); }
   .chip.pain.on{ border-color:var(--coral); color:var(--coral); background:var(--coral-soft); }
   .sub-q{ margin-top:16px; font-size:14px; color:var(--muted); }
@@ -190,8 +193,8 @@
   <h1>선생님 승인을 기다리고 있어요</h1>
   <p>승인되면 이 화면이 저절로 체크인 화면으로 바뀌어요. 창을 닫았다가 나중에 다시 열어도 돼요.</p>
   <div class="box" id="wait-summary"></div>
-  <button class="link" onclick="editRequest()">내 정보 고치기</button>
-  <button class="link" onclick="logout()">로그아웃</button>
+  <div id="wait-error" class="err" role="alert"></div>
+  <div class="link-row"><button class="link" onclick="editRequest()">내 정보 고치기</button><button class="link" onclick="logout()">로그아웃</button></div>
 </section>
 
 <!-- 내 정보 보기 (승인 후) -->
@@ -299,11 +302,11 @@ function judge(t,an){
   const sleepLow=t.sleepMin<300, follow=t.painFollowUp;
   const special=[]; let status, headline;
 
-  if(painHigh){ status='RED'; headline=areas+' 통증이 있어요. 훈련 전에 코치님께 먼저 말해 주세요.'; special.push(areas+' 통증 '+t.painLevel+'/10'); }
+  if(painHigh){ status='RED'; headline=(areas?areas+' ':'')+'통증이 있어요. 훈련 전에 코치님께 먼저 말해 주세요.'; special.push((areas?areas+' ':'')+'통증 '+t.painLevel+'/10'); }
   else if(t.sorenessImpact===3){ status='RED'; headline='근육통 때문에 움직이기 힘든 상태예요. 훈련 전에 코치님께 말해 주세요.'; special.push((sAreas||'근육통')+' · 훈련 어려움'); }
   else if(t.readiness<=2){ status='RED'; headline='오늘 몸이 많이 무거워요. 훈련 전에 코치님께 말해 주세요.'; special.push('준비도 '+t.readiness+'/10'); }
   else if(worse.some(r=>bad(r)>=2&&BODY_KEYS.includes(r.m.key))){ const r=worse.find(r=>bad(r)>=2&&BODY_KEYS.includes(r.m.key)); status='RED'; headline=PHRASE[r.m.key](r)+'. 훈련 전에 코치님께 말해 주세요.'; }
-  else if(painLow){ status='AMBER'; headline=areas+'에 약한 통증이 있어요. 코치님께 미리 말해 두세요.'; special.push(areas+' 통증 '+t.painLevel+'/10'); }
+  else if(painLow){ status='AMBER'; headline=(areas?areas+'에 ':'')+'약한 통증이 있어요. 코치님께 미리 말해 두세요.'; special.push((areas?areas+' ':'')+'통증 '+t.painLevel+'/10'); }
   else if(follow===2){ status='AMBER'; headline='어제 아팠던 곳이 오늘 아침 더 아팠어요. 코치님께 말해 주세요.'; special.push('아침 통증 증가'); }
   else if(sleepLow){ status='AMBER'; headline='어젯밤 '+fmtSleep(t.sleepMin)+'밖에 못 잤어요.'; special.push('수면 '+fmtSleep(t.sleepMin)); }
   else if(isW('sleepMin')&&(isW('fatigue')||isW('readiness'))){ status='AMBER'; headline='잠이 부족하고 몸도 무거운 날이에요.'; }
@@ -311,7 +314,7 @@ function judge(t,an){
   else if(t.sorenessImpact===2){ status='AMBER'; headline=(sAreas?josa(sAreas,'이','가'):'근육통이')+' 훈련에 영향을 주는 상태예요.'; special.push((sAreas||'근육통')+' · 훈련에 영향'); }
   else if(!an.ready){ status='BASE'; headline='평소 기준을 만드는 중이에요 ('+an.n+'/'+BASELINE_MIN_DAYS+'일)'; }
   else if(worse.length||(['무릎','정강이','허리'].some(a=>(t.sorenessAreas||[]).includes(a))&&t.sorenessImpact===1)){
-    status='YELLOW'; headline=worse.length?PHRASE[worse[0].m.key](worse[0])+'.':josa(sAreas,'이','가')+' 조금 불편한 상태예요.'; }
+    status='YELLOW'; headline=worse.length?PHRASE[worse[0].m.key](worse[0])+'.':josa(sAreas,'이','가')+' 조금 불편한 상태예요.'; if(!worse.length) special.push(sAreas+' 뻐근함'); }
   else { status='GREEN'; headline=better.length?'평소보다 컨디션이 좋아요.':'평소랑 비슷한 컨디션이에요.'; }
   if(follow===1) special.push('아침 통증 그대로');
 
@@ -341,7 +344,7 @@ function coachMessage(c){
   const t=c.t, facts=[];
   let main=null, ask=null, usedSleep=false;
   if(t.pain){
-    main='선생님, 오늘 '+josa(c.areas,'이','가')+' 아픕니다';
+    main=c.areas?'선생님, 오늘 '+josa(c.areas,'이','가')+' 아픕니다':'선생님, 오늘 아픈 곳이 있습니다';
     facts.push('10점 중 '+t.painLevel+'점');
     if(t.painNote) facts.push(t.painNote.length>40?t.painNote.slice(0,40)+'…':t.painNote);
     ask=c.painHigh?'훈련 전에 한번 봐 주실 수 있을까요?':'해당 부위에 무리가 가는 운동은 조절해도 될까요?';
@@ -354,7 +357,7 @@ function coachMessage(c){
     else if(c.sleepLow||c.isW('sleepMin')){ main='선생님, 어젯밤 '+fmtSleep(t.sleepMin)+'밖에 못 자서 컨디션이 저조합니다'; usedSleep=true; ask='오늘 운동량을 조절해도 될까요?'; }
     else { main='선생님, 오늘 컨디션이 저조합니다'; ask='오늘 운동량을 조절해도 될까요?'; }
   }else if(c.status==='YELLOW'){
-    if(t.sorenessImpact>=1&&c.sAreas){ main='선생님, 오늘 '+josa(c.sAreas,'이','가')+' 조금 뻐근합니다'; }
+    if(t.sorenessImpact>=1&&c.sAreas&&(c.isW('soreness')||!METRICS.some(m=>c.isW(m.key)))){ main='선생님, 오늘 '+josa(c.sAreas,'이','가')+' 조금 뻐근합니다'; }
     else main='선생님, 오늘 컨디션이 평소보다 조금 저조합니다';
     ask='훈련할 때 참고 부탁드립니다.';
   }
@@ -505,6 +508,11 @@ function buildCare(c){
 
 /* ============ Firebase ============ */
 // 코치 화면(index.html)과 같은 로그인을 쓴다. 로그인은 첫 화면에서 하고, 여기서는 학생 계정인지 확인만 한다.
+// 인터넷이 약해서 Firebase 파일을 못 받아 오면 '확인하는 중...'에서 영원히 멈추므로, 먼저 확인하고 안내한다.
+if(typeof firebase==='undefined'){
+  document.getElementById('load-msg').innerHTML='인터넷 연결이 불안정해서 앱을 불러오지 못했어요.<br><button class="link" onclick="location.reload()">다시 시도</button>';
+  throw new Error('Firebase 라이브러리를 불러오지 못함');
+}
 const fbApp=firebase.initializeApp({
   apiKey:"AIzaSyAWKsdEXjM0vMT06wYht5kPmD6R9i1d0yA",
   authDomain:"hero-sports-academy.firebaseapp.com",
@@ -522,6 +530,21 @@ function show(id){
 }
 
 let myStudent=null, myCheckins=[], form=null, trendChart=null, trendKey='fatigue', trendRange=14;
+let saving=false, loadedDate=null, refreshing=false;
+
+/* 휴대폰은 앱을 닫지 않고 '잠재워' 둔다. 다음 날 아침에 다시 열면 어제 화면이 '오늘'처럼 보이므로,
+   다시 화면에 나타날 때 날짜가 바뀌었으면 기록을 새로 불러온다. */
+async function refreshIfNewDay(fromTimer){
+  if(!myStudent||saving||refreshing||loadedDate===todayStr()) return;
+  if(fromTimer===true&&!$('screen-form').classList.contains('hidden')) return;   // 체크인 작성 중에는 자정이 지나도 지우지 않는다
+  refreshing=true;
+  try{ await enterApp(myStudent); }catch(e){ /* 다음 기회에 다시 시도 */ }
+  finally{ refreshing=false; }
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') refreshIfNewDay(); });
+window.addEventListener('pageshow',e=>{ if(e.persisted) refreshIfNewDay(); });
+window.addEventListener('focus',()=>refreshIfNewDay());
+setInterval(()=>refreshIfNewDay(true),60000);
 
 function loginWithGoogle(){
   $('login-error').textContent='';
@@ -590,9 +613,10 @@ async function sendJoinRequest(){
   errBox.textContent='';
   if(!/^[A-Z0-9]{4,12}$/.test(code)){ errBox.textContent='반 코드는 영문과 숫자로 된 4~12자리예요.'; return; }
   btn.disabled=true;
+  let old=null;
   try{
     const u=auth.currentUser, ref=db.collection('joinRequests').doc(u.uid);
-    const old=await ref.get();
+    old=await ref.get();
     const p=profile;
     await ref.set({
       name:p.name, grade:p.grade, branch:p.branch, targetSchool:p.targetSchool,
@@ -603,7 +627,11 @@ async function sendJoinRequest(){
     });
     waitForApproval();
   }catch(e){
-    errBox.textContent=e.code==='permission-denied'?'반 코드가 맞지 않아요. 선생님께 다시 확인해 보세요.':'요청 실패: '+(e.code||e.message);
+    // '권한 없음'은 반 코드가 틀렸을 때 말고도, 이미 승인된 신청서를 다시 쓰려 할 때도 생긴다 → 경우를 나눠서 안내
+    const approved=old&&old.exists&&old.data().status==='approved';
+    errBox.textContent=e.code==='permission-denied'
+      ?(approved?'이미 승인된 신청이에요. 선생님께 "학생 연결을 확인해 주세요"라고 말씀해 주세요.':'반 코드가 맞지 않아요. 선생님께 다시 확인해 보세요.')
+      :e.code==='unavailable'?'인터넷 연결이 불안정해요. 잠시 뒤 다시 눌러 주세요.':'요청 실패: '+(e.code||e.message);
   }finally{ btn.disabled=false; }
 }
 function summaryHTML(r){
@@ -624,7 +652,8 @@ function waitForApproval(){
   unsubs.push(db.collection('links').doc(uid).onSnapshot(async d=>{
     if(!d.exists) return;
     stopListening();
-    await enterApp({id:d.data().studentId,name:d.data().name});
+    try{ await enterApp({id:d.data().studentId,name:d.data().name}); }
+    catch(e){ $('wait-error').innerHTML='승인은 됐는데 기록을 불러오지 못했어요 ('+esc(e.code||e.message||'')+'). <button class="link" onclick="location.reload()">다시 시도</button>'; }
   },()=>{}));
 }
 async function openProfile(req){
@@ -672,6 +701,7 @@ async function enterApp(student){
   const snap=await db.collection('students').doc(student.id).collection('checkins')
     .where(firebase.firestore.FieldPath.documentId(),'>=',from).get();
   myCheckins=snap.docs.map(d=>({...d.data(),date:d.id})).sort((a,b)=>a.date.localeCompare(b.date));
+  loadedDate=todayStr();
   showResult();
 }
 
@@ -731,8 +761,8 @@ function renderForm(){
       <div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})} · 1분이면 끝나요</div></div>
       ${myCheckins.some(c=>c.date===todayStr())?'<div class="head-actions"><button class="link" data-a="back">취소</button></div>':''}</div>
 
-    ${yesterdayPain()?`<div class="q" id="q-fu"><div class="q-title">어제 아팠던 ${esc(yesterdayPain().painAreas.join('·'))}, 오늘 아침 일어났을 때 어땠나요?</div>
-      <div class="chips">${['괜찮아졌어요','비슷해요','더 아파요'].map((x,i)=>`<button class="chip ${i===2?'pain':''} ${form.painFollowUp===i?'on':''}" data-a="set" data-k="painFollowUp" data-v="${i}">${x}</button>`).join('')}</div></div>`:''}
+    ${yesterdayPain()?`<div class="q" id="q-fu"><div class="q-title">어제 아팠던 ${esc((yesterdayPain().painAreas||[]).join('·')||'곳')}, 오늘 아침 일어났을 때 어땠나요?</div>
+      <div class="chips">${['괜찮아졌어요','비슷해요','더 아파요'].map((x,i)=>`<button class="chip ${i===2?'pain':''} ${form.painFollowUp===i?'on':''}" aria-pressed="${form.painFollowUp===i}" data-a="set" data-k="painFollowUp" data-v="${i}">${x}</button>`).join('')}</div></div>`:''}
     <div class="q" id="q-sleep"><div class="q-title">어젯밤 실제로 얼마나 잤나요?</div><div class="q-hint">침대에 누운 시간이 아니라 잠든 시간</div>
       <div class="sleep-row"><select data-a="sleep" data-k="sleepH" aria-label="수면 시간(시간)">${hOpts}</select><select data-a="sleep" data-k="sleepM" aria-label="수면 시간(분)">${mOpts}</select></div></div>
 
@@ -742,7 +772,7 @@ function renderForm(){
 
     <div class="q" id="q-so"><div class="q-title">오늘 근육의 뻐근함/통증은?</div><div class="q-hint">훈련 후 근육이 당기고 뻐근한 정도</div>${scale('soreness','없음','매우 심함','','근육통')}
       ${form.soreness>0?`<div class="sub-q">어느 부위인가요? (여러 개 선택 가능)</div>${chips('sorenessAreas',BODY_PARTS)}
-      <div class="sub-q">움직임에 얼마나 영향을 주나요?</div><div class="chips">${IMPACTS.map((x,i)=>`<button class="chip ${form.sorenessImpact===i?'on':''}" data-a="set" data-k="sorenessImpact" data-v="${i}">${x}</button>`).join('')}</div>`:''}</div>
+      <div class="sub-q">움직임에 얼마나 영향을 주나요?</div><div class="chips">${IMPACTS.map((x,i)=>`<button class="chip ${form.sorenessImpact===i?'on':''}" aria-pressed="${form.sorenessImpact===i}" data-a="set" data-k="sorenessImpact" data-v="${i}">${x}</button>`).join('')}</div>`:''}</div>
 
     <div class="q" id="q-st"><div class="q-title">오늘 심리적 스트레스는?</div>${scale('stress','없음','매우 심함','','스트레스')}
       ${form.stress>0?`<div class="sub-q">원인이 있다면 골라 주세요 (선택)</div>${chips('stressCauses',STRESS_CAUSES)}`:''}</div>
@@ -766,6 +796,7 @@ function refocus(a,k,v){
   const b=$('screen-form').querySelector(sel); if(b) b.focus({preventScroll:true});
 }
 $('screen-form').addEventListener('click',e=>{
+  if(saving) return;   // 저장 중에 다시 그리면 저장 버튼이 다시 눌리는 상태가 되므로 막는다
   const el=e.target.closest('[data-a]'); if(!el) return;
   const a=el.dataset.a, k=el.dataset.k, v=el.dataset.v;
   setTimeout(()=>{ if(a==='set'||a==='toggle'||a==='pain') refocus(a,k,v); },0);
@@ -776,7 +807,7 @@ $('screen-form').addEventListener('click',e=>{
   else if(a==='submit'){ submitCheckin(); }
 });
 $('screen-form').addEventListener('change',e=>{
-  const el=e.target; if(el.dataset.a!=='sleep') return;
+  const el=e.target; if(el.dataset.a!=='sleep'||saving) return;
   form[el.dataset.k]=el.value===''?null:Number(el.value); renderForm();
 });
 $('screen-form').addEventListener('input',e=>{ if(e.target.dataset.a==='memo') form.painNote=e.target.value; });
@@ -797,13 +828,18 @@ async function submitCheckin(){
   };
   const j=judge(data,analyze(data,historyFor(date)));
   data.status=j.status; data.reasons=j.reasons; data.studentId=myStudent.id;   // 코치 화면에서 바로 쓰도록 판정 결과도 저장
-  const btn=document.querySelector('[data-a="submit"]'); btn.disabled=true; err.textContent='';
+  // 인터넷이 끊긴 상태면 저장 버튼이 영원히 '기다리는 중'으로 멈춘 것처럼 보이므로 먼저 알려 준다
+  if(navigator.onLine===false){ err.textContent='인터넷이 끊겨 있어요. 와이파이나 데이터를 켠 뒤 다시 눌러 주세요.'; return; }
+  const btn=document.querySelector('[data-a="submit"]'); btn.disabled=true; btn.textContent='저장하는 중...'; err.textContent='';
+  saving=true;
+  const slow=setTimeout(()=>{ err.textContent='인터넷이 느려서 저장이 늦어지고 있어요. 이 화면을 닫지 말고 잠시 기다려 주세요.'; },8000);
   try{
     await db.collection('students').doc(myStudent.id).collection('checkins').doc(date)
       .set({...data,checkedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    clearTimeout(slow); saving=false;
     myCheckins=myCheckins.filter(c=>c.date!==date).concat([data]).sort((a,b)=>a.date.localeCompare(b.date));
     showResult();
-  }catch(e){ err.textContent='저장 실패: '+(e.code||e.message); btn.disabled=false; }
+  }catch(e){ clearTimeout(slow); saving=false; err.textContent='저장 실패: '+(e.code||e.message)+' · 다시 눌러 주세요.'; btn.disabled=false; btn.textContent='다시 저장하기'; }
 }
 
 /* ============ 결과 화면 ============ */
@@ -816,8 +852,9 @@ function careLines(lines){
 }
 function rowHTML(r,today,ready){
   const m=r.m, ctx=[];
-  if(m.key==='soreness'&&today.soreness>0){ if(today.sorenessAreas.length) ctx.push(today.sorenessAreas.join('·')); if(today.sorenessImpact!=null) ctx.push(IMPACTS[today.sorenessImpact]); }
-  if(m.key==='stress'&&today.stressCauses.length) ctx.push(today.stressCauses.join('·'));
+  const sa=today.sorenessAreas||[], sc=today.stressCauses||[];   // 예전 기록에 칸이 없어도 멈추지 않게
+  if(m.key==='soreness'&&today.soreness>0){ if(sa.length) ctx.push(sa.join('·')); if(today.sorenessImpact!=null&&IMPACTS[today.sorenessImpact]) ctx.push(IMPACTS[today.sorenessImpact]); }
+  if(m.key==='stress'&&sc.length) ctx.push(sc.join('·'));
   const ctxH=ctx.length?`<div class="row-ctx">${esc(ctx.join(' · '))}</div>`:'';
   if(!ready){
     const pct=m.key==='sleepMin'?Math.min(100,r.value/600*100):r.value*10;
@@ -873,7 +910,7 @@ $('screen-result').addEventListener('click',e=>{
   if(el.dataset.a==='edit') openForm();
   else if(el.dataset.a==='logout') logout();
   else if(el.dataset.a==='me') openMe();
-  else if(el.dataset.a==='copy'){ const t=$('talk').textContent; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{ el.textContent='복사됨'; }).catch(()=>{ el.textContent='길게 눌러 직접 복사해 주세요'; }); }
+  else if(el.dataset.a==='copy'){ const t=$('talk').textContent; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{ el.textContent='복사됨 ✓'; setTimeout(()=>{ el.textContent='복사하기'; },2000); }).catch(()=>{ el.textContent='길게 눌러 직접 복사해 주세요'; }); }
   else if(el.dataset.a==='seed') seedData();
   else if(el.dataset.a==='clearseed') clearSeed();
   else if(el.dataset.trend){ trendKey=el.dataset.trend; showResultKeepScroll(); }
@@ -882,7 +919,7 @@ $('screen-result').addEventListener('click',e=>{
 function showResultKeepScroll(){ const y=window.scrollY; showResult(); window.scrollTo(0,y); }
 
 function drawTrend(){
-  const canvas=$('trend'); if(!canvas) return;
+  const canvas=$('trend'); if(!canvas||typeof Chart==='undefined') return;   // 그래프 파일을 못 받아 와도 나머지 화면은 보이게
   const m=METRICS.find(x=>x.key===trendKey), sleep=m.key==='sleepMin', end=todayStr();
   const days=[]; for(let i=trendRange-1;i>=0;i--) days.push(addDays(end,-i));
   const by=Object.fromEntries(myCheckins.map(c=>[c.date,c]));

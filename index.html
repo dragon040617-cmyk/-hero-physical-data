@@ -34,7 +34,7 @@
     --lime-soft: rgba(198,255,61,0.14);
     --text:#ffffff;
     --text-muted:#aab2c5;
-    --text-dim:#828ba0;
+    --text-dim:#8b94a9;   /* 어두운 카드 위에서도 글자 대비 4.5 이상 (예전 #828ba0 은 4.3) */
     --warn:#ffb020;
     --orange:#ff8a3d;
     --good:#3ddc84;
@@ -192,6 +192,7 @@
   .stat-tile.good::before{background:var(--good);}
   .stat-tile.warn::before{background:var(--warn);}
   .stat-tile.orange::before{background:var(--orange);}
+  .stat-tile.neutral::before{background:var(--text-dim);}
 
   .insight-box{
     background:var(--surface-2); border:1px solid var(--line); border-left:3px solid var(--lime);
@@ -528,6 +529,41 @@
     .log-title{ font-size:16px; }
   }
 
+  /* ===== 점검 후 보완 (터치·스크롤·가독성) ===== */
+  /* 카드 밖에 있는 보조 설명도 작고 흐린 글씨로 통일 (예전엔 카드 밖이면 큰 흰 글씨로 보였다) */
+  .stat-note{ font-size:13px; color:var(--text-dim); line-height:1.55; }
+  /* 그리드 칸 안의 그래프·입력칸이 칸보다 커져서 화면 옆으로 삐져나가는 것 방지 */
+  .grid > *{ min-width:0; }
+  form.entry-form > *{ min-width:0; }
+  .field input, .field select{ width:100%; min-width:0; }
+  /* 팝업이 화면보다 길면 잘리지 않고 안에서 스크롤 */
+  .modal{ max-height:90vh; max-height:90dvh; overflow-y:auto; overscroll-behavior:contain; }
+  .modal-actions button{ min-height:44px; }
+  .del-student-btn{ width:100%; margin-top:14px; min-height:44px; border-radius:9px; font-weight:700; font-size:13px; cursor:pointer; background:transparent; border:1px solid var(--accent); color:var(--accent); font-family:inherit; }
+  .section-hint{ margin:-8px 0 12px; }
+  .insight-box.inapp b{ color:#ff8a7a; }
+  @media (max-width:860px){
+    form.entry-form{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+    .sidebar{ height:100vh; height:100dvh; z-index:470; padding-top:calc(16px + env(safe-area-inset-top)); padding-bottom:calc(16px + env(safe-area-inset-bottom)); }
+    .sidebar-backdrop{ z-index:460; }          /* 열린 학생 목록이 아래 메뉴바에 가려지지 않게 메뉴바(450)보다 위로 */
+    .sidebar .sb-dup{ display:none; }          /* 아래 메뉴바에 이미 있는 버튼은 숨겨서 학생 목록 칸을 넓힌다 */
+    .hamburger{ width:44px; height:44px; }
+    .mt-btn{ height:44px; }
+    .logout-link{ min-height:44px; }
+    .student-search{ min-height:44px; }
+    .bn-item{ font-size:11.5px; }
+    .event-tag .reorder, .event-tag .rm{ display:inline-flex; align-items:center; justify-content:center; min-width:32px; min-height:32px; font-size:14px; }
+    .row-del{ padding:10px 12px; font-size:13.5px; }
+    .tagline .rubric-hint{ display:inline-block; padding:8px 0; font-size:12.5px; }
+    .ghost-btn, .add-event{ min-height:44px; }
+  }
+  /* 아이폰은 16px보다 작은 입력칸을 누르면 화면을 자동 확대한다 → 터치 기기에서는 16px로 */
+  @media (max-width:860px), (pointer:coarse){
+    .field input, .field select, .student-search, .log-textarea, .modal input, .modal select, .join-card select{ font-size:16px; }
+  }
+  /* 손가락 기기에는 '마우스를 올리면 보이는' 버튼이 안 보이기만 하고 눌리기는 해서 실수로 누르기 쉽다 → 숨기고 '정보 수정' 안에 둔다 */
+  @media (hover:none){ .del-student{ display:none; } }
+
   ::-webkit-scrollbar{ width:8px; height:8px; }
   ::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
 </style>
@@ -549,13 +585,14 @@
     </div>
     <div class="login-who">코치</div>
     <form onsubmit="loginSubmit(event)">
-      <div class="field" style="margin-bottom:12px;"><label>이메일</label><input type="email" name="email" required placeholder="coach@example.com"></div>
-      <div class="field" style="margin-bottom:14px;"><label>비밀번호</label><input type="password" name="password" required placeholder="비밀번호"></div>
+      <div class="field" style="margin-bottom:12px;"><label>이메일</label><input type="email" name="email" required placeholder="coach@example.com" autocomplete="username" autocapitalize="off"></div>
+      <div class="field" style="margin-bottom:14px;"><label>비밀번호</label><input type="password" name="password" required placeholder="비밀번호" autocomplete="current-password"></div>
       <div id="loginError" style="color:var(--accent); font-size:12.5px; margin-bottom:10px; display:none;"></div>
-      <button class="submit-btn" type="submit" style="width:100%; height:42px;">로그인</button>
+      <button class="submit-btn" type="submit" style="width:100%; height:48px; font-size:15px;">로그인</button>
     </form>
     <div class="stat-note" style="margin-top:10px; text-align:center;">코치 계정이 없으면 관리 코치에게 등록을 요청하세요.</div>
     <div class="login-or"><span>학생</span></div>
+    <div id="inAppNotice" class="insight-box flag inapp" style="display:none; margin-bottom:12px; font-size:14px;"></div>
     <button type="button" class="google-btn" onclick="studentGoogleLogin()">
       <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
       학생은 구글로 로그인
@@ -589,7 +626,52 @@ function runDiagnostics(){
   lines.push(`네트워크: ${navigator.onLine ? '연결됨' : '❌ 오프라인'}`);
   lines.push(`브라우저: ${navigator.userAgent.slice(0,60)}...`);
   el.innerHTML = lines.map(l=>`· ${l}`).join('<br>');
+  // 문제가 있을 때만 보여 준다 (평소에는 학생·코치에게 필요 없는 기술 정보라 화면만 복잡해짐). 주소 뒤에 ?diag=1 을 붙이면 항상 보임.
+  const problem = inIframe || fbFailed || !isFirebaseConfigured() || !auth || !navigator.onLine;
+  el.style.display = (problem || /[?&]diag=1/.test(location.search)) ? '' : 'none';
 }
+
+/* ---- 카카오톡·인스타그램 같은 '앱 안 브라우저' 감지 ----
+   구글은 보안 정책 때문에 앱 안 브라우저에서 구글 로그인을 막는다 (403 disallowed_useragent).
+   학생들은 단톡방·인스타 링크를 눌러 들어오는 경우가 많아서, 바깥 브라우저로 열도록 안내한다. */
+function inAppBrowserName(){
+  const ua = navigator.userAgent || '';
+  if(/KAKAOTALK/i.test(ua)) return '카카오톡';
+  if(/Instagram/i.test(ua)) return '인스타그램';
+  if(/FBAN|FBAV|FB_IAB/i.test(ua)) return '페이스북';
+  if(/NAVER\(inapp/i.test(ua)) return '네이버 앱';
+  if(/\bLine\//i.test(ua)) return '라인';
+  if(/\bBAND\//i.test(ua)) return '밴드';
+  if(/everytimeApp/i.test(ua)) return '에브리타임';
+  return null;
+}
+function openInExternalBrowser(){
+  const url = location.href;
+  if(/KAKAOTALK/i.test(navigator.userAgent)){ location.href = 'kakaotalk://web/openExternal?url='+encodeURIComponent(url); return; }
+  if(/Android/i.test(navigator.userAgent)){ location.href = 'intent://'+location.host+location.pathname+location.search+'#Intent;scheme=https;package=com.android.chrome;end'; return; }
+  copyPageLink();
+}
+function copyPageLink(){
+  const url = location.href.split('#')[0];
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(()=>showToast('주소를 복사했어요. Safari나 Chrome 주소창에 붙여넣기 하세요')).catch(()=>showToast(url));
+  else showToast(url);
+}
+function setupInAppNotice(){
+  const name = inAppBrowserName();
+  const box = document.getElementById('inAppNotice');
+  if(!name || !box) return;
+  const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  box.innerHTML = `<b>지금 ${name} 안에서 열려 있어요.</b><br>구글 로그인은 앱 안 브라우저에서 막혀 있어요. `
+    + (ios ? `오른쪽 아래 또는 위의 <b>⋯ / 공유 버튼 → "Safari로 열기"</b>를 눌러 주세요.` : `아래 버튼을 누르거나, 오른쪽 위 <b>⋮ 메뉴 → "다른 브라우저로 열기"</b>를 눌러 주세요.`)
+    + `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">`
+    + (!ios || /KAKAOTALK/i.test(navigator.userAgent) ? `<button type="button" class="ghost-btn" style="flex:1 1 auto; min-height:44px; font-size:14px;" onclick="openInExternalBrowser()">바깥 브라우저로 열기</button>` : '')
+    + `<button type="button" class="ghost-btn" style="flex:1 1 auto; min-height:44px; font-size:14px;" onclick="copyPageLink()">주소 복사</button></div>`;
+  box.style.display = '';
+  // 카카오톡은 바깥 브라우저로 바로 넘겨 줄 수 있다 (한 번만 시도)
+  if(/KAKAOTALK/i.test(navigator.userAgent) && !sessionStorageGet('heroExtTried')){ sessionStorageSet('heroExtTried','1'); openInExternalBrowser(); }
+}
+function sessionStorageGet(k){ try{ return sessionStorage.getItem(k); }catch(e){ return null; } }
+function sessionStorageSet(k,v){ try{ sessionStorage.setItem(k,v); }catch(e){} }
 window.addEventListener('error', function(e){
   try{
     const t = document.getElementById('toast');
@@ -663,8 +745,11 @@ function jsAttrEsc(v){
     .replace(/</g,'&lt;')
     .replace(/>/g,'&gt;');
 }
-function todayStr(){ return new Date().toISOString().slice(0,10); }
-function daysAgo(n){ const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); }
+// 날짜는 '이 기기의 시계(한국 시간)' 기준으로 만든다.
+// (예전 toISOString() 은 영국 시간이라 한국 아침 9시 전에는 '어제' 날짜가 나왔다)
+function localYmd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function todayStr(){ return localYmd(new Date()); }
+function daysAgo(n){ const d=new Date(); d.setDate(d.getDate()-n); return localYmd(d); }
 
 let state = {
   selectedId: null,
@@ -765,7 +850,7 @@ function computeFatigueMetrics(student){
   const last7=hist.filter(c=>c.date>HC.addDays(today,-7));
   const base=hist.filter(c=>c.date<today&&c.date>=HC.addDays(today,-14));
   const avg=a=>a.length?a.reduce((x,c)=>x+c.fatigue,0)/a.length:null;
-  const t=state.todayCk[student.id];
+  const t=todayCkOf(student.id);
   const out={current:t?t.fatigue:null, cumulative7:avg(last7), acute:null, chronic:base.length>=HC.BASELINE_MIN_DAYS?avg(base):null, ratio:null, thresholds:th, status:t?(t.status||'BASE'):null, today:t||null};
   if(!t) return {...out, riskLevel:'unknown', riskLabel:'오늘 체크인 없음'};
   const lv={RED:'danger',AMBER:'danger',YELLOW:'caution',GREEN:'stable',BASE:'stable'}[out.status]||'stable';
@@ -834,12 +919,12 @@ function buildStudentCardsHTML(filtered){
     const m = computeFatigueMetrics(s);
     return `
       <div class="student-card ${s.id===state.selectedId?'active':''}" role="button" tabindex="0" onclick="selectStudent('${s.id}')" onkeydown="if(event.key==='Enter')selectStudent('${s.id}')">
-        <div class="student-avatar">${s.name[0]}</div>
+        <div class="student-avatar">${esc(s.name[0])}</div>
         <div class="student-meta">
           <div class="name">${esc(s.name)}</div>
           <div class="sub">${s.branch?`${esc(s.branch)} · `:''}${esc(s.grade)} · ${esc(s.target)||'목표 미설정'}${s.rehabHistory?' · <span style="color:var(--accent);">재활 이력</span>':''}</div>
         </div>
-        <div class="fatigue-dot dot-${riskDot(m.riskLevel)}" title="${m.riskLabel}"></div>
+        <div class="fatigue-dot dot-${riskDot(m.riskLevel)}" title="${esc(m.riskLabel)}"></div>
         <button class="del-student" title="학생 삭제" onclick="event.stopPropagation(); deleteStudent('${s.id}')">✕</button>
       </div>`;
   }).join('') || `<div class="empty-mini">검색 결과가 없습니다</div>`;
@@ -853,10 +938,9 @@ function getFilteredStudents(){
     if(branch==='__unassigned__') return !s.branch;
     return s.branch===branch;
   });
-  const today = todayStr();
   return filtered.slice().sort((a,b)=>{
-    const aLogged = a.fatigue.some(f=>f.date===today) ? 0 : 1;
-    const bLogged = b.fatigue.some(f=>f.date===today) ? 0 : 1;
+    const aLogged = statusOf(a) ? 0 : 1;   // 오늘 체크인한 학생이 위로 (브리핑과 같은 기준)
+    const bLogged = statusOf(b) ? 0 : 1;
     if(aLogged !== bLogged) return aLogged - bLogged;
     return a.name.localeCompare(b.name, 'ko');
   });
@@ -888,11 +972,11 @@ function renderSidebar(){
           <button class="logout-link" onclick="logout()">로그아웃</button>
         </div>
       </div>
-      <button class="add-btn" onclick="openAddStudentModal()">+ 학생 등록</button>
+      <button class="add-btn sb-dup" onclick="openAddStudentModal()">+ 학생 등록</button>
       <button class="add-btn" style="background:var(--surface-2); border:1px solid ${pendingJoins().length?'var(--lime)':'var(--line)'}; color:${pendingJoins().length?'var(--lime)':'var(--text-dim)'}; margin-top:-6px;" onclick="openJoinView()">✅ 가입 승인 대기 ${pendingJoins().length}명</button>
-      <button class="add-btn" style="background:var(--surface-2); border:1px solid var(--lime); color:var(--lime); margin-top:-6px; position:relative;" onclick="openTeamView()">📋 오늘 브리핑${dangerCount>0?` <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:var(--accent); color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">위험 ${dangerCount}</span>`:''}</button>
-      <button class="add-btn" style="background:var(--lime); color:#0d1a03; margin-top:-6px; margin-bottom:12px;" onclick="openClassLogView()">📝 수업일지</button>
-      <input class="student-search" id="searchInput" placeholder="학생 이름 검색" value="${q}" oninput="filterStudentList()" style="margin-bottom:8px;">
+      <button class="add-btn sb-dup" style="background:var(--surface-2); border:1px solid var(--lime); color:var(--lime); margin-top:-6px; position:relative;" onclick="openTeamView()">📋 오늘 브리핑${dangerCount>0?` <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:var(--accent); color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">위험 ${dangerCount}</span>`:''}</button>
+      <button class="add-btn sb-dup" style="background:var(--lime); color:#0d1a03; margin-top:-6px; margin-bottom:12px;" onclick="openClassLogView()">📝 수업일지</button>
+      <input class="student-search" id="searchInput" placeholder="학생 이름 검색" value="${esc(q)}" oninput="filterStudentList()" style="margin-bottom:8px;">
       <select id="branchFilter" class="student-search" onchange="state.sidebarBranchFilter=this.value; filterStudentList();" style="margin-bottom:12px;">
         <option value="" ${!branchFilter?'selected':''}>전체 지점</option>
         ${BRANCHES.map(b=>`<option value="${b}" ${branchFilter===b?'selected':''}>${b}</option>`).join('')}
@@ -933,7 +1017,7 @@ function renderMain(){
     <main>
       <div class="topbar">
         <div class="heading">
-          <div class="avatar-lg">${s.name[0]}</div>
+          <div class="avatar-lg">${esc(s.name[0])}</div>
           <div>
             <h2>${esc(s.name)} ${s.rehabHistory?'<span class="badge bad" style="vertical-align:middle; margin-left:6px;">재활 이력</span>':''}</h2>
             <div class="tagline">${s.branch?`${esc(s.branch)} · `:''}${esc(s.grade)} · ${esc(s.target) || '목표 미설정'} <span class="rubric-hint" onclick="openEditStudentModal('${s.id}')" title="학생 정보 수정">ⓘ 정보 수정</span></div>
@@ -958,11 +1042,19 @@ function renderMain(){
 
 // ① 피크 타이밍 예측 → 오늘의 훈련 추천 (기존 피로도·점프 위험도만으로 계산)
 function computeTrainingRecommendation(s){
+  // 학생 화면과 같은 기준으로 맞춘다:
+  //  - 오늘 체크인이 없으면 '판단 보류' (예전에는 데이터가 없으면 0점 = 'PEAK DAY'로 나왔다)
+  //  - 초록이라도 '평소보다 좋아진 항목'이 있을 때만 PEAK DAY, 아니면 '평소대로'
   const m = computeFatigueMetrics(s);
-  const subjOrder = {stable:0, caution:1, danger:3, unknown:0};
-  const statusOrder = {GREEN:0, BASE:0, YELLOW:1, AMBER:2, RED:3};
-  const jumpOrder = {normal:0, caution:1, warning:2, danger:3};
-  let combined = m.status ? (statusOrder[m.status] ?? 0) : 0;
+  const t = todayCkOf(s.id);
+  let combined = -1;   // -1 = 판단할 데이터 없음
+  if(m.status){
+    if(m.status==='GREEN'){
+      const an = HC.analyze(t, checkinHistBefore(s.id, t.date));
+      combined = an.ready && an.rows.some(r=>r.tone==='better') ? 0 : 1;
+    }else combined = {BASE:1, YELLOW:2, AMBER:3, RED:4}[m.status] ?? 1;
+  }
+  const jumpOrder = {normal:-1, caution:2, warning:3, danger:4};
   JUMP_EVENTS.forEach(ev=>{
     if(s.events.includes(ev)){
       const jf = computeJumpFatigue(s, ev);
@@ -970,11 +1062,13 @@ function computeTrainingRecommendation(s){
     }
   });
   const levels = [
-    {tag:'PEAK DAY', tone:'good', title:'기록 측정하기 좋은 날', desc:'컨디션·점프 지표 모두 안정적입니다. 실기 기록 측정이나 고강도 훈련을 시도해보기 좋은 타이밍입니다.'},
-    {tag:'NORMAL DAY', tone:'warn', title:'평소대로 훈련 가능', desc:'큰 위험 신호는 없지만 일부 지표가 주의 단계입니다. 계획된 훈련을 진행하되 컨디션을 계속 관찰하세요.'},
+    {tag:'PEAK DAY', tone:'good', title:'기록 측정하기 좋은 날', desc:'평소보다 좋아진 지표가 있고 위험 신호가 없습니다. 실기 기록 측정이나 고강도 훈련을 시도해보기 좋은 타이밍입니다.'},
+    {tag:'NORMAL DAY', tone:'good', title:'평소대로 훈련', desc:'평소와 비슷한 상태입니다. 계획한 훈련을 그대로 진행하세요.'},
+    {tag:'CAUTION DAY', tone:'warn', title:'평소대로 훈련 가능 · 관찰', desc:'큰 위험 신호는 없지만 일부 지표가 주의 단계입니다. 계획된 훈련을 진행하되 컨디션을 계속 관찰하세요.'},
     {tag:'RECOVERY DAY', tone:'orange', title:'저강도 회복 훈련 권장', desc:'피로 또는 점프 수행능력 저하 신호가 있습니다. 강도를 낮추고 기술·회복 위주로 훈련을 조정하세요.'},
     {tag:'REST DAY', tone:'bad', title:'휴식 권장', desc:'피로·부상 위험 신호가 높은 상태입니다. 오늘은 고강도·고충격 훈련을 피하고 휴식을 우선하세요.'},
   ];
+  if(combined<0) return {tag:'NO CHECK-IN', tone:'neutral', title:'판단 보류 · 오늘 체크인 없음', desc:'오늘 체크인이 없어 컨디션을 판단할 수 없어요. 훈련 전에 직접 상태를 물어보세요.'};
   return levels[combined];
 }
 
@@ -1067,8 +1161,9 @@ function computeLifestyleSignals(s){
   }
 
   const latest = sorted[sorted.length-1];
-  if(latest && latest.stress && Number(latest.stress)>=4 && latest.score>=6){
-    signals.push({flag:true, html:`오늘 스트레스(${latest.stress}/5)와 피로도(${latest.score}/10)가 모두 높게 체크되었습니다. 컨디션 저하가 심리적 요인과 겹쳐 있을 수 있으니 대화를 통해 상태를 확인해보세요.`});
+  // 학생 체크인의 스트레스는 0~10점 (예전 코치 입력은 1~5점이었음)
+  if(latest && latest.stress && Number(latest.stress)>=7 && latest.score>=6){
+    signals.push({flag:true, html:`오늘 스트레스(${esc(latest.stress)}/10)와 피로도(${esc(latest.score)}/10)가 모두 높게 체크되었습니다. 컨디션 저하가 심리적 요인과 겹쳐 있을 수 있으니 대화를 통해 상태를 확인해보세요.`});
   }
   return signals;
 }
@@ -1162,14 +1257,14 @@ function renderTeamOverview(){
   list.forEach(s=>{ const st=statusOf(s); by[st||'NONE'].push(s); });
   const done=list.length-by.NONE.length;
   const tile=(k,label)=>`<div class="brief-tile" style="border-color:${STATUS_COLOR[k]}55;"><div class="stat-note" style="color:${STATUS_COLOR[k]};">${label}</div><div class="n" style="color:${STATUS_COLOR[k]};">${by[k].length}</div></div>`;
-  const row=(s,extra)=>{ const t=state.todayCk[s.id]; const r=(t&&t.reasons)||[];
+  const row=(s,extra)=>{ const t=todayCkOf(s.id); const r=(t&&t.reasons)||[];
     return `<div class="brief-row" role="button" tabindex="0" onclick="selectStudent('${s.id}')">
       <div><b>${esc(s.name)}</b> <span class="stat-note">${esc(s.branch||'')}${s.grade?' · '+esc(s.grade):''}</span>
       <div class="stat-note" style="margin-top:3px; color:var(--text);">${r.map(esc).join(' · ')||'-'}</div>${extra||''}</div>
       <span class="stat-note">›</span></div>`; };
-  const painNote=s=>{ const t=state.todayCk[s.id]; return t&&t.pain&&t.painNote?`<div class="stat-note" style="margin-top:2px;">"${esc(t.painNote)}"</div>`:''; };
+  const painNote=s=>{ const t=todayCkOf(s.id); return t&&t.pain&&t.painNote?`<div class="stat-note" style="margin-top:2px;">"${esc(t.painNote)}"</div>`:''; };
   const areaCount={};
-  list.forEach(s=>{ const t=state.todayCk[s.id]; if(!t) return;
+  list.forEach(s=>{ const t=todayCkOf(s.id); if(!t) return;
     [...new Set([...(t.pain?t.painAreas||[]:[]),...(t.soreness>0?t.sorenessAreas||[]:[])])].forEach(a=>areaCount[a]=(areaCount[a]||0)+1); });
   const areaRows=Object.entries(areaCount).sort((a,b)=>b[1]-a[1]);
   const maxA=areaRows.length?areaRows[0][1]:1;
@@ -1181,7 +1276,7 @@ function renderTeamOverview(){
     if(!ss.length) return '';
     const c={RED:0,AMBER:0,YELLOW:0,GREEN:0,BASE:0,NONE:0}, ac={};
     ss.forEach(s=>{ const st=statusOf(s); c[st||'NONE']++;
-      const t=state.todayCk[s.id]; if(t) [...new Set([...(t.pain?t.painAreas||[]:[]),...(t.soreness>0?t.sorenessAreas||[]:[])])].forEach(a=>ac[a]=(ac[a]||0)+1); });
+      const t=todayCkOf(s.id); if(t) [...new Set([...(t.pain?t.painAreas||[]:[]),...(t.soreness>0?t.sorenessAreas||[]:[])])].forEach(a=>ac[a]=(ac[a]||0)+1); });
     const doneN=ss.length-c.NONE, pct=Math.round(doneN/ss.length*100);
     const urgent=ss.filter(s=>['RED','AMBER'].includes(statusOf(s)));
     const topArea=Object.entries(ac).sort((a,b)=>b[1]-a[1])[0];
@@ -1211,7 +1306,7 @@ function renderTeamOverview(){
           <button class="ghost-btn" style="flex:0 0 auto; padding:8px 14px; min-height:40px;" onclick="refreshCheckins()">↻ 새로 불러오기</button>
         </div>
       </div>
-      ${!branch&&branchCards?`<div class="section-title" style="margin-top:0;">지점별 현황 <span class="stat-note" style="font-weight:400;">· 카드를 누르면 그 지점만 보여요</span></div><div class="branch-grid">${branchCards}</div><div class="lane-divider"></div>`:''}
+      ${!branch&&branchCards?`<div class="section-title" style="margin-top:0;">지점별 현황</div><div class="stat-note section-hint">카드를 누르면 그 지점만 보여요</div><div class="branch-grid">${branchCards}</div><div class="lane-divider"></div>`:''}
       ${branch?`<div style="margin-bottom:12px;"><button class="ghost-btn" style="padding:7px 12px;" onclick="state.briefBranch=''; rerender();">← 전체 지점 보기</button> <b style="margin-left:6px;">${esc(branch)}</b></div>`:''}
       <div class="brief-grid">${tile('RED','빨강 · 즉시 확인')}${tile('AMBER','주황 · 볼륨 조정')}${tile('YELLOW','노랑 · 주의')}${tile('GREEN','초록 · 정상')}</div>
       ${by.BASE.length?`<div class="stat-note" style="margin-top:8px;">기준 수립 중(기록 7일 미만) ${by.BASE.length}명은 정상 그룹에 포함했어요.</div>`:''}
@@ -1283,10 +1378,10 @@ function drawTeamChart(){
   }catch(err){ console.warn('팀 추이 그래프 오류:', err.message); }
 }
 
+// 미입력 명단은 브리핑 숫자와 똑같이 '오늘 체크인(todayCk)' 기준으로 센다 (숫자와 명단이 서로 다르게 나오던 문제)
 function getMissingTodayNames(branch){
-  const today = todayStr();
   const b = branch===undefined ? (state.briefBranch||'') : branch;
-  return state.students.filter(s=> (b==='' || (b==='__none__'?!s.branch:s.branch===b)) && !s.fatigue.some(f=>f.date===today)).map(s=>s.name);
+  return state.students.filter(s=> (b==='' || (b==='__none__'?!s.branch:s.branch===b)) && !statusOf(s)).map(s=>s.name);
 }
 function copyBranchMissing(b){
   const names=getMissingTodayNames(b), label=b==='__none__'?'지점 미지정':b;
@@ -1414,7 +1509,7 @@ function renderStudentApp(){
 function buildStudentPickCardsHTML(list){
   return list.map(s=>`
     <button class="student-pick-card" onclick="attemptSelectStudent('${s.id}')">
-      <div class="student-avatar">${s.name[0]}</div>
+      <div class="student-avatar">${esc(s.name[0])}</div>
       <div class="student-pick-info">
         <div class="student-pick-name">${esc(s.name)}</div>
         <div class="stat-note">${esc(s.grade)}</div>
@@ -1445,7 +1540,7 @@ function renderStudentPicker(){
       </div>
       <div class="stat-note" style="text-align:center; margin-bottom:10px;">누구인가요? 이름을 선택해주세요.</div>
       <div class="stat-note" style="text-align:center; margin-bottom:16px; font-size:11px; opacity:0.8;">🔒 입력하신 기록은 코치님만 확인하며, 훈련·컨디션 관리 목적으로만 사용됩니다.</div>
-      <input class="student-search" id="studentPickSearch" placeholder="이름 검색" value="${q}" oninput="filterStudentPickList()" style="margin-bottom:14px;">
+      <input class="student-search" id="studentPickSearch" placeholder="이름 검색" value="${esc(q)}" oninput="filterStudentPickList()" style="margin-bottom:14px;">
       <div class="student-pick-list">${cards}</div>
     </div>`;
 }
@@ -1540,7 +1635,7 @@ function renderStudentHome(s){
     <div class="student-self-wrap">
       <div class="student-header">
         <div class="who">
-          <div class="avatar-lg">${s.name[0]}</div>
+          <div class="avatar-lg">${esc(s.name[0])}</div>
           <div><h2 class="who-name">${esc(s.name)}</h2><div class="tagline">${s.grade||''}</div></div>
         </div>
         <div class="student-actions">
@@ -2019,7 +2114,7 @@ function renderOverview(s){
   const injuryInsights = injuryPatterns.map(p=>{
     const trendTxt = p.trend==='up' ? ' (강도가 점점 심해지는 추세)' : p.trend==='down' ? ' (강도는 완화되는 추세)' : '';
     const flag = p.latestSev>=6 || p.trend==='up';
-    return {flag, html:`<b>${p.part}</b> 통증이 최근 14일간 <b>${p.count}회</b> 반복 기록됐습니다${trendTxt}. 일회성 근육통이 아니라 만성화 신호일 수 있으니 전문가(의사·물리치료사) 평가를 고려하세요.`};
+    return {flag, html:`<b>${esc(p.part)}</b> 통증이 최근 14일간 <b>${p.count}회</b> 반복 기록됐습니다${trendTxt}. 일회성 근육통이 아니라 만성화 신호일 수 있으니 전문가(의사·물리치료사) 평가를 고려하세요.`};
   });
 
   const rec = computeTrainingRecommendation(s);
@@ -2085,7 +2180,7 @@ function renderOverview(s){
     <div class="lane-divider"></div>
     <div class="section-title">컨디션 신호</div>
     <div class="insight-list">
-      ${conditionInsights.map(i=>`<div class="insight-box ${i.flag?'flag':''}">${i.html}</div>`).join('')}
+      ${conditionInsights.map(i=>`<div class="insight-box ${i.flag?'flag':''}">${i.html}</div>`).join('') || `<div class="empty-mini">지금은 따로 알려 줄 컨디션 신호가 없어요.</div>`}
     </div>
 
     <div class="lane-divider"></div>
@@ -2125,7 +2220,7 @@ function renderFatigueTab(s){
     const st=c.status||'BASE';
     return `<tr>
       <td class="mono">${c.date.slice(5)}</td>
-      <td><span class="ck-dot" style="background:${STATUS_COLOR[st]};"></span>${(STATUS_KO[st]||st).split(' · ')[0]}</td>
+      <td><span class="ck-dot" style="background:${STATUS_COLOR[st]};"></span>${esc((STATUS_KO[st]||st).split(' · ')[0])}</td>
       <td class="mono">${HC.fmtSleep(c.sleepMin)}</td><td class="mono">${c.sleepQuality}</td><td class="mono">${c.fatigue}</td>
       <td class="mono">${c.soreness}${c.soreness>0&&(c.sorenessAreas||[]).length?' · '+esc(c.sorenessAreas.join('·')):''}</td>
       <td class="mono">${c.stress}</td><td class="mono">${c.readiness}</td>
@@ -2171,7 +2266,7 @@ function renderJumpFatiguePanel(s, ev){
           <div class="stat" style="font-size:22px;">${jf.baseline.toFixed(1)}</div>
         </div>
         <div>
-          <div class="stat-note">오늘 기록 · 하락률</div>
+          <div class="stat-note">최근 기록 · 하락률</div>
           <div class="stat" style="font-size:22px;">${jf.today.toFixed(1)} <span style="font-size:13px; color:${jf.dropPct>=0?'var(--accent)':'var(--lime)'};">${jf.dropPct>=0?'▼':'▲'} ${Math.abs(jf.dropPct).toFixed(1)}%</span></div>
         </div>
         <div>
@@ -2343,7 +2438,7 @@ function rerender(){
         <div style="max-width:480px; margin:60px auto; padding:24px; text-align:center;">
           <div style="font-size:32px; margin-bottom:10px;">⚠️</div>
           <div style="font-family:'Bebas Neue',sans-serif; font-size:22px; margin-bottom:8px;">화면을 표시하는 중 오류가 발생했습니다</div>
-          <div style="color:var(--text-dim); font-size:13px; margin-bottom:16px;">${err.message||'알 수 없는 오류'}</div>
+          <div style="color:var(--text-dim); font-size:13px; margin-bottom:16px;">${esc(err.message||'알 수 없는 오류')}</div>
           <button class="submit-btn" onclick="location.reload()">새로고침</button>
           <button class="ghost-btn" style="margin-top:10px; width:100%; min-height:44px;" onclick="logout()">로그아웃</button>
         </div>`;
@@ -2524,6 +2619,8 @@ async function addRecord(e, sid, ev){
 function deleteRecord(sid, ev, idx){
   const s = getStudent(sid);
   if(!s || !s.records[ev]) return;
+  const r = s.records[ev][idx];
+  if(!r || !confirm(`${r.date} ${ev} ${r.value} 기록을 삭제할까요?`)) return;   // 휴대폰에서 스크롤하다 잘못 눌러도 바로 지워지지 않게
   s.records[ev].splice(idx,1);
   saveStudent(s);
 }
@@ -2539,7 +2636,8 @@ function removeEvent(sid, ev){
 }
 async function deleteStudent(sid){
   if(!requireAdmin('학생 삭제')) return;
-  if(!confirm('이 학생의 모든 기록을 삭제하시겠습니까?')) return;
+  const target = getStudent(sid);
+  if(!confirm(`${target?target.name+' ':''}학생을 삭제할까요?\n학생 정보·체력 기록이 지워지고 학생 앱 연결도 끊겨요. 되돌릴 수 없어요.`)) return;
   if(!db){ showToast('Firebase 설정이 필요합니다'); return; }
   try{
     const s = getStudent(sid);
@@ -2627,18 +2725,13 @@ function openEditStudentModal(sid){
             <option value="true" ${s.rehabHistory?'selected':''}>있음 (타이트한 기준 적용)</option>
           </select>
         </div>
-        <div class="field">
-          <label>학생 앱 비밀번호(PIN)</label>
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
-            <span class="stat-note">${s.selfPin? '설정됨 (4자리)' : '아직 설정 안 함'}</span>
-            ${s.selfPin? `<button type="button" class="ghost-btn" style="flex:0 0 auto; padding:7px 12px;" onclick="resetStudentPin('${sid}')">초기화</button>` : ''}
-          </div>
-        </div>
+        ${s.studentUid?`<div class="stat-note" style="margin:-2px 0 12px;">학생 앱 연결됨 · ${esc(s.email||'구글 계정')}</div>`:`<div class="stat-note" style="margin:-2px 0 12px;">학생 앱과 아직 연결되지 않았어요 (가입 승인 때 연결돼요)</div>`}
         <div class="modal-actions">
           <button type="button" class="cancel" onclick="closeModal()">취소</button>
           <button type="submit" class="confirm">저장</button>
         </div>
       </form>
+      ${isAdmin()?`<button type="button" class="del-student-btn" onclick="closeModal(); deleteStudent('${sid}')">이 학생 삭제</button>`:''}
     </div>`);
 }
 async function resetStudentPin(sid){
@@ -2762,17 +2855,22 @@ function exportData(){
   showToast('데이터를 내보냈습니다');
 }
 function csvEscape(val){
-  const s = String(val==null? '' : val);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+  let s = String(val==null? '' : val);
+  if(typeof val==='string' && /^[=+\-@\t\r]/.test(s)) s = "'"+s;   // 엑셀이 '=' 로 시작하는 글자를 수식으로 실행하지 않게
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
 }
-function exportCSV(){
-  const cutoff = daysAgo(30);
-  const header = ['이름','지점','학년','목표','재활이력','최근30일 평균 피로도','최근30일 평균 수면','위험도','종목별 최신기록'];
+async function exportCSV(){
+  // 예전에는 '지금 화면에서 고른 학생'의 기록만 불러와 있어서, 나머지 학생은 평균이 비어 있거나 오늘 하루치만 계산됐다.
+  // → 내보내기 전에 모든 학생의 최근 28일 체크인을 먼저 불러온다.
+  if(!db){ showToast('Firebase 설정이 필요합니다'); return; }
+  showToast(`${state.students.length}명의 최근 28일 체크인을 불러오는 중...`);
+  await Promise.all(state.students.map(s=>loadHistory(s.id, false, true)));
+  applyCheckins(); rerender();
+  const header = ['이름','지점','학년','목표','재활이력','최근28일 체크인 횟수','최근28일 평균 피로(0~10)','최근28일 평균 수면(시간)','오늘 판정','종목별 최신기록'];
   const rows = state.students.map(s=>{
-    const recent = s.fatigue.filter(f=>f.date>=cutoff);
-    const avgScore = recent.length ? (recent.reduce((a,b)=>a+Number(b.score),0)/recent.length).toFixed(1) : '';
-    const sleepVals = recent.map(f=>Number(f.sleep)).filter(v=>!isNaN(v));
-    const avgSleep = sleepVals.length ? (sleepVals.reduce((a,b)=>a+b,0)/sleepVals.length).toFixed(1) : '';
+    const recent = state.hist[s.id]||[];
+    const avgScore = recent.length ? (recent.reduce((a,c)=>a+c.fatigue,0)/recent.length).toFixed(1) : '';
+    const avgSleep = recent.length ? (recent.reduce((a,c)=>a+c.sleepMin,0)/recent.length/60).toFixed(1) : '';
     const m = computeFatigueMetrics(s);
     const eventsSummary = s.events.map(ev=>{
       const recs = s.records[ev]||[];
@@ -2780,7 +2878,7 @@ function exportCSV(){
       const latest = recs.slice().sort((a,b)=>a.date.localeCompare(b.date)).pop();
       return `${ev}:${latest.value}`;
     }).join(', ');
-    return [s.name, s.branch||'', s.grade||'', s.target||'', s.rehabHistory?'있음':'없음', avgScore, avgSleep, m.riskLabel, eventsSummary];
+    return [s.name, s.branch||'', s.grade||'', s.target||'', s.rehabHistory?'있음':'없음', recent.length, avgScore, avgSleep, m.riskLabel, eventsSummary];
   });
   const csvLines = [header, ...rows].map(r=> r.map(csvEscape).join(',')).join('\r\n');
   const blob = new Blob(['\uFEFF'+csvLines], {type:'text/csv;charset=utf-8;'});
@@ -2888,7 +2986,7 @@ function initFirebase(){
     firebase.initializeApp(FIREBASE_CONFIG);
     auth = firebase.auth();
     db = firebase.firestore();
-    try{ db.enablePersistence({synchronizeTabs:true}); }catch(e){ /* 오프라인 캐시 사용 불가 환경 — 무시 */ }
+    try{ db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){ /* 오프라인 캐시 사용 불가 환경 — 무시 */ }
 
     auth.onAuthStateChanged(user=>{
       if(user){
@@ -2950,6 +3048,8 @@ function logout(){ if(auth) auth.signOut(); }
 function studentGoogleLogin(){
   const box=document.getElementById('studentLoginError'); box.style.display='none';
   if(!auth){ box.textContent='Firebase 설정이 완료되지 않았습니다.'; box.style.display='block'; return; }
+  const inApp = inAppBrowserName();
+  if(inApp){ box.textContent=inApp+' 안에서는 구글 로그인이 막혀요. 위 안내대로 Safari나 Chrome으로 열어 주세요.'; box.style.display='block'; document.getElementById('inAppNotice')?.scrollIntoView({block:'center'}); return; }
   auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err=>{
     if(err.code==='auth/popup-closed-by-user') return;
     box.textContent='구글 로그인 실패: '+(err.code==='auth/popup-blocked'?'팝업이 차단됐어요. Safari 설정에서 팝업 차단을 꺼 주세요.':err.code);
@@ -3105,11 +3205,11 @@ function judge(t,an){
   const sleepLow=t.sleepMin<300, follow=t.painFollowUp;
   const special=[]; let status, headline;
 
-  if(painHigh){ status='RED'; headline=areas+' 통증이 있어요. 훈련 전에 코치님께 먼저 말해 주세요.'; special.push(areas+' 통증 '+t.painLevel+'/10'); }
+  if(painHigh){ status='RED'; headline=(areas?areas+' ':'')+'통증이 있어요. 훈련 전에 코치님께 먼저 말해 주세요.'; special.push((areas?areas+' ':'')+'통증 '+t.painLevel+'/10'); }
   else if(t.sorenessImpact===3){ status='RED'; headline='근육통 때문에 움직이기 힘든 상태예요. 훈련 전에 코치님께 말해 주세요.'; special.push((sAreas||'근육통')+' · 훈련 어려움'); }
   else if(t.readiness<=2){ status='RED'; headline='오늘 몸이 많이 무거워요. 훈련 전에 코치님께 말해 주세요.'; special.push('준비도 '+t.readiness+'/10'); }
   else if(worse.some(r=>bad(r)>=2&&BODY_KEYS.includes(r.m.key))){ const r=worse.find(r=>bad(r)>=2&&BODY_KEYS.includes(r.m.key)); status='RED'; headline=PHRASE[r.m.key](r)+'. 훈련 전에 코치님께 말해 주세요.'; }
-  else if(painLow){ status='AMBER'; headline=areas+'에 약한 통증이 있어요. 코치님께 미리 말해 두세요.'; special.push(areas+' 통증 '+t.painLevel+'/10'); }
+  else if(painLow){ status='AMBER'; headline=(areas?areas+'에 ':'')+'약한 통증이 있어요. 코치님께 미리 말해 두세요.'; special.push((areas?areas+' ':'')+'통증 '+t.painLevel+'/10'); }
   else if(follow===2){ status='AMBER'; headline='어제 아팠던 곳이 오늘 아침 더 아팠어요. 코치님께 말해 주세요.'; special.push('아침 통증 증가'); }
   else if(sleepLow){ status='AMBER'; headline='어젯밤 '+fmtSleep(t.sleepMin)+'밖에 못 잤어요.'; special.push('수면 '+fmtSleep(t.sleepMin)); }
   else if(isW('sleepMin')&&(isW('fatigue')||isW('readiness'))){ status='AMBER'; headline='잠이 부족하고 몸도 무거운 날이에요.'; }
@@ -3117,7 +3217,7 @@ function judge(t,an){
   else if(t.sorenessImpact===2){ status='AMBER'; headline=(sAreas?josa(sAreas,'이','가'):'근육통이')+' 훈련에 영향을 주는 상태예요.'; special.push((sAreas||'근육통')+' · 훈련에 영향'); }
   else if(!an.ready){ status='BASE'; headline='평소 기준을 만드는 중이에요 ('+an.n+'/'+BASELINE_MIN_DAYS+'일)'; }
   else if(worse.length||(['무릎','정강이','허리'].some(a=>(t.sorenessAreas||[]).includes(a))&&t.sorenessImpact===1)){
-    status='YELLOW'; headline=worse.length?PHRASE[worse[0].m.key](worse[0])+'.':josa(sAreas,'이','가')+' 조금 불편한 상태예요.'; }
+    status='YELLOW'; headline=worse.length?PHRASE[worse[0].m.key](worse[0])+'.':josa(sAreas,'이','가')+' 조금 불편한 상태예요.'; if(!worse.length) special.push(sAreas+' 뻐근함'); }
   else { status='GREEN'; headline=better.length?'평소보다 컨디션이 좋아요.':'평소랑 비슷한 컨디션이에요.'; }
   if(follow===1) special.push('아침 통증 그대로');
 
@@ -3147,7 +3247,7 @@ function coachMessage(c){
   const t=c.t, facts=[];
   let main=null, ask=null, usedSleep=false;
   if(t.pain){
-    main='선생님, 오늘 '+josa(c.areas,'이','가')+' 아픕니다';
+    main=c.areas?'선생님, 오늘 '+josa(c.areas,'이','가')+' 아픕니다':'선생님, 오늘 아픈 곳이 있습니다';
     facts.push('10점 중 '+t.painLevel+'점');
     if(t.painNote) facts.push(t.painNote.length>40?t.painNote.slice(0,40)+'…':t.painNote);
     ask=c.painHigh?'훈련 전에 한번 봐 주실 수 있을까요?':'해당 부위에 무리가 가는 운동은 조절해도 될까요?';
@@ -3160,7 +3260,7 @@ function coachMessage(c){
     else if(c.sleepLow||c.isW('sleepMin')){ main='선생님, 어젯밤 '+fmtSleep(t.sleepMin)+'밖에 못 자서 컨디션이 저조합니다'; usedSleep=true; ask='오늘 운동량을 조절해도 될까요?'; }
     else { main='선생님, 오늘 컨디션이 저조합니다'; ask='오늘 운동량을 조절해도 될까요?'; }
   }else if(c.status==='YELLOW'){
-    if(t.sorenessImpact>=1&&c.sAreas){ main='선생님, 오늘 '+josa(c.sAreas,'이','가')+' 조금 뻐근합니다'; }
+    if(t.sorenessImpact>=1&&c.sAreas&&(c.isW('soreness')||!METRICS.some(m=>c.isW(m.key)))){ main='선생님, 오늘 '+josa(c.sAreas,'이','가')+' 조금 뻐근합니다'; }
     else main='선생님, 오늘 컨디션이 평소보다 조금 저조합니다';
     ask='훈련할 때 참고 부탁드립니다.';
   }
@@ -3315,12 +3415,32 @@ return {analyze,judge,METRICS,STATUS_UI,fmtSleep,fmtValue,fmtDelta,addDays,today
    코치는 피로도를 입력하지 않는다. 학생이 입력한 students/{id}/checkins/{날짜} 를 읽기만 한다.
    - 오늘 기록: 학생마다 1건씩 (학생 수만큼 읽기)
    - 지난 기록: 학생을 선택할 때 그 학생만 최근 28일 */
-state.todayCk = {}; state.hist = {}; state.ckFetchedAt = 0; state.ckLoading = false;
+state.todayCk = {}; state.hist = {}; state.ckFetchedAt = 0; state.ckLoading = false; state.ckDate = '';
 let ckStudentKey = '';
+/* 학생이 쓴 체크인을 코치 화면에 넣기 전에 '소독'한다.
+   학생 기기에서 온 값은 믿지 않는다: 숫자는 숫자로, 부위 이름은 짧은 글자로, 판정은 정해진 5가지 중 하나로만.
+   (이상한 값이 들어와도 코치 화면이 멈추거나, 글자가 명령어처럼 실행되지 않게) */
+const CK_STATUSES=['RED','AMBER','YELLOW','GREEN','BASE'];
+function cleanCk(raw,id){
+  const c=raw||{};
+  const num=(v,lo,hi,def)=>{ const n=Number(v); return Number.isFinite(n)?Math.min(hi,Math.max(lo,n)):def; };
+  const opt=(v,lo,hi)=>v===null||v===undefined||v===''?null:num(v,lo,hi,null);
+  const strs=(a,len)=>Array.isArray(a)?a.filter(x=>typeof x==='string'&&x.trim()).map(x=>x.slice(0,len)).slice(0,20):[];
+  return {
+    date:String(id||c.date||'').slice(0,10), studentId:String(c.studentId||''),
+    sleepMin:num(c.sleepMin,0,1440,0), sleepQuality:num(c.sleepQuality,0,10,0), fatigue:num(c.fatigue,0,10,0),
+    soreness:num(c.soreness,0,10,0), sorenessAreas:strs(c.sorenessAreas,20), sorenessImpact:opt(c.sorenessImpact,0,3),
+    stress:num(c.stress,0,10,0), stressCauses:strs(c.stressCauses,20), readiness:num(c.readiness,0,10,0),
+    pain:c.pain===true, painAreas:strs(c.painAreas,20), painLevel:opt(c.painLevel,0,10),
+    painNote:typeof c.painNote==='string'?c.painNote.slice(0,200):'', painFollowUp:opt(c.painFollowUp,0,2),
+    status:CK_STATUSES.includes(c.status)?c.status:'BASE', reasons:strs(c.reasons,60).slice(0,3)
+  };
+}
 function ckToFatigue(c){   // 기존 분석 기능(회복 패턴·통증 반복·그래프)이 그대로 쓰도록 예전 기록 형식으로 바꿔 준다
+  // mealBefore 는 새 체크인에 없는 질문이라 '모름(undefined)'으로 둔다. false(안 먹음)로 두면 모든 학생이 '식사 거름' 경고를 받는다.
   return {date:c.date, score:c.fatigue, sleep:(c.sleepMin/60).toFixed(1), painAreas:c.pain?(c.painAreas||[]):[],
     painSeverity:c.pain&&c.painLevel!=null?String(c.painLevel):'', attended:true, stress:String(c.stress),
-    memo:c.painNote||'', sessionTypes:[], area:'', mealBefore:false, weather:'', temp:'', rehabNote:'', _ck:c};
+    memo:c.painNote||'', sessionTypes:[], area:'', mealBefore:undefined, weather:'', temp:'', rehabNote:'', _ck:c};
 }
 function applyCheckins(){
   state.students.forEach(s=>{
@@ -3337,22 +3457,35 @@ async function loadTodayCheckins(force){
   const d=HC.todayStr();
   try{
     const res=await Promise.all(state.students.map(s=>db.collection('students').doc(s.id).collection('checkins').doc(d).get()
-      .then(x=>[s.id, x.exists?{...x.data(),date:x.id}:null]).catch(()=>[s.id,null])));
-    state.todayCk=Object.fromEntries(res); state.ckFetchedAt=Date.now();
+      .then(x=>[s.id, x.exists?cleanCk(x.data(),x.id):null]).catch(()=>[s.id,null])));
+    state.todayCk=Object.fromEntries(res); state.ckFetchedAt=Date.now(); state.ckDate=d;
   }catch(e){ showToast('체크인을 불러오지 못했어요: '+(e&&e.message||'')); return; }
   finally{ state.ckLoading=false; }
   applyCheckins(); rerender();
 }
-async function loadHistory(sid, force){
+async function loadHistory(sid, force, quiet){
   if(!db || !sid || (state.hist[sid] && !force)) return;
   const from=HC.addDays(HC.todayStr(),-28);
   try{
     const snap=await db.collection('students').doc(sid).collection('checkins').where(firebase.firestore.FieldPath.documentId(),'>=',from).get();
-    state.hist[sid]=snap.docs.map(d=>({...d.data(),date:d.id})).sort((a,b)=>a.date.localeCompare(b.date));
+    state.hist[sid]=snap.docs.map(d=>cleanCk(d.data(),d.id)).sort((a,b)=>a.date.localeCompare(b.date));
   }catch(e){ state.hist[sid]=[]; }
+  if(quiet) return;
   applyCheckins(); rerender();
 }
 function refreshCheckins(){ state.hist={}; loadTodayCheckins(true); if(state.selectedId) loadHistory(state.selectedId,true); showToast('체크인을 새로 불러왔어요'); }
+/* 코치 화면을 켜 둔 채 다음 날이 되거나, 오래 다른 앱을 보다 돌아오면 '어제 체크인'이 오늘처럼 보인다.
+   화면에 다시 나타날 때 날짜가 바뀌었거나 5분이 지났으면 새로 불러온다. */
+function refreshIfStale(){
+  if(!db||!currentCoachEmail||document.visibilityState!=='visible') return;
+  const dayChanged=state.ckDate&&state.ckDate!==HC.todayStr();
+  if(dayChanged||Date.now()-state.ckFetchedAt>5*60*1000){
+    if(dayChanged){ state.todayCk={}; state.hist={}; }
+    loadTodayCheckins(true); if(state.selectedId) loadHistory(state.selectedId,true);
+  }
+}
+document.addEventListener('visibilitychange',refreshIfStale);
+window.addEventListener('pageshow',e=>{ if(e.persisted) refreshIfStale(); });
 
 /* ---- 코치용 해석: 학생이 본 판정 + 코치만 보는 훈련 조정·확인 포인트 ---- */
 const STATUS_KO={RED:'빨강 · 위험',AMBER:'주황 · 경고',YELLOW:'노랑 · 주의',GREEN:'초록 · 양호',BASE:'기준 수립 중'};
@@ -3391,14 +3524,15 @@ function interpretCheckin(s,t){
   const h=(state.hist[s.id]||[]).filter(c=>c.date>HC.addDays(t.date,-7)&&c.date<=t.date);
   if(h.length>=5){ const sum=h.reduce((a,c)=>a+c.sleepMin,0)/60*7/h.length; if(sum<42) notes.push('최근 7일 수면이 주당 약 '+sum.toFixed(0)+'시간 수준이에요 (42시간 미만) → 누적 수면 부족, 고강도 볼륨을 줄이세요.'); }
   const rep14={}; (state.hist[s.id]||[]).filter(c=>c.date>HC.addDays(t.date,-14)).forEach(c=>[...(c.pain?c.painAreas||[]:[]),...(c.soreness>0?c.sorenessAreas||[]:[])].forEach(a=>rep14[a]=(rep14[a]||0)+1));
-  Object.entries(rep14).filter(([a,n])=>n>=3).forEach(([a,n])=>notes.push(a+' 불편을 최근 14일 동안 '+n+'번 기록했어요 → 일시적인 근육통보다 과사용 신호일 수 있어요.'));
-  if((t.stressCauses||[]).length&&(an.rows.find(r=>r.m.key==='stress')||{}).tone==='worse') notes.push('스트레스 원인: '+t.stressCauses.join('·')+' → 동작 지시는 단순하게, "바닥을 부순다" 같은 외적 큐 사용.');
+  Object.entries(rep14).filter(([a,n])=>n>=3).forEach(([a,n])=>notes.push(esc(a)+' 불편을 최근 14일 동안 '+n+'번 기록했어요 → 일시적인 근육통보다 과사용 신호일 수 있어요.'));
+  if((t.stressCauses||[]).length&&(an.rows.find(r=>r.m.key==='stress')||{}).tone==='worse') notes.push('스트레스 원인: '+esc(t.stressCauses.join('·'))+' → 동작 지시는 단순하게, "바닥을 부순다" 같은 외적 큐 사용.');
   return {status,j,an,checks,notes};
 }
-function statusOf(s){ const t=state.todayCk[s.id]; return t?(t.status||'BASE'):null; }
+function todayCkOf(sid){ const t=state.todayCk[sid]; return t&&t.date===HC.todayStr()?t:null; }   // 어제 불러온 기록은 '오늘'로 세지 않는다
+function statusOf(s){ const t=todayCkOf(s.id); return t?(t.status||'BASE'):null; }
 
 function renderCheckinCard(s){
-  const t=state.todayCk[s.id];
+  const t=todayCkOf(s.id);
   if(!t){
     const last=(state.hist[s.id]||[]).slice(-1)[0];
     return `<div class="card"><h3>오늘 체크인</h3><div class="stat" style="font-size:20px;">아직 입력하지 않았어요</div>
@@ -3411,8 +3545,8 @@ function renderCheckinCard(s){
     return `<tr><td>${r.m.label}</td><td class="mono">${HC.fmtValue(r.m.key,r.value)}</td><td class="mono">${r.st?HC.fmtValue(r.m.key,r.m.key==='sleepMin'?Math.round(r.st.mean):Number(r.st.mean.toFixed(1))):'-'}</td><td>${tone}</td></tr>`;
   }).join('');
   const ctx=[];
-  if(t.soreness>0&&(t.sorenessAreas||[]).length) ctx.push('근육통 부위: '+t.sorenessAreas.join('·')+(t.sorenessImpact!=null?' ('+HC.IMPACTS[t.sorenessImpact]+')':''));
-  if(t.pain) ctx.push('통증: '+(t.painAreas||[]).join('·')+' '+t.painLevel+'/10'+(t.painNote?' · "'+esc(t.painNote)+'"':''));
+  if(t.soreness>0&&(t.sorenessAreas||[]).length) ctx.push('근육통 부위: '+esc(t.sorenessAreas.join('·'))+(t.sorenessImpact!=null?' ('+HC.IMPACTS[t.sorenessImpact]+')':''));
+  if(t.pain) ctx.push('통증: '+esc((t.painAreas||[]).join('·'))+' '+esc(t.painLevel)+'/10'+(t.painNote?' · "'+esc(t.painNote)+'"':''));
   return `
   <div class="ck-status" style="border-color:${c}; background:${c}14;">
     <div class="ck-badge" style="color:${c};">오늘 체크인 · ${STATUS_KO[I.status]}</div>
@@ -3468,8 +3602,8 @@ function renderJoinView(){
       </div>
       <select id="join-target-${r.uid}" class="student-search" aria-label="${esc(r.name)} 연결 방법">${opts}</select>
       <div class="join-actions">
-        <button style="background:var(--surface-2); border:1px solid var(--line); color:var(--text);" onclick="rejectJoin('${r.uid}')">반려</button>
-        <button style="background:var(--lime); border:none; color:#0d1a03;" onclick="approveJoin('${r.uid}')">승인</button>
+        <button data-join="${esc(r.uid)}" style="background:var(--surface-2); border:1px solid var(--line); color:var(--text);" onclick="rejectJoin('${esc(r.uid)}')">반려</button>
+        <button data-join="${esc(r.uid)}" style="background:var(--lime); border:none; color:#0d1a03;" onclick="approveJoin('${esc(r.uid)}')">승인</button>
       </div>
     </div>`;
   }).join('');
@@ -3478,9 +3612,17 @@ function renderJoinView(){
     ${cards || '<div class="empty-state"><div>승인을 기다리는 학생이 없어요.</div></div>'}
   </div></main>`;
 }
+const joinBusy = new Set();   // 승인 버튼을 두 번 누르면 같은 학생이 두 명 생기던 문제 방지
+function setJoinButtons(uid, on){ document.querySelectorAll(`[data-join="${uid}"]`).forEach(b=>{ b.disabled=!on; b.style.opacity=on?'':'0.5'; }); }
 async function approveJoin(uid){
+  if(joinBusy.has(uid)) return;
   const r = (state.joinRequests||[]).find(x=>x.uid===uid);
   if(!r || !db) return;
+  joinBusy.add(uid); setJoinButtons(uid, false);
+  try{ await approveJoinInner(uid, r); }
+  finally{ joinBusy.delete(uid); setJoinButtons(uid, true); }
+}
+async function approveJoinInner(uid, r){
   const target = document.getElementById('join-target-'+uid)?.value || '__new__';
   const batch = db.batch();
   let sid, name;
@@ -3508,6 +3650,7 @@ async function approveJoin(uid){
   catch(err){ showToast('승인 실패: '+err.message); }
 }
 async function rejectJoin(uid){
+  if(joinBusy.has(uid)) return;
   const reason = prompt('반려 사유 (학생 화면에 보여요)', '정보를 확인하고 다시 보내 주세요.');
   if(reason===null || !db) return;
   try{ await db.collection('joinRequests').doc(uid).update({status:'rejected', rejectReason:reason.slice(0,100)}); showToast('반려했어요'); }
@@ -3559,6 +3702,7 @@ async function deleteClassLog(id){
 try{ runDiagnostics(); }catch(e){}
 initFirebase();
 try{ runDiagnostics(); }catch(e){}
+try{ setupInAppNotice(); }catch(e){}
 rerender(); // 로그인 화면 처리 전, 앱 뼈대는 미리 준비해둔다 (로그인 후 즉시 표시)
 </script>
 </body>
