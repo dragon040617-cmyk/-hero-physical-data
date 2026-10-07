@@ -535,7 +535,7 @@
   /* 그리드 칸 안의 그래프·입력칸이 칸보다 커져서 화면 옆으로 삐져나가는 것 방지 */
   .grid > *{ min-width:0; }
   form.entry-form > *{ min-width:0; }
-  .field input, .field select{ width:100%; min-width:0; }
+  .field input:not([type=checkbox]):not([type=radio]), .field select{ width:100%; min-width:0; }
   /* 팝업이 화면보다 길면 잘리지 않고 안에서 스크롤 */
   .modal{ max-height:90vh; max-height:90dvh; overflow-y:auto; overscroll-behavior:contain; }
   .modal-actions button{ min-height:44px; }
@@ -559,7 +559,7 @@
   }
   /* 아이폰은 16px보다 작은 입력칸을 누르면 화면을 자동 확대한다 → 터치 기기에서는 16px로 */
   @media (max-width:860px), (pointer:coarse){
-    .field input, .field select, .student-search, .log-textarea, .modal input, .modal select, .join-card select{ font-size:16px; }
+    .field input:not([type=checkbox]):not([type=radio]), .field select, .student-search, .log-textarea, .modal input, .modal select, .join-card select{ font-size:16px; }
   }
   /* 손가락 기기에는 '마우스를 올리면 보이는' 버튼이 안 보이기만 하고 눌리기는 해서 실수로 누르기 쉽다 → 숨기고 '정보 수정' 안에 둔다 */
   @media (hover:none){ .del-student{ display:none; } }
@@ -667,11 +667,7 @@ function setupInAppNotice(){
     + (!ios || /KAKAOTALK/i.test(navigator.userAgent) ? `<button type="button" class="ghost-btn" style="flex:1 1 auto; min-height:44px; font-size:14px;" onclick="openInExternalBrowser()">바깥 브라우저로 열기</button>` : '')
     + `<button type="button" class="ghost-btn" style="flex:1 1 auto; min-height:44px; font-size:14px;" onclick="copyPageLink()">주소 복사</button></div>`;
   box.style.display = '';
-  // 카카오톡은 바깥 브라우저로 바로 넘겨 줄 수 있다 (한 번만 시도)
-  if(/KAKAOTALK/i.test(navigator.userAgent) && !sessionStorageGet('heroExtTried')){ sessionStorageSet('heroExtTried','1'); openInExternalBrowser(); }
 }
-function sessionStorageGet(k){ try{ return sessionStorage.getItem(k); }catch(e){ return null; } }
-function sessionStorageSet(k,v){ try{ sessionStorage.setItem(k,v); }catch(e){} }
 window.addEventListener('error', function(e){
   try{
     const t = document.getElementById('toast');
@@ -2020,6 +2016,7 @@ async function submitClassLog(e){
   if(dateInput) dateInput.value = todayStr();
   const customField = document.getElementById('customClassTypeField');
   if(customField) customField.style.display = 'none';
+  flushRerender();
 }
 
 function renderBulkEntry(){
@@ -2426,7 +2423,21 @@ function drawCharts(){
 }
 
 /* ============ ACTIONS ============ */
+/* 다른 코치가 저장하거나, 탭에 돌아와 새로 불러올 때 화면 전체를 다시 그리면
+   지금 쓰고 있던 수업일지·기록 입력칸이 지워진다 → 입력 중이면 다시 그리기를 잠시 미룬다. */
+function userIsTyping(){
+  const app=document.getElementById('app'); if(!app) return false;
+  const a=document.activeElement;
+  if(a && app.contains(a) && !a.closest('.sidebar') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && !/^(checkbox|radio)$/.test(a.type)) return true;
+  return [...app.querySelectorAll('main textarea, main input')].some(el=>!/^(checkbox|radio)$/.test(el.type) ? el.value!==el.defaultValue : el.checked!==el.defaultChecked);
+}
+// 코치가 방금 직접 저장·삭제한 결과는 바로 보여 줘야 하므로(기록 추가 등), 직접 쓴 뒤 3초 동안은 미루지 않는다
+function markUserWrite(){ state.lastUserWrite=Date.now(); }
+function softRerender(){ if(Date.now()-(state.lastUserWrite||0)>3000 && userIsTyping()){ state.rerenderPending=true; return; } rerender(); }
+function flushRerender(){ if(state.rerenderPending && !userIsTyping()) rerender(); }
+document.addEventListener('focusout',()=>setTimeout(flushRerender,400));
 function rerender(){
+  state.rerenderPending=false;
   try{
     rerenderInner();
   }catch(err){
@@ -2467,13 +2478,14 @@ function rerenderInner(){
 }
 function renderBottomNav(){
   const tab = state.teamViewOpen ? 'team' : state.classLogOpen ? 'log' : 'student';
+  const danger = state.students.filter(s=>computeFatigueMetrics(s).riskLevel==='danger').length;   // 옆 메뉴의 '위험 N' 표시를 휴대폰 아래 메뉴에도
   return `
     <nav class="bottom-nav">
       <button class="bn-item ${tab==='student'?'active':''}" onclick="bottomNavGo('student')">
         <span class="bn-icon">🧑‍🎓</span><span>학생</span>
       </button>
       <button class="bn-item ${tab==='team'?'active':''}" onclick="bottomNavGo('team')">
-        <span class="bn-icon">📋</span><span>브리핑</span>
+        <span class="bn-icon" style="position:relative;">📋${danger?`<span style="position:absolute; top:-6px; right:-14px; background:var(--accent); color:#fff; font-size:10.5px; font-weight:800; line-height:1; padding:3px 6px; border-radius:10px;">${danger}</span>`:''}</span><span>브리핑</span>
       </button>
       <button class="bn-item ${tab==='log'?'active':''}" onclick="bottomNavGo('log')">
         <span class="bn-icon">📝</span><span>수업일지</span>
@@ -2644,6 +2656,7 @@ async function deleteStudent(sid){
     const batch = db.batch();
     batch.delete(db.collection('students').doc(sid));
     if(s && s.studentUid) batch.delete(db.collection('links').doc(s.studentUid));   // 학생 앱 연결도 끊기
+    markUserWrite();
     await batch.commit();
   }
   catch(err){ showToast('삭제 실패: '+err.message); }
@@ -2864,8 +2877,10 @@ async function exportCSV(){
   // → 내보내기 전에 모든 학생의 최근 28일 체크인을 먼저 불러온다.
   if(!db){ showToast('Firebase 설정이 필요합니다'); return; }
   showToast(`${state.students.length}명의 최근 28일 체크인을 불러오는 중...`);
-  await Promise.all(state.students.map(s=>loadHistory(s.id, false, true)));
-  applyCheckins(); rerender();
+  const loaded = await Promise.all(state.students.map(s=>loadHistory(s.id, false, true)));
+  const failed = loaded.filter(x=>x===false).length;
+  applyCheckins(); softRerender();
+  if(failed) showToast(`${failed}명의 기록은 불러오지 못해 CSV에서 0회로 나와요. 잠시 뒤 다시 내보내 주세요.`);
   const header = ['이름','지점','학년','목표','재활이력','최근28일 체크인 횟수','최근28일 평균 피로(0~10)','최근28일 평균 수면(시간)','오늘 판정','종목별 최신기록'];
   const rows = state.students.map(s=>{
     const recent = state.hist[s.id]||[];
@@ -3049,7 +3064,11 @@ function studentGoogleLogin(){
   const box=document.getElementById('studentLoginError'); box.style.display='none';
   if(!auth){ box.textContent='Firebase 설정이 완료되지 않았습니다.'; box.style.display='block'; return; }
   const inApp = inAppBrowserName();
-  if(inApp){ box.textContent=inApp+' 안에서는 구글 로그인이 막혀요. 위 안내대로 Safari나 Chrome으로 열어 주세요.'; box.style.display='block'; document.getElementById('inAppNotice')?.scrollIntoView({block:'center'}); return; }
+  if(inApp){
+    // 카카오톡은 바깥 브라우저로 바로 넘겨 줄 수 있다 (코치는 앱 안에서도 이메일 로그인이 되므로, 학생이 구글 버튼을 누를 때만)
+    if(/KAKAOTALK/i.test(navigator.userAgent)){ openInExternalBrowser(); return; }
+    box.textContent=inApp+' 안에서는 구글 로그인이 막혀요. 위 안내대로 Safari나 Chrome으로 열어 주세요.'; box.style.display='block'; document.getElementById('inAppNotice')?.scrollIntoView({block:'center'}); return;
+  }
   auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err=>{
     if(err.code==='auth/popup-closed-by-user') return;
     box.textContent='구글 로그인 실패: '+(err.code==='auth/popup-blocked'?'팝업이 차단됐어요. Safari 설정에서 팝업 차단을 꺼 주세요.':err.code);
@@ -3093,7 +3112,7 @@ function subscribeStudents(){
       state.selectedId = list[0]?.id || null;
     }
     applyCheckins();
-    rerender();
+    softRerender();
     const key=list.map(x=>x.id).sort().join(',');
     if(key!==ckStudentKey){ ckStudentKey=key; loadTodayCheckins(true); }   // 학생 명단이 바뀌면 오늘 체크인 다시 읽기
     if(state.selectedId) loadHistory(state.selectedId);
@@ -3424,7 +3443,7 @@ const CK_STATUSES=['RED','AMBER','YELLOW','GREEN','BASE'];
 function cleanCk(raw,id){
   const c=raw||{};
   const num=(v,lo,hi,def)=>{ const n=Number(v); return Number.isFinite(n)?Math.min(hi,Math.max(lo,n)):def; };
-  const opt=(v,lo,hi)=>v===null||v===undefined||v===''?null:num(v,lo,hi,null);
+  const opt=(v,lo,hi)=>v===null||v===undefined||v===''?null:(n=>n===null?null:Math.round(n))(num(v,lo,hi,null));
   const strs=(a,len)=>Array.isArray(a)?a.filter(x=>typeof x==='string'&&x.trim()).map(x=>x.slice(0,len)).slice(0,20):[];
   return {
     date:String(id||c.date||'').slice(0,10), studentId:String(c.studentId||''),
@@ -3433,7 +3452,7 @@ function cleanCk(raw,id){
     stress:num(c.stress,0,10,0), stressCauses:strs(c.stressCauses,20), readiness:num(c.readiness,0,10,0),
     pain:c.pain===true, painAreas:strs(c.painAreas,20), painLevel:opt(c.painLevel,0,10),
     painNote:typeof c.painNote==='string'?c.painNote.slice(0,200):'', painFollowUp:opt(c.painFollowUp,0,2),
-    status:CK_STATUSES.includes(c.status)?c.status:'BASE', reasons:strs(c.reasons,60).slice(0,3)
+    status:CK_STATUSES.includes(c.status)?c.status:null, reasons:strs(c.reasons,60).slice(0,3)
   };
 }
 function ckToFatigue(c){   // 기존 분석 기능(회복 패턴·통증 반복·그래프)이 그대로 쓰도록 예전 기록 형식으로 바꿔 준다
@@ -3461,17 +3480,19 @@ async function loadTodayCheckins(force){
     state.todayCk=Object.fromEntries(res); state.ckFetchedAt=Date.now(); state.ckDate=d;
   }catch(e){ showToast('체크인을 불러오지 못했어요: '+(e&&e.message||'')); return; }
   finally{ state.ckLoading=false; }
-  applyCheckins(); rerender();
+  applyCheckins(); softRerender();
 }
 async function loadHistory(sid, force, quiet){
-  if(!db || !sid || (state.hist[sid] && !force)) return;
-  const from=HC.addDays(HC.todayStr(),-28);
+  if(!db || !sid || (state.hist[sid] && !force)) return true;
+  const from=HC.addDays(HC.todayStr(),-27);   // 오늘 포함 28일
+  let ok=true;
   try{
     const snap=await db.collection('students').doc(sid).collection('checkins').where(firebase.firestore.FieldPath.documentId(),'>=',from).get();
     state.hist[sid]=snap.docs.map(d=>cleanCk(d.data(),d.id)).sort((a,b)=>a.date.localeCompare(b.date));
-  }catch(e){ state.hist[sid]=[]; }
-  if(quiet) return;
-  applyCheckins(); rerender();
+  }catch(e){ state.hist[sid]=[]; ok=false; }
+  if(quiet) return ok;
+  applyCheckins(); softRerender();
+  return ok;
 }
 function refreshCheckins(){ state.hist={}; loadTodayCheckins(true); if(state.selectedId) loadHistory(state.selectedId,true); showToast('체크인을 새로 불러왔어요'); }
 /* 코치 화면을 켜 둔 채 다음 날이 되거나, 오래 다른 앱을 보다 돌아오면 '어제 체크인'이 오늘처럼 보인다.
@@ -3486,6 +3507,8 @@ function refreshIfStale(){
 }
 document.addEventListener('visibilitychange',refreshIfStale);
 window.addEventListener('pageshow',e=>{ if(e.persisted) refreshIfStale(); });
+// 컴퓨터·태블릿에 켜 둔 채로 자정이 지나는 경우: 1분마다 '날짜가 바뀌었는지'만 확인 (읽기 비용을 아끼려고 5분 새로고침은 하지 않음)
+setInterval(()=>{ if(state.ckDate && state.ckDate!==HC.todayStr()) refreshIfStale(); },60000);
 
 /* ---- 코치용 해석: 학생이 본 판정 + 코치만 보는 훈련 조정·확인 포인트 ---- */
 const STATUS_KO={RED:'빨강 · 위험',AMBER:'주황 · 경고',YELLOW:'노랑 · 주의',GREEN:'초록 · 양호',BASE:'기준 수립 중'};
@@ -3576,7 +3599,7 @@ function subscribeJoinRequests(){
   if(unsubscribeJoin) unsubscribeJoin();
   unsubscribeJoin = db.collection('joinRequests').where('status','==','pending').onSnapshot(snap=>{
     state.joinRequests = snap.docs.map(d=>({uid:d.id, ...d.data()}));
-    rerender();
+    softRerender();
   }, err=>{ if(err.code!=='permission-denied') showToast('가입 신청 불러오기 오류: '+err.message); });
 }
 // 학생 사이트의 지점 선택지를 코치 사이트 지점 목록(BRANCHES)과 맞춘다
@@ -3602,8 +3625,8 @@ function renderJoinView(){
       </div>
       <select id="join-target-${r.uid}" class="student-search" aria-label="${esc(r.name)} 연결 방법">${opts}</select>
       <div class="join-actions">
-        <button data-join="${esc(r.uid)}" style="background:var(--surface-2); border:1px solid var(--line); color:var(--text);" onclick="rejectJoin('${esc(r.uid)}')">반려</button>
-        <button data-join="${esc(r.uid)}" style="background:var(--lime); border:none; color:#0d1a03;" onclick="approveJoin('${esc(r.uid)}')">승인</button>
+        <button data-join="${esc(r.uid)}" style="background:var(--surface-2); border:1px solid var(--line); color:var(--text);" onclick="rejectJoin('${jsAttrEsc(r.uid)}')">반려</button>
+        <button data-join="${esc(r.uid)}" style="background:var(--lime); border:none; color:#0d1a03;" onclick="approveJoin('${jsAttrEsc(r.uid)}')">승인</button>
       </div>
     </div>`;
   }).join('');
@@ -3646,6 +3669,7 @@ async function approveJoinInner(uid, r){
   }
   batch.set(db.collection('links').doc(uid), {studentId:sid, name});
   batch.update(db.collection('joinRequests').doc(uid), {status:'approved', studentId:sid, approvedBy:currentCoachEmail, approvedAt:Date.now()});
+  markUserWrite();
   try{ await batch.commit(); showToast(name+' 학생을 승인했어요'); }
   catch(err){ showToast('승인 실패: '+err.message); }
 }
@@ -3653,6 +3677,7 @@ async function rejectJoin(uid){
   if(joinBusy.has(uid)) return;
   const reason = prompt('반려 사유 (학생 화면에 보여요)', '정보를 확인하고 다시 보내 주세요.');
   if(reason===null || !db) return;
+  markUserWrite();
   try{ await db.collection('joinRequests').doc(uid).update({status:'rejected', rejectReason:reason.slice(0,100)}); showToast('반려했어요'); }
   catch(err){ showToast('반려 실패: '+err.message); }
 }
@@ -3663,6 +3688,7 @@ async function saveStudent(s){
   if(!db){ showToast('Firebase 설정이 필요합니다'); return false; }
   const clean = {};
   Object.keys(s).forEach(k=>{ if(!k.startsWith('_') && k!=='fatigue') clean[k]=s[k]; });   // fatigue 는 체크인에서 만든 값이라 저장하지 않음
+  markUserWrite();
   try{ await db.collection('students').doc(s.id).set(clean); return true; }
   catch(err){ showToast('저장 실패: '+err.message); return false; }
 }
@@ -3676,7 +3702,7 @@ function subscribeClassLogs(){
     snap.forEach(doc=> list.push({ id: doc.id, ...doc.data() }));
     list.sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (b.createdAt||0)-(a.createdAt||0));
     state.classLogs = list;
-    if(state.classLogOpen) rerender();
+    if(state.classLogOpen) softRerender();
   }, err=>{
     if(err && err.code==='permission-denied'){
       // 권한 문제는 학생 목록 쪽에서 '코치로 등록되지 않은 계정' 화면으로 한 번에 안내한다 (중복 알림 방지)
@@ -3688,12 +3714,14 @@ function subscribeClassLogs(){
 }
 async function saveClassLog(logObj){
   if(!db){ showToast('Firebase 설정이 필요합니다'); return false; }
+  markUserWrite();
   try{ await db.collection('classLogs').doc(logObj.id).set(logObj); return true; }
   catch(err){ showToast('저장 실패: '+err.message); return false; }
 }
 async function deleteClassLog(id){
   if(!confirm('이 수업일지를 삭제할까요?')) return;
   if(!db) return;
+  markUserWrite();
   try{ await db.collection('classLogs').doc(id).delete(); }
   catch(err){ showToast('삭제 실패: '+err.message); }
 }

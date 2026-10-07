@@ -536,7 +536,8 @@ let saving=false, loadedDate=null, refreshing=false;
    다시 화면에 나타날 때 날짜가 바뀌었으면 기록을 새로 불러온다. */
 async function refreshIfNewDay(fromTimer){
   if(!myStudent||saving||refreshing||loadedDate===todayStr()) return;
-  if(fromTimer===true&&!$('screen-form').classList.contains('hidden')) return;   // 체크인 작성 중에는 자정이 지나도 지우지 않는다
+  // 체크인을 쓰는 중이면(하나라도 답했으면) 날짜가 바뀌어도 지우지 않는다. 저장은 누른 날짜로 된다.
+  if(!$('screen-form').classList.contains('hidden')&&(fromTimer===true||(form&&answeredCount()>0))) return;
   refreshing=true;
   try{ await enterApp(myStudent); }catch(e){ /* 다음 기회에 다시 시도 */ }
   finally{ refreshing=false; }
