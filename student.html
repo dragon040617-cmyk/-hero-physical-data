@@ -31,10 +31,27 @@
   .note{ font-size:13px; color:var(--dim); }
   input.code{ width:100%; height:52px; margin-bottom:12px; padding:0 14px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:18px; letter-spacing:4px; text-align:center; }
 
+  /* 가입 화면 */
+  .steps{ display:flex; gap:6px; margin-bottom:18px; font-size:12px; }
+  .steps span{ flex:1; text-align:center; padding:6px 0; border-radius:8px; background:var(--surface); color:var(--dim); }
+  .steps span.on{ background:var(--lime); color:#0d1a03; font-weight:700; }
+  .steps span.done{ color:var(--lime); }
+  .fl{ display:block; font-size:15px; font-weight:600; margin:18px 0 8px; }
+  .fl em{ font-style:normal; font-size:12px; color:var(--lime); margin-left:4px; font-weight:500; }
+  .fl .opt{ font-size:12px; color:var(--dim); margin-left:4px; font-weight:400; }
+  input.txt, select.txt{ width:100%; height:50px; padding:0 14px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:16px; font-family:inherit; }
+  .chips + .fl{ margin-top:18px; }
+  .consent{ display:flex; gap:10px; align-items:flex-start; margin-top:22px; font-size:14px; color:var(--muted); line-height:1.5; }
+  .consent input{ width:22px; height:22px; margin:0; flex-shrink:0; accent-color:var(--lime); }
+  .box{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .kv{ display:grid; grid-template-columns:76px minmax(0,1fr); gap:8px; padding:6px 0; font-size:15px; }
+  .kv b{ color:var(--dim); font-weight:500; }
+  .reject{ border:1px solid var(--coral); background:var(--coral-soft); border-radius:12px; padding:12px 14px; margin-bottom:8px; font-size:14px; }
+
   /* 헤더 */
   .head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px; }
   .head .date{ font-size:14px; color:var(--dim); }
-  .head-actions{ display:flex; gap:14px; flex-shrink:0; }
+  .head-actions{ display:flex; gap:4px 14px; flex-wrap:wrap; justify-content:flex-end; max-width:45%; }
   .head-actions .link{ font-size:13px; }
 
   /* 체크인 폼 */
@@ -125,15 +142,64 @@
   <div id="login-error" class="err" role="alert"></div>
 </section>
 
-<section id="screen-code" class="screen hidden">
-  <h1>초대 코드 입력</h1>
-  <p id="user-email" style="color:var(--lime); margin-bottom:8px;"></p>
-  <p>코치님께 받은 코드를 입력하면 내 기록과 연결돼요. 처음 한 번만 하면 됩니다.</p>
-  <input id="code-input" class="code" maxlength="6" placeholder="코드 6자리" autocapitalize="characters" autocomplete="off">
-  <button id="link-btn" class="btn" onclick="linkStudent()">연결하기</button>
-  <div id="code-error" class="err" role="alert"></div>
-  <p class="note" style="margin-top:12px;">입력한 컨디션·통증 기록은 본인과 코치님만 볼 수 있고, 훈련 관리에만 쓰여요.</p>
+<!-- 가입 1: 내 정보 -->
+<section id="screen-profile" class="screen hidden">
+  <div class="steps" aria-label="가입 단계"><span class="on">1 내 정보</span><span>2 반 코드</span><span>3 승인</span></div>
+  <h1>내 정보 입력</h1>
+  <p class="note" id="user-email" style="color:var(--lime);margin-bottom:16px;"></p>
+  <div id="reject-box"></div>
+
+  <label class="fl" for="pf-name">이름 <em>필수</em></label>
+  <input id="pf-name" class="txt" maxlength="20" autocomplete="name" placeholder="실명으로 적어 주세요">
+
+  <div class="fl" id="pf-grade-l">학년 <em>필수</em></div>
+  <div class="chips" id="pf-grade" role="group" aria-labelledby="pf-grade-l"></div>
+
+  <label class="fl" for="pf-branch">지점 <em>필수</em></label>
+  <div id="pf-branch-box"></div>
+
+  <label class="fl" for="pf-school">목표 학교 <span class="opt">선택</span></label>
+  <input id="pf-school" class="txt" maxlength="40" placeholder="예: OO대 체육교육과">
+
+  <div class="fl" id="pf-injury-l">부상 이력 <span class="opt">선택</span></div>
+  <div class="chips" id="pf-injury" role="group" aria-labelledby="pf-injury-l"></div>
+  <div id="pf-injury-note-box"></div>
+
+  <label class="consent"><input type="checkbox" id="pf-consent">
+    <span>입력한 정보와 체크인 기록을 선생님이 훈련 관리에만 쓰는 것에 동의해요. 만 14세 미만이면 보호자에게 먼저 동의를 받았어요.</span></label>
+
+  <button class="btn" style="margin-top:20px" onclick="profileNext()">다음</button>
+  <div id="pf-error" class="err" role="alert"></div>
   <button class="link" onclick="logout()">다른 계정으로 로그인</button>
+</section>
+
+<!-- 가입 2: 반 코드 -->
+<section id="screen-join" class="screen hidden">
+  <div class="steps" aria-label="가입 단계"><span class="done">1 내 정보</span><span class="on">2 반 코드</span><span>3 승인</span></div>
+  <h1>반 코드 입력</h1>
+  <p>선생님께 받은 반 코드를 입력하면 승인 요청이 가요.</p>
+  <input id="code-input" class="code" maxlength="12" placeholder="반 코드" autocapitalize="characters" autocomplete="off" aria-label="반 코드">
+  <button id="join-btn" class="btn" onclick="sendJoinRequest()">승인 요청 보내기</button>
+  <div id="code-error" class="err" role="alert"></div>
+  <button class="link" onclick="show('screen-profile')">← 내 정보 고치기</button>
+</section>
+
+<!-- 가입 3: 승인 대기 -->
+<section id="screen-wait" class="screen hidden">
+  <div class="steps" aria-label="가입 단계"><span class="done">1 내 정보</span><span class="done">2 반 코드</span><span class="on">3 승인</span></div>
+  <h1>선생님 승인을 기다리고 있어요</h1>
+  <p>승인되면 이 화면이 저절로 체크인 화면으로 바뀌어요. 창을 닫았다가 나중에 다시 열어도 돼요.</p>
+  <div class="box" id="wait-summary"></div>
+  <button class="link" onclick="editRequest()">내 정보 고치기</button>
+  <button class="link" onclick="logout()">로그아웃</button>
+</section>
+
+<!-- 내 정보 보기 (승인 후) -->
+<section id="screen-me" class="screen hidden">
+  <h1>내 정보</h1>
+  <div class="box" id="me-summary"></div>
+  <p class="note" style="margin-top:12px">정보를 바꾸려면 선생님께 말씀해 주세요.</p>
+  <button class="btn" onclick="showResult()">돌아가기</button>
 </section>
 
 <section id="screen-form" class="screen hidden"></section>
@@ -463,49 +529,133 @@ function loginWithGoogle(){
 }
 function logout(){ auth.signOut(); }
 
-async function findMyStudent(uid){
-  const snap=await db.collection('students').where('uid','==',uid).limit(1).get();
-  if(snap.empty) return null;
-  const d=snap.docs[0];
-  return {id:d.id,name:d.data().name};
-}
+/* ============ 가입: 내 정보 → 반 코드 → 선생님 승인 ============
+   joinRequests/{내 uid}  : 학생이 쓰는 가입 신청서 (코치 사이트가 읽어서 승인)
+   links/{내 uid}         : 선생님이 승인하면 만들어지는 연결 문서 {studentId, name}
+   settings/public        : 지점 목록 {branches:[...]} (누구나 읽기)
+   settings/join          : 반 코드 {code} (학생은 못 읽음. 맞는지는 보안 규칙이 검사) */
+const GRADES=['중1','중2','중3','고1','고2','고3','N수','기타'];
+let profile=null, branches=[], unsubs=[];
+function emptyProfile(){ return {name:'',grade:'',branch:'',targetSchool:'',injury:null,injuryNote:'',consent:false}; }
+function stopListening(){ unsubs.forEach(u=>u()); unsubs=[]; }
 
-// 초대 코드로 학생과 이 계정을 연결
-async function linkStudent(){
-  const errBox=$('code-error'), btn=$('link-btn');
+async function loadBranches(){
+  try{ const d=await db.collection('settings').doc('public').get(); branches=(d.exists&&Array.isArray(d.data().branches))?d.data().branches:[]; }
+  catch(e){ branches=[]; }
+}
+function renderProfile(){
+  const p=profile;
+  $('pf-name').value=p.name;
+  $('pf-school').value=p.targetSchool;
+  $('pf-grade').innerHTML=GRADES.map(g=>`<button type="button" class="chip ${p.grade===g?'on':''}" aria-pressed="${p.grade===g}" data-g="${g}">${g}</button>`).join('');
+  $('pf-branch-box').innerHTML=branches.length
+    ? `<select id="pf-branch" class="txt"><option value="">지점 선택</option>${branches.map(b=>`<option ${p.branch===b?'selected':''}>${esc(b)}</option>`).join('')}</select>`
+    : `<input id="pf-branch" class="txt" maxlength="20" placeholder="다니는 지점 이름" value="${esc(p.branch)}">`;
+  $('pf-injury').innerHTML=[['없음',false],['있음',true]].map(([t,v])=>`<button type="button" class="chip ${v?'pain':''} ${p.injury===v?'on':''}" aria-pressed="${p.injury===v}" data-inj="${v}">${t}</button>`).join('');
+  $('pf-injury-note-box').innerHTML=p.injury?`<input id="pf-injury-note" class="txt" style="margin-top:10px" maxlength="100" placeholder="예: 작년 여름 오른쪽 발목 염좌" value="${esc(p.injuryNote)}" aria-label="부상 이력 내용">`:'';
+  $('pf-consent').checked=p.consent;
+}
+function readProfileInputs(){
+  profile.name=$('pf-name').value.trim();
+  profile.targetSchool=$('pf-school').value.trim();
+  profile.branch=($('pf-branch').value||'').trim();
+  if($('pf-injury-note')) profile.injuryNote=$('pf-injury-note').value.trim();
+  profile.consent=$('pf-consent').checked;
+}
+$('screen-profile').addEventListener('click',e=>{
+  const g=e.target.closest('[data-g]'), inj=e.target.closest('[data-inj]');
+  if(!g&&!inj) return;
+  readProfileInputs();
+  if(g) profile.grade=g.dataset.g;
+  if(inj){ profile.injury=inj.dataset.inj==='true'; if(!profile.injury) profile.injuryNote=''; }
+  renderProfile();
+  const again=$('screen-profile').querySelector(g?`[data-g="${g.dataset.g}"]`:`[data-inj="${inj.dataset.inj}"]`); if(again) again.focus({preventScroll:true});
+});
+function profileNext(){
+  readProfileInputs();
+  const p=profile, err=$('pf-error'), miss=[];
+  if(p.name.length<2) miss.push('이름(2자 이상)');
+  if(!p.grade) miss.push('학년');
+  if(!p.branch) miss.push('지점');
+  if(!p.consent) miss.push('동의 체크');
+  if(miss.length){ err.textContent='아직 입력하지 않은 항목이 있어요: '+miss.join(', '); return; }
+  err.textContent='';
+  $('code-error').textContent='';
+  show('screen-join');
+}
+async function sendJoinRequest(){
+  const errBox=$('code-error'), btn=$('join-btn');
   const code=$('code-input').value.trim().toUpperCase();
   errBox.textContent='';
-  if(!code){ errBox.textContent='코드를 입력해 주세요.'; return; }
+  if(!/^[A-Z0-9]{4,12}$/.test(code)){ errBox.textContent='반 코드는 영문과 숫자로 된 4~12자리예요.'; return; }
   btn.disabled=true;
   try{
-    const uid=auth.currentUser.uid;
-    const inviteRef=db.collection('invites').doc(code);
-    const invite=await inviteRef.get();
-    if(!invite.exists){ errBox.textContent='없는 코드예요. 코치님께 다시 확인해 보세요.'; return; }
-    const inv=invite.data();
-    if(inv.usedBy&&inv.usedBy!==uid){ errBox.textContent='이미 사용된 코드예요.'; return; }
-    const studentRef=db.collection('students').doc(inv.studentId);
-    try{ await studentRef.update({uid:uid}); }
-    catch(e){
-      if(e.code==='permission-denied'){ errBox.textContent='연결할 수 없어요. 이미 다른 계정과 연결된 학생이에요.'; return; }
-      throw e;
-    }
-    if(!inv.usedBy){ try{ await inviteRef.update({usedBy:uid}); }catch(e){} }
-    const s=await studentRef.get();
-    await enterApp({id:s.id,name:s.data().name});
-  }catch(err){
-    errBox.textContent='연결 실패: '+(err.code||err.message);
+    const u=auth.currentUser, ref=db.collection('joinRequests').doc(u.uid);
+    const old=await ref.get();
+    const p=profile;
+    await ref.set({
+      name:p.name, grade:p.grade, branch:p.branch, targetSchool:p.targetSchool,
+      injury:p.injury, injuryNote:p.injury?p.injuryNote:'', consent:true,
+      email:u.email, code, status:'pending',
+      createdAt:old.exists&&old.data().createdAt?old.data().createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    waitForApproval();
+  }catch(e){
+    errBox.textContent=e.code==='permission-denied'?'반 코드가 맞지 않아요. 선생님께 다시 확인해 보세요.':'요청 실패: '+(e.code||e.message);
   }finally{ btn.disabled=false; }
+}
+function summaryHTML(r){
+  const rows=[['이름',r.name],['학년',r.grade],['지점',r.branch],['목표 학교',r.targetSchool||'-'],['부상 이력',r.injury===true?('있음'+(r.injuryNote?' · '+r.injuryNote:'')):r.injury===false?'없음':'-']];
+  return rows.map(([k,v])=>`<div class="kv"><b>${k}</b><span>${esc(v)}</span></div>`).join('');
+}
+// 승인 대기: links(승인) 와 joinRequests(반려) 를 실시간으로 지켜본다
+function waitForApproval(){
+  stopListening();
+  const uid=auth.currentUser.uid;
+  show('screen-wait');
+  unsubs.push(db.collection('joinRequests').doc(uid).onSnapshot(d=>{
+    if(!d.exists) return;
+    const r=d.data();
+    $('wait-summary').innerHTML=summaryHTML(r);
+    if(r.status==='rejected'){ stopListening(); openProfile(r); }
+  },()=>{}));
+  unsubs.push(db.collection('links').doc(uid).onSnapshot(async d=>{
+    if(!d.exists) return;
+    stopListening();
+    await enterApp({id:d.data().studentId,name:d.data().name});
+  },()=>{}));
+}
+async function openProfile(req){
+  await loadBranches();
+  profile=req?{name:req.name||'',grade:req.grade||'',branch:req.branch||'',targetSchool:req.targetSchool||'',injury:req.injury??null,injuryNote:req.injuryNote||'',consent:!!req.consent}:emptyProfile();
+  $('reject-box').innerHTML=req&&req.status==='rejected'
+    ?`<div class="reject"><b>승인되지 않았어요.</b> ${esc(req.rejectReason||'정보를 확인하고 다시 보내 주세요.')}</div>`:'';
+  renderProfile(); show('screen-profile');
+}
+async function editRequest(){
+  stopListening();
+  const d=await db.collection('joinRequests').doc(auth.currentUser.uid).get();
+  openProfile(d.exists?d.data():null);
+}
+async function openMe(){
+  const d=await db.collection('joinRequests').doc(auth.currentUser.uid).get();
+  $('me-summary').innerHTML=d.exists?summaryHTML(d.data()):`<div class="kv"><b>이름</b><span>${esc(myStudent.name)}</span></div>`;
+  show('screen-me');
 }
 
 auth.onAuthStateChanged(async user=>{
+  stopListening();
   if(!user){ myStudent=null; myCheckins=[]; show('screen-login'); return; }
   $('user-email').textContent=user.email;
   $('load-msg').textContent='확인하는 중...';
   show('screen-loading');
   try{
-    const mine=await findMyStudent(user.uid);
-    if(mine) await enterApp(mine); else show('screen-code');
+    const link=await db.collection('links').doc(user.uid).get();
+    if(link.exists){ await enterApp({id:link.data().studentId,name:link.data().name}); return; }
+    const req=await db.collection('joinRequests').doc(user.uid).get();
+    if(req.exists&&req.data().status==='pending') waitForApproval();
+    else await openProfile(req.exists?req.data():null);
   }catch(err){
     $('load-msg').innerHTML='불러오지 못했어요: '+esc(err.code||'')+'<br><span class="note">'+esc(err.message||'')+'</span><br><button class="link" onclick="location.reload()">다시 시도</button>';
     show('screen-loading');
@@ -514,8 +664,8 @@ auth.onAuthStateChanged(async user=>{
 
 async function enterApp(student){
   myStudent=student;
-  // 최근 30일만 날짜 범위로 조회 (문서 ID = 날짜라서 색인 없이 가능). 정렬은 아래에서 화면 쪽이 한다.
-  const from=addDays(todayStr(),-30);
+  // 평소 기준(14일) + 오늘 = 15일치만 읽는다. 문서 ID 가 날짜라서 색인 없이 범위 조회 가능.
+  const from=addDays(todayStr(),-BASELINE_WINDOW_DAYS);
   const snap=await db.collection('students').doc(student.id).collection('checkins')
     .where(firebase.firestore.FieldPath.documentId(),'>=',from).get();
   myCheckins=snap.docs.map(d=>({...d.data(),date:d.id})).sort((a,b)=>a.date.localeCompare(b.date));
@@ -643,7 +793,7 @@ async function submitCheckin(){
     painFollowUp:yesterdayPain()?form.painFollowUp:null
   };
   const j=judge(data,analyze(data,historyFor(date)));
-  data.status=j.status; data.reasons=j.reasons;   // 코치 화면에서 바로 쓰도록 판정 결과도 저장
+  data.status=j.status; data.reasons=j.reasons; data.studentId=myStudent.id;   // 코치 화면에서 바로 쓰도록 판정 결과도 저장
   const btn=document.querySelector('[data-a="submit"]'); btn.disabled=true; err.textContent='';
   try{
     await db.collection('students').doc(myStudent.id).collection('checkins').doc(date)
@@ -686,7 +836,7 @@ function showResult(){
   $('screen-result').innerHTML=`
     <div class="head"><div><h1>${esc(myStudent.name||'학생')}님, 오늘 상태</h1>
       <div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})}</div></div>
-      <div class="head-actions"><button class="link" data-a="edit">기록 수정</button><button class="link" data-a="logout">로그아웃</button></div></div>
+      <div class="head-actions"><button class="link" data-a="edit">기록 수정</button><button class="link" data-a="me">내 정보</button><button class="link" data-a="logout">로그아웃</button></div></div>
 
     <div class="status" style="border-color:${ui.color};background:${ui.bg}">
       <div class="badge" style="color:${ui.color}">${ui.label}</div>
@@ -712,13 +862,14 @@ function showResult(){
       <div class="chips" style="margin-top:0">${METRICS.map(m=>`<button class="chip ${trendKey===m.key?'on':''}" data-trend="${m.key}">${m.label}</button>`).join('')}</div>
       <div class="range"><button class="chip ${trendRange===7?'on':''}" data-range="7">7일</button><button class="chip ${trendRange===14?'on':''}" data-range="14">14일</button></div>
       <div class="chart-box"><canvas id="trend" role="img" aria-label="${METRICS.find(m=>m.key===trendKey).label} 최근 ${trendRange}일 추이 그래프"></canvas></div>
-      <p class="note" style="margin-top:8px;">점선은 최근 평소 평균이에요.</p></div>${DEV?devPanel():''}`;
+      <p class="note" style="margin-top:8px;">점선은 최근 평소 평균이에요.</p></div>${isDev()?devPanel():''}`;
   show('screen-result'); drawTrend();
 }
 $('screen-result').addEventListener('click',e=>{
   const el=e.target.closest('[data-a],[data-trend],[data-range]'); if(!el) return;
   if(el.dataset.a==='edit') openForm();
   else if(el.dataset.a==='logout') logout();
+  else if(el.dataset.a==='me') openMe();
   else if(el.dataset.a==='copy'){ const t=$('talk').textContent; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{ el.textContent='복사됨'; }).catch(()=>{ el.textContent='길게 눌러 직접 복사해 주세요'; }); }
   else if(el.dataset.a==='seed') seedData();
   else if(el.dataset.a==='clearseed') clearSeed();
@@ -745,7 +896,8 @@ function drawTrend(){
 }
 
 /* ============ 개발용 테스트 데이터 (?dev=1 일 때만 화면에 나온다) ============ */
-const DEV=new URLSearchParams(location.search).get('dev')==='1';
+const DEV_EMAILS=['dragon040617@gmail.com'];   // 테스트 데이터 버튼을 볼 수 있는 계정
+function isDev(){ return new URLSearchParams(location.search).get('dev')==='1'&&auth.currentUser&&DEV_EMAILS.includes(auth.currentUser.email); }
 const SEED={
   sleepMin:[430,415,445,420,400,435,425,410,440,420],
   sleepQuality:[7,6,8,7,6,7,7,6,8,7],
@@ -770,7 +922,7 @@ async function seedData(){
       if(myCheckins.some(c=>c.date===date)) continue;
       batch.set(col.doc(date),{date,sleepMin:SEED.sleepMin[i],sleepQuality:SEED.sleepQuality[i],fatigue:SEED.fatigue[i],
         soreness:SEED.soreness[i],sorenessAreas:['허벅지 앞'],sorenessImpact:1,stress:SEED.stress[i],stressCauses:[],
-        readiness:SEED.readiness[i],pain:false,painAreas:[],painLevel:null,painNote:'',seed:true,
+        readiness:SEED.readiness[i],studentId:myStudent.id,status:'BASE',reasons:[],painFollowUp:null,pain:false,painAreas:[],painLevel:null,painNote:'',seed:true,
         checkedAt:firebase.firestore.FieldValue.serverTimestamp()});
       n++;
     }
