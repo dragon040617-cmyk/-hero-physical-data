@@ -504,14 +504,15 @@ function buildCare(c){
 /* PURE:END */
 
 /* ============ Firebase ============ */
-firebase.initializeApp({
+// 앱 이름을 'student' 로 따로 지어서, 같은 기기의 코치 사이트와 로그인 정보가 섞이지 않게 한다
+const fbApp=firebase.initializeApp({
   apiKey:"AIzaSyAWKsdEXjM0vMT06wYht5kPmD6R9i1d0yA",
   authDomain:"hero-sports-academy.firebaseapp.com",
   projectId:"hero-sports-academy",
   appId:"1:505238936070:web:ab01e5164d03c44de0c187"
-});
-const auth=firebase.auth();
-const db=firebase.firestore();
+},'student');
+const auth=fbApp.auth();
+const db=fbApp.firestore();
 const $=id=>document.getElementById(id);
 
 function show(id){
