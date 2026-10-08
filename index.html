@@ -23,7 +23,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
 <!-- 속도: 서버들과 미리 연결해 두고(인사 시간 절약), 글꼴은 화면을 막지 않게 나중에 입힌다 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin>
@@ -647,6 +647,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
 <div class="toast" id="toast"></div>
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
 <div id="authWait" class="auth-wait" role="status"><div class="aw-mark">HERO PHYSICAL DATA</div><div class="aw-spin" aria-hidden="true"></div><div id="authWaitMsg">로그인 확인 중...</div></div>
+<script>setTimeout(function(){ var e=document.getElementById('authWait'); if(e&&!/학생 화면/.test(e.textContent)) e.classList.add('hide'); },6000);   // 무슨 일이 있어도 6초 뒤엔 로그인 화면을 보여 준다</script>
 
 <!-- 속도: 무거운 파일은 첫 화면 글자를 먼저 그린 다음에 받는다. 그래프 파일(Chart.js)은 로그인 뒤에 따로 받는다 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-app-compat.min.js"></script>
@@ -726,6 +727,9 @@ const EVENT_UNIT = {
   "배근력":"kg","100m":"초 (낮을수록 좋음)","턱걸이":"회","매달리기":"초","배구":"점수","농구":"점수",
   "사이드 스텝":"회","핸드볼 던지기":"m"
 };
+// 종목 이름으로 단위 찾기 ('constructor' 같은 이름도 안전하게)
+function unitText(ev){ return Object.prototype.hasOwnProperty.call(EVENT_UNIT,ev)?String(EVENT_UNIT[ev]).split(' ')[0]:''; }
+function unitFull(ev){ return Object.prototype.hasOwnProperty.call(EVENT_UNIT,ev)?String(EVENT_UNIT[ev]):''; }
 const LOWER_IS_BETTER = ["10m 왕복달리기","20m 왕복달리기","Z-런","25m 왕복달리기","중량 달리기","100m"];
 
 // 가장 최근 기록이 그 학생의 해당 종목 역대 최고 기록인지 (최소 2회 이상 기록이 있어야 의미 있음)
@@ -779,6 +783,7 @@ function esc(v){
 function jsAttrEsc(v){
   if(v===null || v===undefined) return '';
   return String(v)
+    .replace(/&/g,'&amp;')          // 먼저 & 를 바꿔야 &#39; 같은 글자가 다시 따옴표로 풀리지 않는다
     .replace(/\\/g,'\\\\')
     .replace(/'/g,"\\'")
     .replace(/"/g,'&quot;')
@@ -1382,9 +1387,9 @@ function renderTeamRankList(){
   const ev = sel.value;
   const lower = LOWER_IS_BETTER.includes(ev);
   const ranked = state.students
-    .filter(s=> evList(s).includes(ev) && (s.records[ev]||[]).length)
+    .filter(s=> evList(s).includes(ev) && (s.records[ev]||[]).some(r=>r.by!=='student'||!PERF.rangeWarn(ev,r.value)))
     .map(s=>{
-      const recs = s.records[ev].slice().sort((a,b)=>a.date.localeCompare(b.date));
+      const recs = s.records[ev].filter(r=>r.by!=='student'||!PERF.rangeWarn(ev,r.value)).slice().sort((a,b)=>a.date.localeCompare(b.date));   // 범위 밖 학생 값(단위 실수 등)은 순위에서 뺀다
       return { name:s.name, value: recs[recs.length-1].value };
     })
     .sort((a,b)=> lower ? a.value-b.value : b.value-a.value);
@@ -1392,7 +1397,7 @@ function renderTeamRankList(){
   el.innerHTML = ranked.length ? `
     <table>
       <thead><tr><th>순위</th><th>이름</th><th>기록</th></tr></thead>
-      <tbody>${ranked.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td class="mono">${r.value} ${EVENT_UNIT[ev]?.split(' ')[0]||''}</td></tr>`).join('')}</tbody>
+      <tbody>${ranked.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td class="mono">${r.value} ${esc(unitText(ev))}</td></tr>`).join('')}</tbody>
     </table>` : `<div class="empty-mini">이 종목의 기록이 있는 학생이 없습니다</div>`;
 }
 
@@ -1639,7 +1644,7 @@ function renderOverview(s){
     return `
       <div class="card stat-tile ${tone}">
         <h3>${esc(ev)}${pb?' <span class="pb-badge">🏅 개인 최고</span>':''}</h3>
-        <div class="stat">${latest!==null? latest : '—'}<span style="font-size:14px;color:var(--text-dim);"> ${EVENT_UNIT[ev]?.split(' ')[0]||''}</span></div>
+        <div class="stat">${latest!==null? latest : '—'}<span style="font-size:14px;color:var(--text-dim);"> ${esc(unitText(ev))}</span></div>
         <div class="stat-note">${target? `목표 ${esc(target)} · 달성률 ${pct!==null? pct.toFixed(0)+'%':'-'}`:'목표 미설정'}${recs.length&&recs[recs.length-1].by==='student'?' · <span class="t-good">학생 입력</span>':''}</div>
         ${fb?`<div class="stat-note t-${fb.tone}" style="margin-top:4px;">${esc(fb.headline)}</div>`:''}
       </div>`;
@@ -1796,7 +1801,7 @@ function renderRecordsTab(s){
   const ev = selEv;
   const recs = s.records[ev]||[];
   const target = s.targets[ev];
-  const unit = EVENT_UNIT[ev]?.split(' ')[0]||'';
+  const unit = unitText(ev);
   const fb = PERF.feedback(ev, recs, target, {today:HC.todayStr(), todayStatus:statusOf(s)});
   const isExtra = !s.events.includes(ev);
   const rows = recs.slice().reverse().map((r,idx)=>{
@@ -1806,7 +1811,7 @@ function renderRecordsTab(s){
       <td class="mono">${esc(r.date)}</td>
       <td class="mono">${esc(r.value)} ${esc(unit)}${warn?` <span class="t-warn" title="${esc(warn)}">⚠</span>`:''}</td>
       <td><span class="src-badge ${r.by==='student'?'stu':''}">${r.by==='student'?'학생':'선생님'}</span></td>
-      <td><button class="row-del" onclick="deleteRecord('${jsAttrEsc(s.id)}','${jsAttrEsc(ev)}',${realIdx})">삭제</button></td>
+      <td><button class="row-del" onclick="deleteRecord('${jsAttrEsc(s.id)}','${jsAttrEsc(ev)}',${realIdx},'${jsAttrEsc(r.date)}','${jsAttrEsc(r.by||'coach')}','${jsAttrEsc(r.rid||'')}')">삭제</button></td>
     </tr>`;
   }).join('') || `<tr><td colspan="4" class="empty-mini">기록이 없습니다</td></tr>`;
 
@@ -1815,7 +1820,7 @@ function renderRecordsTab(s){
     ${state.perfDenied?`<div class="insight-box flag" style="margin-bottom:14px;">학생이 입력한 실기 기록을 읽을 권한이 아직 없어요. Firebase 규칙에 <b>perfRecords</b> 부분을 추가해야 해요.</div>`:''}
 
     <div class="card" style="margin-bottom:18px;">
-      <h3 style="margin-bottom:12px;">${esc(ev)} 기록 입력 <span style="color:var(--text-dim); font-weight:400; text-transform:none;">(${esc(EVENT_UNIT[ev]||'')})</span></h3>
+      <h3 style="margin-bottom:12px;">${esc(ev)} 기록 입력 <span style="color:var(--text-dim); font-weight:400; text-transform:none;">(${esc(unitFull(ev))})</span></h3>
       ${isExtra?`<div class="stat-note" style="margin-bottom:10px;">학생이 직접 고른 종목이에요. 선생님 기록을 넣거나 목표를 정하려면 먼저 위에서 <b>＋등록</b>을 눌러 주세요.</div>`:`
       <form class="entry-form" onsubmit="addRecord(event,'${jsAttrEsc(s.id)}','${jsAttrEsc(ev)}')">
         <div class="field"><label>날짜</label><input type="date" name="date" value="${todayStr()}" max="${todayStr()}" required></div>
@@ -1855,10 +1860,11 @@ let chartLoading=null;
 function ensureChart(){
   if(typeof Chart!=='undefined') return Promise.resolve();
   if(chartLoading) return chartLoading;
+  if(Date.now()-(ensureChart.failedAt||0)<30000) return Promise.reject(new Error('chart'));   // 인터넷이 끊겼을 때 계속 다시 받지 않게
   chartLoading=new Promise((res,rej)=>{
     const sc=document.createElement('script');
     sc.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js';
-    sc.onload=()=>res(); sc.onerror=()=>{ chartLoading=null; rej(new Error('chart')); };
+    sc.onload=()=>res(); sc.onerror=()=>{ chartLoading=null; ensureChart.failedAt=Date.now(); sc.remove(); rej(new Error('chart')); };
     document.head.appendChild(sc);
   });
   return chartLoading;
@@ -2093,10 +2099,15 @@ async function addRecord(e, sid, ev){
   if(ok) showToast(isPersonalBest(s,ev) ? `🏅 ${ev} 개인 최고 기록 경신!` : `${ev} 기록이 저장되었습니다`);
   else showToast('저장에 실패했어요. 다시 시도해주세요.');
 }
-async function deleteRecord(sid, ev, idx){
+async function deleteRecord(sid, ev, idx, date, by, rid){
   const s = getStudent(sid);
   if(!s || !s.records[ev]) return;
-  const r = s.records[ev][idx];
+  // 화면을 그린 뒤 목록이 바뀌었을 수 있으니, 순서 번호가 가리키는 기록이 누른 기록과 같은지 확인한다
+  const list = s.records[ev];
+  const same = r => r && (date===undefined || r.date===date) && (by===undefined || (r.by||'coach')===by) && (!rid || r.rid===rid);
+  if(!same(list[idx])) idx = list.findIndex(same);
+  if(idx<0){ showToast('기록이 바뀌었어요. 화면을 다시 확인해 주세요.'); rerender(); return; }
+  const r = list[idx];
   if(!r || !confirm(`${r.date} ${ev} ${r.value}${r.by==='student'?' (학생이 입력한 기록)':''} 기록을 삭제할까요?`)) return;   // 휴대폰에서 스크롤하다 잘못 눌러도 바로 지워지지 않게
   if(r.by==='student'){   // 학생 기록은 학생 쪽 저장소에서 지운다
     try{ await deletePerfDoc(sid, r.rid); showToast('학생 기록을 삭제했어요'); }
@@ -2116,11 +2127,12 @@ function adoptEvent(sid, ev){
 async function removeEvent(sid, ev){
   const s = getStudent(sid);
   if(!s) return;
-  const stu = (s.records[ev]||[]).filter(r=>r.by==='student');
+  await loadPerf(sid, true, true);   // 화면에 안 보이던 학생 기록(같은 날 선생님 기록에 가려진 것 등)까지 모두 읽어서 같이 지운다
+  const stu = (state.perf[sid]||[]).filter(r=>r.event===ev);
   if(!confirm(`'${ev}' 종목을 삭제하시겠습니까? 관련 기록도 함께 삭제됩니다.${stu.length?`\n(학생이 입력한 기록 ${stu.length}개 포함)`:''}`)) return;
   if(state.selectedEventByStudent[sid]===ev) state.selectedEventByStudent[sid]=null;
   if(stu.length){
-    try{ markUserWrite(); for(const r of stu) await db.collection('students').doc(sid).collection('perfRecords').doc(r.rid).delete(); }
+    try{ markUserWrite(); for(let i=0;i<stu.length;i+=400){ const b=db.batch(); stu.slice(i,i+400).forEach(r=>b.delete(db.collection('students').doc(sid).collection('perfRecords').doc(r.rid))); await b.commit(); } }
     catch(err){ showToast('학생 기록 삭제 실패: '+(err.code==='permission-denied'?'권한이 없어요 (Firebase 규칙 확인)':err.message)); return; }
     state.perf[sid]=(state.perf[sid]||[]).filter(r=>r.event!==ev);
   }
@@ -2363,7 +2375,7 @@ async function exportCSV(){
   // → 내보내기 전에 모든 학생의 최근 28일 체크인을 먼저 불러온다.
   if(!db){ showToast('Firebase 설정이 필요합니다'); return; }
   showToast(`${state.students.length}명의 최근 28일 체크인을 불러오는 중...`);
-  const [loaded] = await Promise.all([Promise.all(state.students.map(s=>loadHistory(s.id, false, true))), loadAllPerf(true)]);
+  const [loaded] = await Promise.all([Promise.all(state.students.map(s=>loadHistory(s.id, false, true))), loadAllPerf(true, 60)]);
   const failed = loaded.filter(x=>x===false).length;
   applyCheckins(); softRerender();
   if(failed) showToast(`${failed}명의 기록은 불러오지 못해 CSV에서 0회로 나와요. 잠시 뒤 다시 내보내 주세요.`);
@@ -2473,7 +2485,6 @@ function isFirebaseConfigured(){
 }
 
 function hideAuthWait(){ document.getElementById('authWait')?.classList.add('hide'); }
-setTimeout(hideAuthWait, 6000);   // 인터넷이 아주 느려도 6초 뒤엔 로그인 화면을 보여 준다
 function initFirebase(){
   if(!isFirebaseConfigured()){ hideAuthWait();
     document.getElementById('firebaseConfigWarning').style.display='block';
@@ -2521,6 +2532,7 @@ function initFirebase(){
         if(unsubscribeClassLogs){ unsubscribeClassLogs(); unsubscribeClassLogs=null; }
         if(unsubscribeJoin){ unsubscribeJoin(); unsubscribeJoin=null; }
         hideAuthWait();
+        state.students=[]; state.studentsLoaded=false; state.todayCk={}; state.hist={}; state.perf={}; state.perfFull={}; state.perfAllAt=0; ckStudentKey='';
         document.getElementById('loginScreen').style.display='';
         document.getElementById('app').style.display='none';
       }
@@ -2572,6 +2584,7 @@ function studentGoogleLogin(){
   });
 }
 function showAccountProblem(msg){
+  hideAuthWait();
   document.getElementById('loginScreen').style.display='none';
   const app=document.getElementById('app'); app.style.display='';
   app.innerHTML=`<div style="max-width:440px; margin:80px auto; padding:24px; text-align:center;">
@@ -2600,7 +2613,7 @@ function subscribeStudents(){
         fatigue: [],   // 코치 입력 피로도는 쓰지 않음 → 아래 applyCheckins 가 학생 체크인으로 채운다
         events: Array.isArray(d.events) ? d.events.filter(e=>typeof e==='string') : [],
         _coachRecords: (d.records && typeof d.records==='object') ? d.records : {},   // 선생님이 적은 실기 기록 (저장되는 원본)
-        records: {},   // 화면용: 선생님 기록 + 학생이 입력한 기록 (applyRecords 가 채운다)
+        records: coachCopy(d.records),   // 화면용: 선생님 기록 + 학생 기록 (applyRecords 가 채운다). 먼저 선생님 기록으로 채워 둬서, 합치기가 실패해도 저장 때 기록이 사라지지 않는다
         targets: (d.targets && typeof d.targets==='object') ? d.targets : {}
       });
     });
@@ -2937,12 +2950,14 @@ const JUMP=["제자리멀리뛰기","CMJ"];
 // 보통 나오는 범위. 벗어나면 막지는 않고 "단위가 맞나요?"라고 한 번 더 묻는다 (251cm 를 2.51 로 적는 실수 방지)
 const RANGE={"제자리멀리뛰기":[120,340],"메디신볼":[3,20],"10m 왕복달리기":[7,15],"20m 왕복달리기":[5,60],"Z-런":[7,25],"25m 왕복달리기":[7,20],"좌전굴":[-20,40],"중량 달리기":[5,30],"배근력":[30,300],"100m":[10,25],"턱걸이":[0,60],"매달리기":[0,180],"배구":[0,100],"농구":[0,100],"사이드 스텝":[10,80],"핸드볼 던지기":[10,60],"CMJ":[15,90]};
 
+const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);   // 'constructor' 같은 이름이 내장 기능으로 읽히지 않게
 const r2=v=>Math.round(v*100)/100;
 const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
-function unitOf(ev){ return UNIT[ev]||''; }
+function unitOf(ev){ return own(UNIT,ev)?UNIT[ev]:''; }
 function withUnit(ev,v){ return String(r2(v))+unitOf(ev); }
 function isLower(ev){ return LOWER.includes(ev); }
-function isKnown(ev){ return Object.prototype.hasOwnProperty.call(UNIT,ev); }   // 선생님이 직접 만든 종목은 '높을수록 좋은지' 알 수 없어서 좋다/나쁘다 판단을 하지 않는다
+function safeEvent(ev){ return typeof ev==='string'&&ev.length<=60&&/^[\p{L}\p{N} .()+·\-]+$/u.test(ev)&&ev.trim()===ev&&ev.length>0; }   // 글자·숫자·공백·. ( ) + · - 만
+function isKnown(ev){ return own(UNIT,ev); }   // 선생님이 직접 만든 종목은 '높을수록 좋은지' 알 수 없어서 좋다/나쁘다 판단을 하지 않는다
 function better(ev,a,b){ return isLower(ev)?a<b:a>b; }          // a 가 b 보다 좋은 기록인가
 function gain(ev,from,to){ return isLower(ev)?from-to:to-from; }  // + 면 좋아짐
 function md(d){ return Number(d.slice(5,7))+'/'+Number(d.slice(8,10)); }
@@ -2952,20 +2967,22 @@ function changeWord(ev,g){ if(!isKnown(ev)) return g>0?'높아졌어요':'낮아
 function headWord(ev,g){ if(!isKnown(ev)) return g>0?'높아짐':'낮아짐'; if(isLower(ev)) return g>0?'빨라짐':'느려짐'; if(unitOf(ev)==='점') return g>0?'오름':'내려감'; return g>0?'늘어남':'줄어듦'; }
 function amount(ev,x){ return withUnit(ev,Math.abs(x)); }
 function validDate(d){ return typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d); }
+// 빈 칸('')이나 null 은 0으로 보지 않는다 (Number('') 는 0 이라서 따로 막음)
+function numOf(v){ if(typeof v==='number') return Number.isFinite(v)?v:null; if(typeof v==='string'&&v.trim()!==''){ const n=Number(v); return Number.isFinite(n)?n:null; } return null; }
 
 // 숫자 입력 읽기: "12,85" 처럼 쉼표로 적어도 소수점으로 본다
-function parseValue(s){ const t=String(s==null?'':s).trim().replace(',', '.'); if(!/^-?\d+(\.\d+)?$/.test(t)) return null; const n=Number(t); return Number.isFinite(n)?n:null; }
+function parseValue(s){ let t=String(s==null?'':s).trim().replace(/[−–]/g,'-').replace(',', '.'); if(/^-?\.\d/.test(t)) t=t.replace('.','0.'); if(!/^-?\d+(\.\d+)?$/.test(t)) return null; const n=Number(t); return Number.isFinite(n)?n:null; }
 function rangeWarn(ev,v){
-  const r=RANGE[ev]; if(!r||!Number.isFinite(v)) return null;
+  const r=own(RANGE,ev)?RANGE[ev]:null; if(!r||!Number.isFinite(v)) return null;
   return (v<r[0]||v>r[1])?'보통 '+r[0]+'~'+r[1]+unitOf(ev)+' 사이예요. 숫자와 단위('+(unitOf(ev)||'단위')+')가 맞는지 확인해 주세요.':null;
 }
 
 // 선생님 기록 + 학생이 입력한 기록 합치기. 같은 날짜에 둘 다 있으면 선생님 기록을 쓴다.
 function merge(coachList,studentList){
-  const ok=r=>r&&validDate(r.date)&&Number.isFinite(Number(r.value));
-  const coach=(Array.isArray(coachList)?coachList:[]).filter(ok).map(r=>({date:r.date,value:Number(r.value),by:'coach'}));
+  const ok=r=>r&&validDate(r.date)&&numOf(r.value)!==null;
+  const coach=(Array.isArray(coachList)?coachList:[]).filter(ok).map(r=>({date:r.date,value:numOf(r.value),by:'coach'}));
   const taken=new Set(coach.map(r=>r.date));
-  const stu=(Array.isArray(studentList)?studentList:[]).filter(ok).filter(r=>!taken.has(r.date)).map(r=>({date:r.date,value:Number(r.value),by:'student',rid:r.rid||''}));
+  const stu=(Array.isArray(studentList)?studentList:[]).filter(ok).filter(r=>!taken.has(r.date)).map(r=>({date:r.date,value:numOf(r.value),by:'student',rid:r.rid||''}));
   return coach.concat(stu).sort((a,b)=>a.date.localeCompare(b.date));
 }
 
@@ -2973,11 +2990,11 @@ function merge(coachList,studentList){
    recs: [{date,value}] (날짜순 아니어도 됨), target: 목표 기록(없으면 null), opt: {today, todayStatus} */
 function feedback(ev,recsIn,target,opt){
   opt=opt||{};
-  const recs=(Array.isArray(recsIn)?recsIn:[]).filter(r=>r&&validDate(r.date)&&Number.isFinite(Number(r.value))).map(r=>({date:r.date,value:Number(r.value),by:r.by})).sort((a,b)=>a.date.localeCompare(b.date));
+  const recs=(Array.isArray(recsIn)?recsIn:[]).filter(r=>r&&validDate(r.date)&&numOf(r.value)!==null).map(r=>({date:r.date,value:numOf(r.value),by:r.by,rid:r.rid})).sort((a,b)=>a.date.localeCompare(b.date));
   const out={lines:[],headline:'아직 기록이 없어요',tone:'info',isPB:false,goalDone:false,count:recs.length};
   if(!recs.length) return out;
   const last=recs[recs.length-1], prevs=recs.slice(0,-1), prev=prevs[prevs.length-1];
-  const tgt=target===null||target===undefined||target===''?NaN:Number(target);
+  const tgt=numOf(target)===null?NaN:numOf(target);
   const hasT=Number.isFinite(tgt)&&(isLower(ev)?tgt>0:true);
   const known=isKnown(ev);
   out.latest=last;
@@ -3054,7 +3071,8 @@ function feedback(ev,recsIn,target,opt){
   else { out.headline='최근 '+withUnit(ev,last.value); out.tone='info'; }
   return out;
 }
-return {LIBRARY,UNIT,LOWER,RANGE,isKnown,unitOf,withUnit,isLower,better,md,parseValue,rangeWarn,merge,feedback,validDate};
+function rangeOf(ev){ return own(RANGE,ev)?RANGE[ev]:null; }
+return {LIBRARY,UNIT,LOWER,RANGE,rangeOf,numOf,safeEvent,isKnown,unitOf,withUnit,isLower,better,md,parseValue,rangeWarn,merge,feedback,validDate};
 })();
 /* PERF:END */
 
@@ -3105,9 +3123,9 @@ function applyCheckins(){
    - 브리핑·CSV: 모든 학생의 최근 60일만 읽는다 (읽기 비용 절약) */
 state.perf = {}; state.perfFull = {}; state.perfAllAt = 0; state.perfDenied = false;
 function cleanPerf(d,id){
-  const v=Number(d.value);
-  if(typeof d.event!=='string'||!d.event.trim()||!PERF.validDate(d.date)||!Number.isFinite(v)) return null;
-  return {rid:String(id), event:d.event.slice(0,40), value:v, date:d.date, by:'student'};
+  // 학생 기기에서 온 종목 이름은 안전한 글자만 받는다 (이상한 이름으로 코치 화면을 망가뜨리지 못하게)
+  if(!PERF.safeEvent(d.event)||!PERF.validDate(d.date)||PERF.numOf(d.value)===null) return null;
+  return {rid:String(id), event:d.event, value:PERF.numOf(d.value), date:d.date, by:'student'};
 }
 async function loadPerf(sid, force, quiet, sinceDays){
   if(!db||!sid) return true;
@@ -3124,28 +3142,36 @@ async function loadPerf(sid, force, quiet, sinceDays){
   applyRecords(); softRerender();
   return ok;
 }
-async function loadAllPerf(force){
+// 읽기 비용: 학생마다 질문 1번 + 기록 수만큼 읽기. 브리핑은 최근 14일만, 5분에 한 번까지 (CSV 는 60일)
+async function loadAllPerf(force, days){
   if(!db) return [];
-  if(!force && Date.now()-state.perfAllAt<60000) return [];
+  if(!force && Date.now()-state.perfAllAt<5*60000) return [];
   state.perfAllAt=Date.now();
-  const res=await Promise.all(state.students.filter(s=>!state.perfFull[s.id]).map(s=>loadPerf(s.id,false,true,60)));
+  const res=await Promise.all(state.students.filter(s=>!state.perfFull[s.id]).map(s=>loadPerf(s.id,false,true,days||14)));
   applyRecords(); softRerender();
   return res;
 }
+function coachCopy(cr){ const out={}; Object.keys(cr||{}).forEach(ev=>{ out[ev]=Array.isArray(cr[ev])?cr[ev].map(r=>({...r,by:'coach'})):[]; }); return out; }
 function applyRecords(){
   state.students.forEach(s=>{
-    const cr=s._coachRecords||{}, by={};
-    (state.perf[s.id]||[]).forEach(r=>{ (by[r.event]=by[r.event]||[]).push(r); });
-    const rec={};
-    [...new Set([...Object.keys(cr),...Object.keys(by)])].forEach(ev=>{ rec[ev]=PERF.merge(cr[ev],by[ev]); });
-    s.records=rec;
-    s._extraEvents=Object.keys(by).filter(ev=>!s.events.includes(ev)&&rec[ev]&&rec[ev].length);   // 학생이 직접 고른 종목 (선생님 목록에 없음)
+    try{
+      const cr=s._coachRecords||{}, by=Object.create(null);   // 'constructor' 같은 이름도 안전하게 담는 빈 상자
+      (state.perf[s.id]||[]).forEach(r=>{ (by[r.event]=by[r.event]||[]).push(r); });
+      const rec={};
+      [...new Set([...Object.keys(cr),...Object.keys(by)])].forEach(ev=>{ Object.defineProperty(rec,ev,{value:PERF.merge(cr[ev],by[ev]),enumerable:true,writable:true,configurable:true}); });
+      s.records=rec;
+      s._extraEvents=Object.keys(by).filter(ev=>!s.events.includes(ev)&&rec[ev]&&rec[ev].length);   // 학생이 직접 고른 종목 (선생님 목록에 없음)
+    }catch(e){ console.warn('실기 기록 합치기 오류', e); s.records=coachCopy(s._coachRecords); s._extraEvents=[]; }   // 실패해도 선생님 기록은 그대로
   });
 }
 function evList(s){ return s.events.concat(s._extraEvents||[]); }
-function coachRecordsForSave(records){
-  const out={};
-  Object.keys(records||{}).forEach(ev=>{ out[ev]=(records[ev]||[]).filter(r=>r.by!=='student').map(r=>({date:r.date,value:r.value})); });
+function coachRecordsForSave(s){
+  const out={}, orig=s._coachRecords||{};
+  const bad=r=>!(r&&PERF.validDate(r.date)&&PERF.numOf(r.value)!==null);   // 화면엔 못 그리는 옛 기록(날짜·숫자 형식이 다름)도 지우지 않고 그대로 저장
+  Object.keys(s.records||{}).forEach(ev=>{
+    out[ev]=(s.records[ev]||[]).filter(r=>r.by!=='student').map(r=>({date:r.date,value:r.value}))
+      .concat((Array.isArray(orig[ev])?orig[ev]:[]).filter(bad));
+  });
   return out;
 }
 async function deletePerfDoc(sid, rid){
@@ -3189,7 +3215,7 @@ function refreshIfStale(){
   if(dayChanged||Date.now()-state.ckFetchedAt>5*60*1000){
     if(dayChanged){ state.todayCk={}; state.hist={}; }
     loadTodayCheckins(true); if(state.selectedId){ loadHistory(state.selectedId,true); loadPerf(state.selectedId,true); }
-    if(state.teamViewOpen) loadAllPerf(true);
+    if(state.teamViewOpen) loadAllPerf(false);
   }
 }
 document.addEventListener('visibilitychange',refreshIfStale);
@@ -3227,7 +3253,7 @@ function interpretCheckin(s,t){
   const an=HC.analyze(t,checkinHistBefore(s.id,t.date)), j=HC.judge(t,an);
   const status=t.status||j.status;
   const areas=[...new Set([...(t.pain?t.painAreas||[]:[]), ...((t.soreness>0)?t.sorenessAreas||[]:[])])].map(a=>a==='허벅지'?'허벅지 앞':a);
-  const checks=areas.filter(a=>AREA_CHECK[a]).map(a=>({area:a,text:AREA_CHECK[a],pain:t.pain&&(t.painAreas||[]).includes(a)}));
+  const checks=areas.filter(a=>Object.prototype.hasOwnProperty.call(AREA_CHECK,a)).map(a=>({area:a,text:AREA_CHECK[a],pain:t.pain&&(t.painAreas||[]).includes(a)}));
   const notes=[];
   if(t.painFollowUp===2) notes.push('어제 통증 부위가 오늘 아침 더 아팠어요 → 전날 부하가 회복 한계를 넘은 신호. 해당 부위 부하를 한 단계 낮추세요.');
   if(t.painFollowUp===1) notes.push('어제 통증이 아침에도 비슷하게 남아 있어요 → 오늘 훈련 후에도 같은지 다시 확인하세요.');
@@ -3375,7 +3401,7 @@ async function saveStudent(s){
   if(!db){ showToast('Firebase 설정이 필요합니다'); return false; }
   const clean = {};
   Object.keys(s).forEach(k=>{ if(!k.startsWith('_') && k!=='fatigue') clean[k]=s[k]; });   // fatigue 는 체크인에서 만든 값이라 저장하지 않음
-  clean.records = coachRecordsForSave(s.records);   // 학생이 입력한 기록은 학생 쪽 저장소에 따로 있으므로 여기엔 쓰지 않는다
+  clean.records = coachRecordsForSave(s);   // 학생이 입력한 기록은 학생 쪽 저장소에 따로 있으므로 여기엔 쓰지 않는다
   markUserWrite();
   try{ await db.collection('students').doc(s.id).set(clean); return true; }
   catch(err){ showToast('저장 실패: '+err.message); return false; }
