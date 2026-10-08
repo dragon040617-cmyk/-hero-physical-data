@@ -588,7 +588,7 @@ function parseInput(ev,s){
   const m=t.match(/^(.*?)(cm|센티|센치|m|미터|초|s|sec|kg|회|개|점)$/);
   let suf='';
   if(m){ t=m[1]; suf={'센티':'cm','센치':'cm','미터':'m','s':'초','sec':'초','개':'회'}[m[2]]||m[2]; }
-  if(/^\d{1,3},\d{3}$/.test(t)) t=t.replace(',','');   // 1,234 는 천 단위 쉼표 (소수점 쉼표 2,51 과 구분)
+  if(/^\d{1,3},\d{3}$/.test(t)&&!(rangeOf(ev)&&rangeOf(ev)[1]<1000)) t=t.replace(',','');   // 1,234 는 천 단위 쉼표 (기록이 1000을 넘을 수 있는 종목만. 2,510 은 2.51 로 본다)
   const v=parseValue(t); if(v===null) return null;
   const u=unitOf(ev), r=rangeOf(ev);
   const r1=x=>Math.round(x*10)/10, r2x=x=>Math.round(x*100)/100;
@@ -1321,7 +1321,7 @@ function updatePerfHint(){
   else if(same) extra='<br><span class="t-warn">이 날 기록('+esc(PERF.withUnit(ev,same.value))+')이 있어요. 저장하면 바뀌어요.</span>';
   const raw=$('pf-val')?$('pf-val').value:'', pin=raw.trim()?PERF.parseInput(ev,raw):undefined;
   if(pin&&pin.note) extra+='<br><span class="t-good">'+esc(pin.note)+'로 저장돼요</span>';
-  else if(pin===null) extra+='<br><span class="t-warn">숫자로 적어 주세요'+(PERF.unitOf(ev)?' (단위 '+esc(PERF.unitOf(ev))+')':'')+'</span>';
+  else if(pin===null&&!/^-?\d*[.,]?$/.test(raw.trim())) extra+='<br><span class="t-warn">숫자로 적어 주세요'+(PERF.unitOf(ev)?' (단위 '+esc(PERF.unitOf(ev))+')':'')+'</span>';
   h.innerHTML=hintHTML(ev,recs)+extra;
 }
 async function savePerf(){

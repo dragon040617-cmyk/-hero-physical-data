@@ -631,6 +631,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   @media (min-width:861px){ .event-tag .reorder.ph{ display:none; } }
   /* 한국어는 단어 중간에서 줄이 바뀌면 읽기 어렵다 → 띄어쓰기 단위로 줄바꿈 (긴 기호 줄은 overflow-wrap 이 처리) */
   .student-meta .sub, .insight-box, .stat-note, .fb-card, .brief-row, .join-card, .tagline, .card h3, td{ word-break:keep-all; }
+  td{ overflow-wrap:anywhere; }
   .join-grid{ display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(min(100%, 420px), 1fr)); align-items:start; }
   .join-grid .join-card{ margin-bottom:0; }
 
@@ -2079,7 +2080,7 @@ function toggleSidebar(){
   state.mobileSidebarOpen = !state.mobileSidebarOpen;
   rerender();
 }
-function selectStudent(id){ loadHistory(id); loadPerf(id); state.joinOpen=false; state.selectedId=id; state.activeTab='overview'; state.classLogOpen=false; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
+function selectStudent(id){ loadHistory(id); loadPerf(id,false,false,0,true); state.joinOpen=false; state.selectedId=id; state.activeTab='overview'; state.classLogOpen=false; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
 function openClassLogView(){ state.joinOpen=false; state.classLogOpen=true; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
 function closeClassLogView(){ state.classLogOpen=false; rerender(); }
 function openTeamView(){ loadTodayCheckins(); loadAllPerf(); state.joinOpen=false; state.teamViewOpen=true; state.classLogOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
@@ -3034,7 +3035,7 @@ function parseInput(ev,s){
   const m=t.match(/^(.*?)(cm|센티|센치|m|미터|초|s|sec|kg|회|개|점)$/);
   let suf='';
   if(m){ t=m[1]; suf={'센티':'cm','센치':'cm','미터':'m','s':'초','sec':'초','개':'회'}[m[2]]||m[2]; }
-  if(/^\d{1,3},\d{3}$/.test(t)) t=t.replace(',','');   // 1,234 는 천 단위 쉼표 (소수점 쉼표 2,51 과 구분)
+  if(/^\d{1,3},\d{3}$/.test(t)&&!(rangeOf(ev)&&rangeOf(ev)[1]<1000)) t=t.replace(',','');   // 1,234 는 천 단위 쉼표 (기록이 1000을 넘을 수 있는 종목만. 2,510 은 2.51 로 본다)
   const v=parseValue(t); if(v===null) return null;
   const u=unitOf(ev), r=rangeOf(ev);
   const r1=x=>Math.round(x*10)/10, r2x=x=>Math.round(x*100)/100;
@@ -3198,10 +3199,10 @@ function cleanPerf(d,id){
   if(!PERF.safeEvent(d.event)||!PERF.validDate(d.date)||PERF.numOf(d.value)===null) return null;
   return {rid:String(id), event:d.event, value:PERF.numOf(d.value), date:d.date, by:'student'};
 }
-async function loadPerf(sid, force, quiet, sinceDays){
+async function loadPerf(sid, force, quiet, sinceDays, fresh){
   if(!db||!sid) return true;
   // 같은 학생을 다시 눌러도 1분이 지났으면 새로 읽는다 (그 사이 학생이 새 기록을 적었을 수 있다)
-  if(!sinceDays && state.perfFull[sid] && !force && Date.now()-(state.perfAt[sid]||0)<60000) return true;
+  if(!sinceDays && state.perfFull[sid] && !force && (!fresh || Date.now()-(state.perfAt[sid]||0)<60000)) return true;   // fresh: 학생을 직접 눌렀을 때만
   let q=db.collection('students').doc(sid).collection('perfRecords');
   const since=sinceDays?HC.addDays(HC.todayStr(),-sinceDays):'';
   if(sinceDays) q=q.where('date','>=',since);
