@@ -632,6 +632,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   /* 한국어는 단어 중간에서 줄이 바뀌면 읽기 어렵다 → 띄어쓰기 단위로 줄바꿈 (긴 기호 줄은 overflow-wrap 이 처리) */
   .student-meta .sub, .insight-box, .stat-note, .fb-card, .brief-row, .join-card, .tagline, .card h3, td{ word-break:keep-all; }
   td{ overflow-wrap:anywhere; }
+  @media (max-width:860px){ .brief-ctrl{ width:100%; } }   /* 휴대폰: 지점 선택과 새로고침을 한 줄에 꽉 차게 */
   .join-grid{ display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(min(100%, 420px), 1fr)); align-items:start; }
   .join-grid .join-card{ margin-bottom:0; }
 
@@ -1311,7 +1312,7 @@ function renderTeamOverview(){
       <div class="topbar">
         <div class="heading"><div><h2>오늘 브리핑</h2>
           <div class="tagline">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})} · 체크인 ${done}/${list.length}명 · ${fetched} 기준</div></div></div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <div class="brief-ctrl" style="display:flex; gap:8px; flex-wrap:wrap;">
           <select class="student-search" style="margin:0; min-height:40px; width:auto; flex:1 1 140px;" aria-label="지점 고르기" onchange="state.briefBranch=this.value; rerender();">
             <option value="">전체 지점</option>${BRANCHES.map(b=>`<option ${branch===b?'selected':''}>${b}</option>`).join('')}
           </select>
