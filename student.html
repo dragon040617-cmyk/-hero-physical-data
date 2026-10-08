@@ -5,7 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#12151c">
 <title>HERO 체크인</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<!-- 속도: 서버와 미리 연결해 두고, 글꼴은 화면을 막지 않게 나중에 입힌다 (글꼴이 늦으면 기본 글꼴로 먼저 보임) -->
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media='all'">
 <style>
   :root{
     --bg:#12151c; --surface:#1a1f29; --surface2:#222836; --line:#2b3242;
@@ -14,7 +19,8 @@
     --coral:#ff4b33; --coral-soft:rgba(255,75,51,.14);
   }
   *{ box-sizing:border-box; }
-  html{ -webkit-text-size-adjust:100%; }
+  html{ -webkit-text-size-adjust:100%; overflow-x:clip; }
+  body{ overflow-wrap:break-word; overflow-x:clip; }
   body{ margin:0; background:var(--bg); color:var(--text); line-height:1.5; font-variant-numeric:tabular-nums;
         font-family:'Pretendard Variable',Pretendard,-apple-system,'Apple SD Gothic Neo',sans-serif; }
   button,select,textarea{ font-family:inherit; }
@@ -126,16 +132,43 @@
   .care-l{ font-size:15px; padding:3px 0; }
   .care-k{ display:inline-block; font-size:12px; color:var(--lime); border:1px solid var(--line); border-radius:999px; padding:0 8px; margin-right:6px; }
   .care-m{ font-size:14px; color:var(--muted); margin-top:1px; }
+
+  /* 불러오는 화면 */
+  .boot{ display:flex; flex-direction:column; align-items:center; gap:14px; padding-top:28vh; text-align:center; }
+  .boot-mark{ font-weight:800; letter-spacing:.24em; color:var(--lime); font-size:15px; }
+  .boot p{ margin:0; }
+  .spinner{ width:28px; height:28px; border:3px solid var(--line); border-top-color:var(--lime); border-radius:50%; animation:spin .8s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce){ .spinner{ animation:none; } }
+
+  /* 실기 기록 */
+  .btn-2{ background:var(--surface); color:var(--text); border:1px solid var(--line); margin-top:12px; }
+  .pf-row{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:2px 12px; width:100%; text-align:left; background:none; border:0; border-top:1px solid var(--line); padding:12px 0; color:var(--text); font:inherit; cursor:pointer; min-height:44px; }
+  .sec-t + .pf-row{ border-top:0; padding-top:4px; }
+  .pf-ev{ font-weight:600; }
+  .pf-val{ font-weight:700; font-variant-numeric:tabular-nums; text-align:right; }
+  .pf-tag{ grid-column:1 / -1; font-size:13px; }
+  .t-good{ color:var(--lime); } .t-warn{ color:#ffb35c; } .t-info{ color:var(--muted); } .t-bad{ color:#ff8a7a; }
+  .pf-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .pf-grid .fl{ margin-top:14px; }
+  .pf-hint{ margin:10px 0 14px; line-height:1.6; }
+  input[type=date].txt{ -webkit-appearance:none; appearance:none; display:block; min-width:0; max-width:100%; }
+  .fb-head{ font-size:18px; font-weight:700; margin-bottom:8px; }
+  .fb-line{ display:grid; grid-template-columns:10px minmax(0,1fr); gap:10px; padding:5px 0; font-size:15px; line-height:1.55; }
+  .fb-line i{ width:8px; height:8px; border-radius:50%; margin-top:8px; background:var(--muted); }
+  .fb-line i.t-good{ background:var(--lime); } .fb-line i.t-warn{ background:#ffb35c; } .fb-line i.t-bad{ background:#ff8a7a; }
+  .fb-saved{ display:inline-block; font-size:12px; color:#0d1a03; background:var(--lime); border-radius:999px; padding:1px 8px; margin-left:6px; vertical-align:2px; }
+  .rec{ display:grid; grid-template-columns:56px minmax(0,1fr) auto; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line); font-size:15px; }
+  .sec-t + .rec{ border-top:0; }
+  .rec .src{ font-size:12px; color:var(--dim); margin-left:6px; }
+  .rec .del{ background:none; border:1px solid var(--line); color:var(--muted); border-radius:8px; min-height:36px; padding:0 10px; font:inherit; font-size:13px; cursor:pointer; }
+  .err.warn{ color:#ffd23f; }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-app-compat.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-auth-compat.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-firestore-compat.min.js"></script>
 </head>
 <body>
 
 <section id="screen-loading" class="screen">
-  <p id="load-msg">확인하는 중...</p>
+  <div class="boot"><div class="boot-mark">HERO</div><div class="spinner" aria-hidden="true"></div><p id="load-msg" role="status">로그인 확인 중...</p></div>
 </section>
 
 <section id="screen-login" class="screen hidden">
@@ -207,7 +240,12 @@
 
 <section id="screen-form" class="screen hidden"></section>
 <section id="screen-result" class="screen hidden"></section>
+<section id="screen-perf" class="screen hidden"></section>
 
+<!-- 속도: 무거운 파일은 화면 글자를 먼저 보여 준 다음에 받는다 (예전엔 <head>에 있어서 다 받을 때까지 빈 화면) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-auth-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-firestore-compat.min.js"></script>
 <script>
 /* ============ 설정값 ============ */
 const BASELINE_MIN_DAYS = 7;      // 평소 비교를 시작하는 최소 기록 일수 (개발 중 조정)
@@ -506,6 +544,137 @@ function buildCare(c){
 
 /* PURE:END */
 
+/* PERF:START  실기 기록 계산 — 학생 화면(student.html)과 코치 화면(index.html)에 똑같은 코드가 들어 있다. 고칠 때는 두 곳을 같이 고친다. */
+const PERF=(function(){
+const LIBRARY=["제자리멀리뛰기","메디신볼","10m 왕복달리기","20m 왕복달리기","Z-런","25m 왕복달리기","좌전굴","중량 달리기","배근력","100m","턱걸이","매달리기","배구","농구","사이드 스텝","핸드볼 던지기"];
+const UNIT={"제자리멀리뛰기":"cm","메디신볼":"m","10m 왕복달리기":"초","20m 왕복달리기":"초","Z-런":"초","25m 왕복달리기":"초","좌전굴":"cm","중량 달리기":"초","배근력":"kg","100m":"초","턱걸이":"회","매달리기":"초","배구":"점","농구":"점","사이드 스텝":"회","핸드볼 던지기":"m","CMJ":"cm"};
+const LOWER=["10m 왕복달리기","20m 왕복달리기","Z-런","25m 왕복달리기","중량 달리기","100m"];   // 시간 종목: 숫자가 작을수록 좋은 기록
+const JUMP=["제자리멀리뛰기","CMJ"];
+// 보통 나오는 범위. 벗어나면 막지는 않고 "단위가 맞나요?"라고 한 번 더 묻는다 (251cm 를 2.51 로 적는 실수 방지)
+const RANGE={"제자리멀리뛰기":[120,340],"메디신볼":[3,20],"10m 왕복달리기":[7,15],"20m 왕복달리기":[5,60],"Z-런":[7,25],"25m 왕복달리기":[7,20],"좌전굴":[-20,40],"중량 달리기":[5,30],"배근력":[30,300],"100m":[10,25],"턱걸이":[0,60],"매달리기":[0,180],"배구":[0,100],"농구":[0,100],"사이드 스텝":[10,80],"핸드볼 던지기":[10,60],"CMJ":[15,90]};
+
+const r2=v=>Math.round(v*100)/100;
+const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+function unitOf(ev){ return UNIT[ev]||''; }
+function withUnit(ev,v){ return String(r2(v))+unitOf(ev); }
+function isLower(ev){ return LOWER.includes(ev); }
+function isKnown(ev){ return Object.prototype.hasOwnProperty.call(UNIT,ev); }   // 선생님이 직접 만든 종목은 '높을수록 좋은지' 알 수 없어서 좋다/나쁘다 판단을 하지 않는다
+function better(ev,a,b){ return isLower(ev)?a<b:a>b; }          // a 가 b 보다 좋은 기록인가
+function gain(ev,from,to){ return isLower(ev)?from-to:to-from; }  // + 면 좋아짐
+function md(d){ return Number(d.slice(5,7))+'/'+Number(d.slice(8,10)); }
+function dayNum(d){ return Date.UTC(Number(d.slice(0,4)),Number(d.slice(5,7))-1,Number(d.slice(8,10)))/86400000; }
+function daysBetween(a,b){ return Math.round(dayNum(b)-dayNum(a)); }
+function changeWord(ev,g){ if(!isKnown(ev)) return g>0?'높아졌어요':'낮아졌어요'; if(isLower(ev)) return g>0?'빨라졌어요':'느려졌어요'; if(unitOf(ev)==='점') return g>0?'올랐어요':'내려갔어요'; return g>0?'늘었어요':'줄었어요'; }
+function headWord(ev,g){ if(!isKnown(ev)) return g>0?'높아짐':'낮아짐'; if(isLower(ev)) return g>0?'빨라짐':'느려짐'; if(unitOf(ev)==='점') return g>0?'오름':'내려감'; return g>0?'늘어남':'줄어듦'; }
+function amount(ev,x){ return withUnit(ev,Math.abs(x)); }
+function validDate(d){ return typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d); }
+
+// 숫자 입력 읽기: "12,85" 처럼 쉼표로 적어도 소수점으로 본다
+function parseValue(s){ const t=String(s==null?'':s).trim().replace(',', '.'); if(!/^-?\d+(\.\d+)?$/.test(t)) return null; const n=Number(t); return Number.isFinite(n)?n:null; }
+function rangeWarn(ev,v){
+  const r=RANGE[ev]; if(!r||!Number.isFinite(v)) return null;
+  return (v<r[0]||v>r[1])?'보통 '+r[0]+'~'+r[1]+unitOf(ev)+' 사이예요. 숫자와 단위('+(unitOf(ev)||'단위')+')가 맞는지 확인해 주세요.':null;
+}
+
+// 선생님 기록 + 학생이 입력한 기록 합치기. 같은 날짜에 둘 다 있으면 선생님 기록을 쓴다.
+function merge(coachList,studentList){
+  const ok=r=>r&&validDate(r.date)&&Number.isFinite(Number(r.value));
+  const coach=(Array.isArray(coachList)?coachList:[]).filter(ok).map(r=>({date:r.date,value:Number(r.value),by:'coach'}));
+  const taken=new Set(coach.map(r=>r.date));
+  const stu=(Array.isArray(studentList)?studentList:[]).filter(ok).filter(r=>!taken.has(r.date)).map(r=>({date:r.date,value:Number(r.value),by:'student',rid:r.rid||''}));
+  return coach.concat(stu).sort((a,b)=>a.date.localeCompare(b.date));
+}
+
+/* 기록 피드백: 지난번 / 개인 최고 / 목표 / 추세 / 고르기 / 점프 피로 / 오늘 컨디션
+   recs: [{date,value}] (날짜순 아니어도 됨), target: 목표 기록(없으면 null), opt: {today, todayStatus} */
+function feedback(ev,recsIn,target,opt){
+  opt=opt||{};
+  const recs=(Array.isArray(recsIn)?recsIn:[]).filter(r=>r&&validDate(r.date)&&Number.isFinite(Number(r.value))).map(r=>({date:r.date,value:Number(r.value),by:r.by})).sort((a,b)=>a.date.localeCompare(b.date));
+  const out={lines:[],headline:'아직 기록이 없어요',tone:'info',isPB:false,goalDone:false,count:recs.length};
+  if(!recs.length) return out;
+  const last=recs[recs.length-1], prevs=recs.slice(0,-1), prev=prevs[prevs.length-1];
+  const tgt=target===null||target===undefined||target===''?NaN:Number(target);
+  const hasT=Number.isFinite(tgt)&&(isLower(ev)?tgt>0:true);
+  const known=isKnown(ev);
+  out.latest=last;
+  let sameAsPrev=false;
+  if(!prev) out.lines.push({tone:'info',text:'첫 기록이에요. 3번 이상 쌓이면 변화 흐름도 알려 줄게요.'});
+  else{
+    const g=gain(ev,prev.value,last.value);
+    out.delta=g;
+    if(Math.abs(last.value-prev.value)<=Math.abs(prev.value)*0.005){ sameAsPrev=true; out.lines.push({tone:'info',text:'지난 기록('+md(prev.date)+', '+withUnit(ev,prev.value)+')과 거의 같아요.'}); }
+    else out.lines.push({tone:!known?'info':g>0?'good':'warn',text:'지난 기록('+md(prev.date)+', '+withUnit(ev,prev.value)+')보다 '+amount(ev,last.value-prev.value)+' '+changeWord(ev,g)+'.'});
+  }
+  if(!known){
+    out.best=null;
+    if(hasT) out.lines.push({tone:'info',text:'목표('+withUnit(ev,tgt)+')와 지금 기록의 차이: '+amount(ev,tgt-last.value)+'.'});
+  } else if(prevs.length){
+    const best=prevs.reduce((b,r)=>better(ev,r.value,b.value)?r:b,prevs[0]);
+    if(better(ev,last.value,best.value)){ out.isPB=true; out.best=last; out.lines.push({tone:'good',text:'개인 최고 기록이에요 (이전 최고 '+withUnit(ev,best.value)+', '+md(best.date)+').'}); }
+    else if(last.value===best.value){ out.best=last; out.lines.push({tone:'good',text:'개인 최고 기록과 같아요.'}); }
+    else { out.best=best; out.lines.push({tone:'info',text:'개인 최고 '+withUnit(ev,best.value)+'('+md(best.date)+')까지 '+amount(ev,best.value-last.value)+' 남았어요.'}); }
+  } else out.best=last;
+  if(known&&hasT){
+    const remain=isLower(ev)?last.value-tgt:tgt-last.value;
+    out.remain=remain;
+    const pct=isLower(ev)?(last.value>0?tgt/last.value*100:null):(tgt>0&&last.value>0?last.value/tgt*100:null);
+    if(remain<=0){ out.goalDone=true; out.lines.push({tone:'good',text:'목표 '+withUnit(ev,tgt)+' 달성!'}); }
+    else out.lines.push({tone:'info',text:'목표 '+withUnit(ev,tgt)+'까지 '+amount(ev,remain)+(pct!==null?' 남았어요 (달성률 '+Math.min(99,Math.floor(pct))+'%).':' 남았어요.')});
+  }
+  // 추세: 최근 60일 안의 기록이 3번 이상이고, 처음과 끝이 14일 이상 떨어져 있을 때 (한 주에 얼마씩 변하는지)
+  const win=recs.filter(r=>daysBetween(r.date,last.date)<=60);
+  if(win.length>=3){
+    const span=daysBetween(win[0].date,last.date);
+    if(span>=14){
+      const xs=win.map(r=>daysBetween(win[0].date,r.date)), ys=win.map(r=>r.value), mx=avg(xs), my=avg(ys);
+      let sxy=0,sxx=0; xs.forEach((x,i)=>{ sxy+=(x-mx)*(ys[i]-my); sxx+=(x-mx)*(x-mx); });
+      const perWeek=(sxx>0?sxy/sxx:0)*7*(isLower(ev)?-1:1);   // + 면 좋아지는 중 (직접 만든 종목은 + 면 숫자가 커지는 중)
+      const weeks=Math.max(2,Math.round(span/7));
+      out.perWeek=perWeek;
+      if(Math.abs(perWeek)<=Math.abs(my||1)*0.002) out.lines.push({tone:'info',text:'최근 '+weeks+'주 동안 기록이 거의 그대로예요. 훈련 방법을 바꿔 볼지 선생님과 이야기해 보세요.'});
+      else if(!known) out.lines.push({tone:'info',text:'최근 '+weeks+'주 동안 한 주에 약 '+amount(ev,perWeek)+'씩 '+(perWeek>0?'높아지고':'낮아지고')+' 있어요.'});
+      else if(perWeek>0){
+        let t='최근 '+weeks+'주 동안 한 주에 약 '+amount(ev,perWeek)+'씩 좋아지고 있어요.';
+        if(hasT&&out.remain>0){ const w=Math.ceil(out.remain/perWeek); t+=w<=52?' 이 속도면 목표까지 약 '+w+'주.':' 지금 속도로는 목표까지 1년 넘게 걸려요.'; }
+        out.lines.push({tone:'good',text:t});
+      } else out.lines.push({tone:'warn',text:'최근 '+weeks+'주 동안 한 주에 약 '+amount(ev,perWeek)+'씩 나빠지고 있어요. 피로나 자세를 선생님과 점검해 보세요.'});
+    }
+  }
+  // 고르기: 최근 8번 중 5번 이상 있을 때. 기록 차이가 크면 측정 방법부터 맞추도록
+  const last8=recs.slice(-8);
+  if(last8.length>=5){
+    const m=avg(last8.map(r=>r.value));
+    if(m>0){
+      const cv=Math.sqrt(last8.reduce((a,r)=>a+(r.value-m)*(r.value-m),0)/last8.length)/m*100;
+      out.cv=cv;
+      if(cv<3) out.lines.push({tone:'good',text:'최근 기록이 고르게 나와요 (편차 '+cv.toFixed(1)+'%). 실전에서도 비슷하게 낼 가능성이 높아요.'});
+      else if(cv>7) out.lines.push({tone:'warn',text:'최근 기록 차이가 큰 편이에요 (편차 '+cv.toFixed(1)+'%). 측정할 때 준비 동작과 시도 횟수를 똑같이 맞춰 보세요.'});
+    }
+  }
+  // 점프 종목: 최근 2주 평균보다 5% 이상 낮으면 다리 피로 신호
+  if(JUMP.includes(ev)){
+    const prior=prevs.filter(r=>{ const g=daysBetween(r.date,last.date); return g>0&&g<=14; });
+    if(prior.length>=3){
+      const b=avg(prior.map(r=>r.value));
+      if(b>0){ const drop=(b-last.value)/b*100; out.jumpDrop=drop;
+        if(drop>=5) out.lines.push({tone:'warn',text:'최근 2주 평균('+withUnit(ev,b)+')보다 '+drop.toFixed(1)+'% 낮아요. 다리 피로가 쌓였다는 신호일 수 있어요.'}); }
+    }
+  }
+  if(known&&opt.today&&last.date===opt.today&&(opt.todayStatus==='RED'||opt.todayStatus==='AMBER')&&out.delta<0)
+    out.lines.push({tone:'info',text:'오늘 체크인이 '+(opt.todayStatus==='RED'?'위험':'경고')+' 단계라 기록이 평소보다 낮게 나올 수 있어요.'});
+  // 한 줄 요약
+  if(out.isPB){ out.headline='개인 최고 '+withUnit(ev,last.value); out.tone='good'; }
+  else if(out.goalDone&&prev&&!(prevs.some(r=>isLower(ev)?r.value<=tgt:r.value>=tgt))){ out.headline='목표 첫 달성 '+withUnit(ev,last.value); out.tone='good'; }
+  else if(out.jumpDrop>=5){ out.headline='2주 평균보다 '+out.jumpDrop.toFixed(1)+'% 낮음'; out.tone='warn'; }
+  else if(prev&&!sameAsPrev){ out.headline='지난번보다 '+amount(ev,last.value-prev.value)+' '+headWord(ev,out.delta); out.tone=!known?'info':out.delta>0?'good':'warn'; }
+  else { out.headline='최근 '+withUnit(ev,last.value); out.tone='info'; }
+  return out;
+}
+return {LIBRARY,UNIT,LOWER,RANGE,isKnown,unitOf,withUnit,isLower,better,md,parseValue,rangeWarn,merge,feedback,validDate};
+})();
+/* PERF:END */
+
+
 /* ============ Firebase ============ */
 // 코치 화면(index.html)과 같은 로그인을 쓴다. 로그인은 첫 화면에서 하고, 여기서는 학생 계정인지 확인만 한다.
 // 인터넷이 약해서 Firebase 파일을 못 받아 오면 '확인하는 중...'에서 영원히 멈추므로, 먼저 확인하고 안내한다.
@@ -538,6 +707,7 @@ async function refreshIfNewDay(fromTimer){
   if(!myStudent||saving||refreshing||loadedDate===todayStr()) return;
   // 체크인을 쓰는 중이면(하나라도 답했으면) 날짜가 바뀌어도 지우지 않는다. 저장은 누른 날짜로 된다.
   if(!$('screen-form').classList.contains('hidden')&&(fromTimer===true||(form&&answeredCount()>0))) return;
+  if(!$('screen-perf').classList.contains('hidden')&&($('pf-val')&&$('pf-val').value||perf.saving)) return;   // 실기 기록을 적는 중이어도 지우지 않는다
   refreshing=true;
   try{ await enterApp(myStudent); }catch(e){ /* 다음 기회에 다시 시도 */ }
   finally{ refreshing=false; }
@@ -552,7 +722,17 @@ function loginWithGoogle(){
   auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
     .catch(err=>{ $('login-error').textContent='로그인 실패: '+err.code; });
 }
-function logout(){ auth.signOut().then(()=>location.replace('./')); }
+/* 속도: 이 기기에서 학생으로 들어온 적이 있으면 첫 화면(index.html)이 무거운 코치 파일을 받지 않고 바로 이 화면으로 보낸다.
+   그 표시(heroRole)는 로그아웃하거나 학생이 아니면 지운다 → 첫 화면과 이 화면이 서로 계속 보내는 일이 없게. */
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+function goHome(){ lsDel('heroRole'); location.replace('./'); }
+function readLinkCache(uid){ try{ const v=JSON.parse(lsGet('heroLink:'+uid)||'null'); return v&&typeof v.id==='string'?v:null; }catch(e){ return null; } }
+function logout(){
+  try{ Object.keys(localStorage).filter(k=>k.startsWith('heroLink:')).forEach(lsDel); }catch(e){}
+  auth.signOut().then(goHome,goHome);
+}
 
 /* ============ 가입: 내 정보 → 반 코드 → 선생님 승인 ============
    joinRequests/{내 uid}  : 학생이 쓰는 가입 신청서 (코치 사이트가 읽어서 승인)
@@ -678,14 +858,26 @@ async function openMe(){
 auth.onAuthStateChanged(async user=>{
   stopListening();
   // 로그인 안 됨 → 첫 화면(코치·학생 공용 로그인)으로. 코치 계정이면 코치 화면으로.
-  if(!user){ myStudent=null; myCheckins=[]; location.replace('./'); return; }
-  if(((user.providerData||[])[0]||{}).providerId!=='google.com'){ location.replace('./'); return; }
+  if(!user){ myStudent=null; myCheckins=[]; goHome(); return; }
+  if(((user.providerData||[])[0]||{}).providerId!=='google.com'){ goHome(); return; }
+  lsSet('heroRole','student');
   $('user-email').textContent=user.email;
-  $('load-msg').textContent='확인하는 중...';
+  $('load-msg').textContent='기록 불러오는 중...';
   show('screen-loading');
   try{
-    const link=await db.collection('links').doc(user.uid).get();
-    if(link.exists){ await enterApp({id:link.data().studentId,name:link.data().name}); return; }
+    // 속도: 지난번에 기억해 둔 학생 번호가 있으면, 연결 확인과 체크인 불러오기를 '동시에' 한다 (기다리는 시간 1번 줄임)
+    const cached=readLinkCache(user.uid);
+    const linkP=db.collection('links').doc(user.uid).get();
+    const ckP=cached?fetchCheckins(cached.id):null;
+    if(ckP) ckP.catch(()=>{});
+    const link=await linkP;
+    if(link.exists){
+      const st={id:link.data().studentId,name:link.data().name};
+      lsSet('heroLink:'+user.uid,JSON.stringify(st));
+      await enterApp(st,cached&&cached.id===st.id?ckP:null);
+      return;
+    }
+    lsDel('heroLink:'+user.uid);
     const req=await db.collection('joinRequests').doc(user.uid).get();
     if(req.exists&&req.data().status==='pending') waitForApproval();
     else await openProfile(req.exists?req.data():null);
@@ -695,15 +887,23 @@ auth.onAuthStateChanged(async user=>{
   }
 });
 
-async function enterApp(student){
-  myStudent=student;
-  // 평소 기준(14일) + 오늘 = 15일치만 읽는다. 문서 ID 가 날짜라서 색인 없이 범위 조회 가능.
+// 평소 기준(14일) + 오늘 = 15일치만 읽는다. 문서 ID 가 날짜라서 색인 없이 범위 조회 가능.
+async function fetchCheckins(sid){
   const from=addDays(todayStr(),-BASELINE_WINDOW_DAYS);
-  const snap=await db.collection('students').doc(student.id).collection('checkins')
+  const snap=await db.collection('students').doc(sid).collection('checkins')
     .where(firebase.firestore.FieldPath.documentId(),'>=',from).get();
-  myCheckins=snap.docs.map(d=>({...d.data(),date:d.id})).sort((a,b)=>a.date.localeCompare(b.date));
+  return snap.docs.map(d=>({...d.data(),date:d.id})).sort((a,b)=>a.date.localeCompare(b.date));
+}
+async function enterApp(student,ckPromise){
+  myStudent=student;
+  let list=null;
+  if(ckPromise){ try{ list=await ckPromise; }catch(e){ list=null; } }   // 미리 불러온 게 실패하면 다시 불러온다
+  if(!list) list=await fetchCheckins(student.id);
+  myCheckins=list;
   loadedDate=todayStr();
   showResult();
+  loadPerfData();                    // 실기 기록은 체크인 화면을 먼저 보여 준 뒤 뒤에서 불러온다
+  ensureChart().catch(()=>{});       // 그래프 파일도 화면이 뜬 다음에 받는다
 }
 
 /* ============ 체크인 폼 ============ */
@@ -739,24 +939,30 @@ function missing(){
   if(form.sleepQuality===null) m.push(['q-sq','수면의 질']);
   if(form.fatigue===null) m.push(['q-fa','피로']);
   if(form.soreness===null) m.push(['q-so','근육통']);
-  else if(form.soreness>0&&form.sorenessImpact===null) m.push(['q-so','근육통 동작 영향']);
+  else if(form.soreness>0){
+    if(!form.sorenessAreas.length) m.push(['q-so','근육통 부위']);   // 부위가 있어야 선생님 화면의 '불편 부위'와 확인 포인트가 채워진다
+    if(form.sorenessImpact===null) m.push(['q-so','근육통 동작 영향']);
+  }
   if(form.stress===null) m.push(['q-st','스트레스']);
   if(form.readiness===null) m.push(['q-re','준비도']);
   if(form.pain===null) m.push(['q-pa','통증']);
   else if(form.pain&&(!form.painAreas.length||form.painLevel===null)) m.push(['q-pa','통증 부위와 강도']);
   return m;
 }
-// 답해야 할 질문 목록 (어제 통증이 있으면 아침 질문이 하나 더 생긴다)
-function requiredAnswers(){
-  const base=[form.sleepH,form.sleepQuality,form.fatigue,form.soreness,form.stress,form.readiness,form.pain];
-  return yesterdayPain()?base.concat([form.painFollowUp]):base;
+// 답해야 할 칸 목록 (근육통·통증이 있으면 부위 같은 세부 칸이, 어제 통증이 있으면 아침 질문이 더 생긴다)
+function requiredChecks(){
+  const c=[form.sleepH!==null,form.sleepQuality!==null,form.fatigue!==null,form.soreness!==null,form.stress!==null,form.readiness!==null,form.pain!==null];
+  if(form.soreness>0) c.push(form.sorenessAreas.length>0, form.sorenessImpact!==null);
+  if(form.pain) c.push(form.painAreas.length>0, form.painLevel!==null);
+  if(yesterdayPain()) c.push(form.painFollowUp!==null);
+  return c;
 }
-function answeredCount(){ return requiredAnswers().filter(v=>v!==null).length; }
+function answeredCount(){ return requiredChecks().filter(Boolean).length; }
 function renderForm(){
   const y=window.scrollY;
   const hOpts='<option value="">시간</option>'+Array.from({length:15},(_,i)=>`<option value="${i}" ${form.sleepH===i?'selected':''}>${i}시간</option>`).join('');
   const mOpts=[0,10,20,30,40,50].map(i=>`<option value="${i}" ${form.sleepM===i?'selected':''}>${i}분</option>`).join('');
-  const n=answeredCount(), total=requiredAnswers().length;
+  const n=answeredCount(), total=requiredChecks().length;
   $('screen-form').innerHTML=`
     <div class="head"><div><h1>${esc(myStudent.name||'학생')}님, 오늘 체크인</h1>
       <div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})} · 1분이면 끝나요</div></div>
@@ -772,7 +978,7 @@ function renderForm(){
     <div class="q" id="q-fa"><div class="q-title">지금 전반적으로 느끼는 신체 피로는?</div>${scale('fatigue','전혀 피곤하지 않음','극심','','피로')}</div>
 
     <div class="q" id="q-so"><div class="q-title">오늘 근육의 뻐근함/통증은?</div><div class="q-hint">훈련 후 근육이 당기고 뻐근한 정도</div>${scale('soreness','없음','매우 심함','','근육통')}
-      ${form.soreness>0?`<div class="sub-q">어느 부위인가요? (여러 개 선택 가능)</div>${chips('sorenessAreas',BODY_PARTS)}
+      ${form.soreness>0?`<div class="sub-q">어느 부위인가요? <b style="color:var(--lime);font-weight:600;">필수</b> · 여러 개 선택 가능</div>${chips('sorenessAreas',BODY_PARTS)}
       <div class="sub-q">움직임에 얼마나 영향을 주나요?</div><div class="chips">${IMPACTS.map((x,i)=>`<button class="chip ${form.sorenessImpact===i?'on':''}" aria-pressed="${form.sorenessImpact===i}" data-a="set" data-k="sorenessImpact" data-v="${i}">${x}</button>`).join('')}</div>`:''}</div>
 
     <div class="q" id="q-st"><div class="q-title">오늘 심리적 스트레스는?</div>${scale('stress','없음','매우 심함','','스트레스')}
@@ -877,7 +1083,7 @@ function showResult(){
   $('screen-result').innerHTML=`
     <div class="head"><div><h1>${esc(myStudent.name||'학생')}님, 오늘 상태</h1>
       <div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})}</div></div>
-      <div class="head-actions"><button class="link" data-a="edit">기록 수정</button><button class="link" data-a="me">내 정보</button><button class="link" data-a="logout">로그아웃</button></div></div>
+      <div class="head-actions"><button class="link" data-a="perf">실기 기록</button><button class="link" data-a="edit">기록 수정</button><button class="link" data-a="me">내 정보</button><button class="link" data-a="logout">로그아웃</button></div></div>
 
     <div class="status" style="border-color:${ui.color};background:${ui.bg}">
       <div class="badge" style="color:${ui.color}">${ui.label}</div>
@@ -896,6 +1102,8 @@ function showResult(){
         ${j.care.recovery.map((r,i)=>`<details class="care-d" ${i===0?'open':''}><summary>${esc(r.name)}</summary>${careLines(r.lines)}</details>`).join('')}</div></div>
       <p class="note" style="margin-top:8px;">음식 수치는 편의점 일반 제품 기준 대략값이에요. 삼각김밥은 참치마요처럼 마요네즈가 많은 것보다 비빔·불고기류를 골라요. 알레르기가 있으면 선생님과 바꿔요.</p></div>
 
+    <div class="sec" id="perf-sum">${perfSummaryHTML()}</div>
+
     <div class="sec"><div class="sec-t">${an.ready?'평소(최근 14일)와 비교':'오늘 기록 · 평소 비교는 '+BASELINE_MIN_DAYS+'일 기록 후 시작 ('+hist.length+'/'+BASELINE_MIN_DAYS+')'}</div>
       ${an.rows.map(r=>rowHTML(r,today,an.ready)).join('')}</div>
 
@@ -909,6 +1117,8 @@ function showResult(){
 $('screen-result').addEventListener('click',e=>{
   const el=e.target.closest('[data-a],[data-trend],[data-range]'); if(!el) return;
   if(el.dataset.a==='edit') openForm();
+  else if(el.dataset.a==='perf') openPerf();
+  else if(el.dataset.a==='perf-ev') openPerf(el.dataset.ev);
   else if(el.dataset.a==='logout') logout();
   else if(el.dataset.a==='me') openMe();
   else if(el.dataset.a==='copy'){ const t=$('talk').textContent; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{ el.textContent='복사됨 ✓'; setTimeout(()=>{ el.textContent='복사하기'; },2000); }).catch(()=>{ el.textContent='길게 눌러 직접 복사해 주세요'; }); }
@@ -920,7 +1130,8 @@ $('screen-result').addEventListener('click',e=>{
 function showResultKeepScroll(){ const y=window.scrollY; showResult(); window.scrollTo(0,y); }
 
 function drawTrend(){
-  const canvas=$('trend'); if(!canvas||typeof Chart==='undefined') return;   // 그래프 파일을 못 받아 와도 나머지 화면은 보이게
+  const canvas=$('trend'); if(!canvas) return;
+  if(typeof Chart==='undefined'){ ensureChart().then(()=>{ if($('trend')===canvas) drawTrend(); }).catch(()=>{}); return; }   // 그래프 파일은 필요할 때 받는다. 못 받아도 나머지 화면은 그대로
   const m=METRICS.find(x=>x.key===trendKey), sleep=m.key==='sleepMin', end=todayStr();
   const days=[]; for(let i=trendRange-1;i>=0;i--) days.push(addDays(end,-i));
   const by=Object.fromEntries(myCheckins.map(c=>[c.date,c]));
@@ -935,6 +1146,194 @@ function drawTrend(){
       scales:{y:sleep?{grid:{color:'#2b3242'},ticks:{color:'#828ba0'}}:{min:0,max:10,grid:{color:'#2b3242'},ticks:{color:'#828ba0',stepSize:2}},
               x:{grid:{display:false},ticks:{color:'#828ba0',maxTicksLimit:7}}}}});
 }
+
+/* ============ 그래프 파일(Chart.js)은 필요할 때 한 번만 받는다 ============ */
+let chartLoading=null;
+function ensureChart(){
+  if(typeof Chart!=='undefined') return Promise.resolve();
+  if(chartLoading) return chartLoading;
+  chartLoading=new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js';
+    s.onload=()=>res(); s.onerror=()=>{ chartLoading=null; rej(new Error('chart')); };
+    document.head.appendChild(s);
+  });
+  return chartLoading;
+}
+
+/* ============ 실기 기록 ============
+   선생님 기록: students/{학생}.records  (선생님이 정한 종목 events, 목표 targets 도 같은 문서)
+   내가 입력한 기록: students/{학생}/perfRecords/{날짜_종목}  → 같은 날 같은 종목은 덮어쓴다
+   같은 날짜에 둘 다 있으면 선생님 기록을 보여 준다. */
+const perf={status:'idle',coach:{events:[],targets:{},records:{}},mine:[],denied:{doc:false,list:false},ev:null,ack:null,saving:false,justSaved:null};
+let perfChart=null;
+async function loadPerfData(){
+  if(!myStudent) return;
+  perf.status='loading';
+  const ref=db.collection('students').doc(myStudent.id);
+  const [d,l]=await Promise.allSettled([ref.get(), ref.collection('perfRecords').get()]);
+  if(d.status==='fulfilled'){
+    const x=d.value.exists?d.value.data():{};
+    perf.coach={events:Array.isArray(x.events)?x.events.filter(e=>typeof e==='string'&&e.trim()):[],
+      targets:(x.targets&&typeof x.targets==='object')?x.targets:{}, records:(x.records&&typeof x.records==='object')?x.records:{}};
+    perf.denied.doc=false;
+  }else perf.denied.doc=true;
+  if(l.status==='fulfilled'){
+    perf.mine=l.value.docs.map(x=>({...x.data(),rid:x.id})).filter(r=>typeof r.event==='string'&&PERF.validDate(r.date)&&Number.isFinite(Number(r.value)));
+    perf.denied.list=false;
+  }else{ perf.mine=[]; perf.denied.list=true; }
+  perf.status='ready';
+  if(!$('screen-result').classList.contains('hidden')&&$('perf-sum')) $('perf-sum').innerHTML=perfSummaryHTML();
+  if(!$('screen-perf').classList.contains('hidden')) renderPerf();
+}
+function perfEvents(){ const list=[...perf.coach.events]; perf.mine.forEach(r=>{ if(!list.includes(r.event)) list.push(r.event); }); return list; }
+function perfRecs(ev){ return PERF.merge(perf.coach.records[ev]||[], perf.mine.filter(r=>r.event===ev)); }
+function perfTarget(ev){ const t=perf.coach.targets[ev]; return t===undefined||t===null||t===''?null:t; }
+function fbOpt(){ const t=myCheckins.find(c=>c.date===todayStr()); return {today:todayStr(),todayStatus:t?t.status:null}; }
+function defaultEv(){ return perfEvents().find(ev=>perfRecs(ev).length)||perf.coach.events[0]||PERF.LIBRARY[0]; }
+function perfId(date,ev){ return date+'_'+String(ev).replace(/\//g,'∕').slice(0,60); }
+
+function perfSummaryHTML(){
+  let body;
+  if(perf.status!=='ready') body='<p class="note">실기 기록 불러오는 중...</p>';
+  else if(perf.denied.list) body='<p class="note">실기 기록 기능을 준비하고 있어요. 곧 여기서 기록하고 피드백을 받을 수 있어요.</p>';
+  else{
+    const evs=perfEvents().filter(ev=>perfRecs(ev).length);
+    body=evs.length
+      ? evs.slice(0,4).map(ev=>{ const f=PERF.feedback(ev,perfRecs(ev),perfTarget(ev),fbOpt());
+          return `<button class="pf-row" data-a="perf-ev" data-ev="${esc(ev)}"><span class="pf-ev">${esc(ev)}</span><span class="pf-val">${esc(PERF.withUnit(ev,f.latest.value))}</span><span class="pf-tag t-${f.tone}">${esc(f.headline)}</span></button>`; }).join('')
+        +(evs.length>4?`<p class="note" style="margin-top:6px">외 ${evs.length-4}개 종목</p>`:'')
+      : '<p class="note">측정한 실기 기록을 남기면 지난번·개인 최고·목표와 비교해서 알려 줘요.</p>';
+    body+='<button class="btn btn-2" data-a="perf">실기 기록 입력하기</button>';
+  }
+  return `<h2 class="sec-t">실기 기록</h2>${body}`;
+}
+
+function openPerf(ev){
+  if(ev) perf.ev=ev;
+  perf.ack=null; perf.justSaved=null;
+  renderPerf(); show('screen-perf');
+  if(perf.status==='idle') loadPerfData();
+}
+function hintHTML(ev,recs){
+  const parts=[], t=perfTarget(ev), last=recs[recs.length-1];
+  parts.push(t!==null?'목표 '+esc(PERF.withUnit(ev,Number(t))):'목표는 선생님이 정해요');
+  if(last) parts.push('최근 '+esc(PERF.withUnit(ev,last.value))+' ('+PERF.md(last.date)+')');
+  if(!PERF.isKnown(ev)) parts.push('선생님이 만든 종목');
+  else if(PERF.isLower(ev)) parts.push('시간 종목: 숫자가 작을수록 좋아요');
+  return parts.join(' · ');
+}
+function fbHTML(ev,f){
+  if(!f.count) return '<p class="note">아직 기록이 없어요. 위에서 첫 기록을 남겨 보세요.</p>';
+  return `<div class="fb-head t-${f.tone}">${esc(f.headline)}${perf.justSaved?'<span class="fb-saved">방금 저장</span>':''}</div>`
+    +f.lines.map(l=>`<div class="fb-line"><i class="t-${l.tone}"></i><span>${esc(l.text)}</span></div>`).join('');
+}
+function listHTML(ev,recs){
+  if(!recs.length) return '<p class="note">기록이 쌓이면 여기에 날짜순으로 보여요.</p>';
+  return recs.slice().reverse().map(r=>`<div class="rec"><span class="note">${PERF.md(r.date)}</span><span><b>${esc(PERF.withUnit(ev,r.value))}</b><span class="src">${r.by==='coach'?'선생님 기록':'내 기록'}</span></span>${r.by==='student'?`<button class="del" data-p="del" data-rid="${esc(r.rid)}">지우기</button>`:'<span></span>'}</div>`).join('');
+}
+function renderPerf(){
+  const box=$('screen-perf');
+  const keep={date:$('pf-date')?$('pf-date').value:'', val:$('pf-val')?$('pf-val').value:''};
+  const head=`<div class="head"><div><h1>실기 기록</h1><div class="date">기록하면 지난번·개인 최고·목표와 바로 비교해 줘요</div></div>
+    <div class="head-actions"><button class="link" data-p="back">← 오늘 상태</button></div></div>`;
+  if(perf.status!=='ready'){ box.innerHTML=head+'<p class="note">불러오는 중...</p>'; return; }
+  if(perf.denied.list){ box.innerHTML=head+'<div class="box">실기 기록 기능을 준비하고 있어요. 선생님이 기능을 켜면 여기서 기록할 수 있어요.</div>'; return; }
+  if(!perf.ev) perf.ev=defaultEv();
+  const ev=perf.ev, recs=perfRecs(ev), f=PERF.feedback(ev,recs,perfTarget(ev),fbOpt()), unit=PERF.unitOf(ev), today=todayStr();
+  const coachEv=perf.coach.events;
+  const others=[...new Set([...perf.mine.map(r=>r.event),...PERF.LIBRARY,ev])].filter(e=>!coachEv.includes(e));
+  const opt=e=>`<option value="${esc(e)}" ${e===ev?'selected':''}>${esc(e)}</option>`;
+  const sel=`<select id="pf-ev" class="txt">${coachEv.length?`<optgroup label="선생님이 정한 종목">${coachEv.map(opt).join('')}</optgroup>`:''}${others.length?`<optgroup label="${coachEv.length?'다른 종목':'종목'}">${others.map(opt).join('')}</optgroup>`:''}</select>`;
+  box.innerHTML=head
+    +(perf.denied.doc?'<div class="box note" style="margin-top:8px">선생님이 정한 종목·목표는 아직 볼 수 없어요. 종목을 직접 골라 기록할 수 있어요.</div>':'')
+    +`<div class="q" style="border-top:0">
+      <label class="fl" for="pf-ev" style="margin-top:0">종목</label>${sel}
+      <div class="pf-grid">
+        <div><label class="fl" for="pf-date">측정한 날</label><input id="pf-date" type="date" class="txt" max="${today}" min="${addDays(today,-365)}" value="${esc(keep.date||today)}"></div>
+        <div><label class="fl" for="pf-val">기록${unit?' ('+esc(unit)+')':''}</label><input id="pf-val" class="txt" inputmode="decimal" autocomplete="off" enterkeyhint="done" placeholder="${PERF.isLower(ev)?'예: 9.85':'예: 251'}" value="${esc(keep.val)}"></div>
+      </div>
+      <div id="pf-hint" class="note pf-hint">${hintHTML(ev,recs)}</div>
+      <button class="btn" data-p="save">기록 저장</button>
+      <div id="pf-err" class="err" role="alert"></div>
+    </div>
+    <div class="sec" id="pf-fb"><h2 class="sec-t">${esc(ev)} 피드백</h2>${fbHTML(ev,f)}</div>
+    ${recs.length>=2?`<div class="sec"><h2 class="sec-t">기록 흐름${PERF.isLower(ev)?' · 위로 갈수록 빠른 기록':''}</h2><div class="chart-box"><canvas id="pf-chart" role="img" aria-label="${esc(ev)} 기록 그래프"></canvas></div><p class="note" style="margin-top:6px">초록 점은 내 기록, 회색 점은 선생님 기록${perfTarget(ev)!==null?', 주황 점선은 목표':''}이에요.</p></div>`:''}
+    <div class="sec"><h2 class="sec-t">기록 목록 (${recs.length})</h2>${listHTML(ev,recs)}</div>`;
+  drawPerfChart(ev,recs,f);
+}
+function drawPerfChart(ev,recs,f){
+  const c=$('pf-chart'); if(!c) return;
+  if(typeof Chart==='undefined'){ ensureChart().then(()=>{ if($('pf-chart')===c) drawPerfChart(ev,recs,f); }).catch(()=>{}); return; }
+  if(perfChart) perfChart.destroy();
+  const colors=recs.map(r=>r.by==='coach'?'#aab2c5':'#c6ff3d');
+  const best=f.best;
+  const sets=[{data:recs.map(r=>r.value),borderColor:'#c6ff3d',pointBackgroundColor:colors,pointBorderColor:colors,pointRadius:recs.map(r=>best&&r.date===best.date&&r.value===best.value?6:3),borderWidth:2,tension:.25}];
+  const t=perfTarget(ev); if(t!==null&&Number.isFinite(Number(t))) sets.push({data:recs.map(()=>Number(t)),borderColor:'#ff9f1c',borderDash:[5,5],borderWidth:1,pointRadius:0});
+  perfChart=new Chart(c,{type:'line',data:{labels:recs.map(r=>PERF.md(r.date)),datasets:sets},
+    options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},
+      scales:{y:{reverse:PERF.isLower(ev),grid:{color:'#2b3242'},ticks:{color:'#828ba0'}},x:{grid:{display:false},ticks:{color:'#828ba0',maxTicksLimit:7}}}}});
+}
+function resetPerfSave(){ perf.ack=null; const b=document.querySelector('[data-p="save"]'); if(b&&!perf.saving) b.textContent='기록 저장'; const e=$('pf-err'); if(e){ e.className='err'; e.textContent=''; } }
+function updatePerfHint(){
+  const h=$('pf-hint'); if(!h) return;
+  const ev=$('pf-ev').value, date=$('pf-date').value, recs=perfRecs(ev), same=recs.find(r=>r.date===date);
+  let extra='';
+  if(same&&same.by==='coach') extra='<br><span class="t-warn">이 날에는 선생님이 적은 기록('+esc(PERF.withUnit(ev,same.value))+')이 있어요.</span>';
+  else if(same) extra='<br><span class="t-warn">이 날 기록('+esc(PERF.withUnit(ev,same.value))+')이 있어요. 저장하면 바뀌어요.</span>';
+  h.innerHTML=hintHTML(ev,recs)+extra;
+}
+async function savePerf(){
+  if(perf.saving) return;
+  const ev=$('pf-ev').value, date=$('pf-date').value, err=$('pf-err'), btn=document.querySelector('[data-p="save"]');
+  err.className='err'; err.textContent='';
+  const v=PERF.parseValue($('pf-val').value);
+  if(v===null){ err.textContent='기록을 숫자로 적어 주세요 (예: 251 또는 9.85).'; $('pf-val').focus(); return; }
+  const today=todayStr();
+  if(!PERF.validDate(date)||date>today){ err.textContent='측정한 날을 오늘이나 그 전으로 골라 주세요.'; return; }
+  if(date<addDays(today,-365)){ err.textContent='1년 안의 기록만 저장할 수 있어요.'; return; }
+  const same=perfRecs(ev).find(r=>r.date===date);
+  if(same&&same.by==='coach'){ err.textContent=PERF.md(date)+'에는 선생님이 적은 기록('+PERF.withUnit(ev,same.value)+')이 있어요. 다른 날을 고르거나 선생님께 말씀해 주세요.'; return; }
+  const warn=PERF.rangeWarn(ev,v), key=ev+'|'+v;
+  if(warn&&perf.ack!==key){ perf.ack=key; err.className='err warn'; err.textContent=warn+' 맞으면 한 번 더 눌러 주세요.'; btn.textContent='맞아요, 저장하기'; return; }
+  if(navigator.onLine===false){ err.textContent='인터넷이 끊겨 있어요. 와이파이나 데이터를 켠 뒤 다시 눌러 주세요.'; return; }
+  perf.saving=true; btn.disabled=true; btn.textContent='저장하는 중...';
+  const slow=setTimeout(()=>{ err.className='err warn'; err.textContent='인터넷이 느려서 저장이 늦어지고 있어요. 이 화면을 닫지 말고 잠시 기다려 주세요.'; },8000);
+  const rid=perfId(date,ev);
+  try{
+    await db.collection('students').doc(myStudent.id).collection('perfRecords').doc(rid)
+      .set({event:ev,value:v,date,by:'student',uid:auth.currentUser.uid,studentId:myStudent.id,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    clearTimeout(slow);
+    perf.mine=perf.mine.filter(r=>r.rid!==rid).concat([{event:ev,value:v,date,by:'student',rid}]);
+    perf.saving=false; perf.ack=null; perf.ev=ev; perf.justSaved=rid;
+    $('pf-val').value='';
+    renderPerf();
+    const fb=$('pf-fb'); if(fb) fb.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  }catch(e){
+    clearTimeout(slow); perf.saving=false; btn.disabled=false; btn.textContent='다시 저장하기'; err.className='err';
+    err.textContent=e.code==='permission-denied'?'기록 저장 권한이 아직 없어요. 선생님께 "실기 기록 저장이 안 돼요"라고 말씀해 주세요.':'저장 실패: '+(e.code||e.message)+' · 다시 눌러 주세요.';
+  }
+}
+async function deletePerf(rid){
+  const r=perf.mine.find(x=>x.rid===rid); if(!r) return;
+  if(!confirm(PERF.md(r.date)+' '+r.event+' '+PERF.withUnit(r.event,Number(r.value))+' 기록을 지울까요?')) return;
+  try{
+    await db.collection('students').doc(myStudent.id).collection('perfRecords').doc(rid).delete();
+    perf.mine=perf.mine.filter(x=>x.rid!==rid); perf.justSaved=null; renderPerf();
+  }catch(e){ $('pf-err').textContent='지우지 못했어요: '+(e.code||e.message); }
+}
+$('screen-perf').addEventListener('click',e=>{
+  const el=e.target.closest('[data-p]'); if(!el) return;
+  if(el.dataset.p==='back'){ showResult(); }
+  else if(el.dataset.p==='save') savePerf();
+  else if(el.dataset.p==='del') deletePerf(el.dataset.rid);
+});
+$('screen-perf').addEventListener('change',e=>{
+  if(e.target.id==='pf-ev'){ perf.ev=e.target.value; perf.ack=null; perf.justSaved=null; renderPerf(); updatePerfHint(); }
+  else if(e.target.id==='pf-date'){ resetPerfSave(); updatePerfHint(); }
+});
+$('screen-perf').addEventListener('input',e=>{ if(e.target.id==='pf-val'||e.target.id==='pf-date') resetPerfSave(); });
+$('screen-perf').addEventListener('keydown',e=>{ if(e.target.id==='pf-val'&&e.key==='Enter'){ e.preventDefault(); savePerf(); } });
 
 /* ============ 개발용 테스트 데이터 (?dev=1 일 때만 화면에 나온다) ============ */
 const DEV_EMAILS=['dragon040617@gmail.com'];   // 테스트 데이터 버튼을 볼 수 있는 계정
