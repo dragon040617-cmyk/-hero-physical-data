@@ -8,6 +8,9 @@
 <!-- 속도: 서버와 미리 연결해 두고, 글꼴은 화면을 막지 않게 나중에 입힌다 (글꼴이 늦으면 기본 글꼴로 먼저 보임) -->
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="HERO">
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media='all'">
@@ -154,10 +157,14 @@
   .pf-val{ font-weight:700; font-variant-numeric:tabular-nums; text-align:right; }
   .pf-tag{ grid-column:1 / -1; font-size:13px; }
   .t-good{ color:var(--lime); } .t-warn{ color:#ffb35c; } .t-info{ color:var(--muted); } .t-bad{ color:#ff8a7a; }
-  .pf-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .pf-grid{ display:grid; grid-template-columns:minmax(0,1fr); gap:0 10px; }   /* 휴대폰: 날짜·기록을 한 줄씩 (아이폰 날짜가 반쪽 칸에 안 들어가던 문제) */
+  @media (min-width:480px){ .pf-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
   .pf-grid .fl{ margin-top:14px; }
   .pf-hint{ margin:10px 0 14px; line-height:1.6; }
-  input[type=date].txt{ -webkit-appearance:none; appearance:none; display:block; min-width:0; max-width:100%; }
+  input[type=date].txt{ -webkit-appearance:none; appearance:none; display:block; width:100%; min-width:0; max-width:100%; height:50px; line-height:48px; text-align:left; padding:0 14px; }
+  input[type=date].txt::-webkit-date-and-time-value{ text-align:left; margin:0; line-height:48px; }   /* 아이폰: 날짜 글자를 칸 가운데 높이에, 왼쪽 정렬로 */
+  input[type=date].txt::-webkit-datetime-edit{ padding:0; line-height:48px; }
+  input[type=date].txt::-webkit-calendar-picker-indicator{ filter:invert(.8); }
   .fb-head{ font-size:18px; font-weight:700; margin-bottom:8px; }
   .fb-line{ display:grid; grid-template-columns:10px minmax(0,1fr); gap:10px; padding:5px 0; font-size:15px; line-height:1.55; }
   .fb-line i{ width:8px; height:8px; border-radius:50%; margin-top:8px; background:var(--muted); }
@@ -168,6 +175,81 @@
   .rec .src{ font-size:12px; color:var(--dim); margin-left:6px; }
   .rec .del{ background:none; border:1px solid var(--line); color:var(--muted); border-radius:8px; min-height:44px; padding:0 12px; font:inherit; font-size:13px; cursor:pointer; }
   .err.warn{ color:#ffd23f; }
+
+  /* ===== 아래 메뉴 (오늘 · 몸관리 · 실기 기록 · 내 정보) ===== */
+  .bnav{ position:fixed; left:0; right:0; bottom:0; z-index:50; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px;
+    background:rgba(26,31,41,.97); border-top:1px solid var(--line); padding:6px 8px calc(6px + env(safe-area-inset-bottom)); }
+  .bnav.hidden{ display:none; }
+  .bnav button{ background:none; border:0; border-radius:12px; color:var(--dim); font:inherit; font-size:12.5px; font-weight:600; min-height:54px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; }
+  .bnav button .ic{ font-size:20px; line-height:1; filter:grayscale(1); opacity:.75; }
+  .bnav button[aria-current="page"]{ color:var(--lime); background:var(--lime-soft); }
+  .bnav button[aria-current="page"] .ic{ filter:none; opacity:1; }
+  @media (min-width:768px){ .bnav{ max-width:600px; margin:0 auto; border:1px solid var(--line); border-bottom:0; border-radius:18px 18px 0 0; } }
+  body.with-nav .screen{ padding-bottom:calc(100px + env(safe-area-inset-bottom)); }
+
+  /* 오늘 할 것 */
+  .todo-box{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:6px 14px 10px; margin-top:16px; }
+  .todo-h{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:10px 0 4px; }
+  .todo-h b{ font-size:16px; } .todo-h span{ font-size:13px; color:var(--muted); }
+  .todo{ display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; border-top:1px solid var(--line); }
+  .todo:first-of-type{ border-top:0; }
+  .todo-c{ display:grid; grid-template-columns:28px minmax(0,1fr); gap:10px; align-items:start; background:none; border:0; color:var(--text); font:inherit; text-align:left; padding:12px 0; min-height:48px; cursor:pointer; }
+  .todo-c i{ width:24px; height:24px; border-radius:50%; border:2px solid var(--dim); display:flex; align-items:center; justify-content:center; font-style:normal; font-size:14px; color:#0d1a03; margin-top:1px; }
+  .todo-c .k{ display:block; font-size:12.5px; color:var(--lime); margin-bottom:1px; }
+  .todo-c .v{ font-size:15px; line-height:1.5; }
+  .todo.done .todo-c i{ background:var(--lime); border-color:var(--lime); }
+  .todo.done .todo-c .v{ color:var(--dim); text-decoration:line-through; }
+  .todo-more{ background:none; border:0; color:var(--muted); font:inherit; font-size:13px; min-height:44px; padding:0 4px; cursor:pointer; white-space:nowrap; }
+  .status-foot{ display:flex; justify-content:flex-end; margin-top:6px; }
+  .status-foot .link{ font-size:14px; padding:0 4px; }
+
+  /* 이번 주 체크인 */
+  .week{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; margin:6px 0 10px; }
+  .week div{ text-align:center; font-size:12px; color:var(--dim); }
+  .week i{ display:flex; align-items:center; justify-content:center; height:34px; border-radius:10px; border:1px solid var(--line); font-style:normal; font-size:14px; margin-top:4px; color:var(--dim); }
+  .week .on i{ background:var(--lime); border-color:var(--lime); color:#0d1a03; font-weight:800; }
+  .week .today i{ border-color:var(--muted); border-width:2px; }
+  .week-s{ font-size:14.5px; color:var(--muted); line-height:1.6; }
+  .week-s b{ color:var(--text); }
+
+  /* 자세히 보기 (평소와 비교·그래프) */
+  details.more{ border-top:1px solid var(--line); margin-top:20px; }
+  details.more > summary{ list-style:none; display:flex; justify-content:space-between; align-items:center; gap:10px; min-height:56px; cursor:pointer; font-weight:600; font-size:15.5px; }
+  details.more > summary::-webkit-details-marker{ display:none; }
+  details.more > summary::after{ content:'펼치기 ▾'; font-size:13px; font-weight:500; color:var(--muted); }
+  details.more[open] > summary::after{ content:'접기 ▴'; }
+
+  /* 몸관리 화면 */
+  .seg{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:4px; margin:14px 0 4px; position:sticky; top:calc(6px + env(safe-area-inset-top)); z-index:5; }
+  .seg button{ min-height:46px; border:0; border-radius:10px; background:none; color:var(--muted); font:inherit; font-size:15px; font-weight:700; cursor:pointer; }
+  .seg button[aria-selected="true"]{ background:var(--lime); color:#0d1a03; }
+  .seg button small{ font-size:12px; font-weight:600; opacity:.8; }
+  .cstate{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:6px; font-size:14px; color:var(--muted); }
+  .cstate b{ font-size:13px; border:1px solid; border-radius:999px; padding:1px 10px; }
+  .ccard{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-top:12px; }
+  .ccard h3{ font-size:16.5px; margin:0 0 8px; }
+  .ctime{ display:grid; grid-template-columns:minmax(0,1fr); gap:0; }
+  .ctime .care-l{ border-top:1px solid var(--line); padding:10px 0; }
+  .ctime .care-l:first-child{ border-top:0; padding-top:2px; }
+  .ccard .care-l{ font-size:15.5px; line-height:1.55; }
+  .ccard ul{ margin:0; padding-left:20px; } .ccard li{ font-size:15.5px; line-height:1.6; padding:3px 0; }
+  .ccard li .care-m{ margin-top:2px; }
+
+  /* 개인 최고 축하 */
+  .cele{ position:fixed; inset:0; z-index:100; background:rgba(8,10,14,.82); display:flex; align-items:center; justify-content:center; padding:24px; overflow:hidden; }
+  .cele-card{ position:relative; z-index:2; width:min(360px,100%); background:var(--surface); border:2px solid var(--lime); border-radius:20px; padding:26px 22px 20px; text-align:center; animation:pop .35s ease-out; }
+  .cele-burst{ font-size:52px; line-height:1; }
+  .cele-t{ font-size:22px; font-weight:800; margin-top:10px; color:var(--lime); }
+  .cele-v{ font-size:40px; font-weight:800; margin-top:4px; font-variant-numeric:tabular-nums; }
+  .cele-s{ font-size:15px; color:var(--muted); margin:6px 0 18px; line-height:1.55; }
+  .cele i{ position:absolute; top:-20px; width:10px; height:16px; border-radius:2px; animation:fall linear forwards; z-index:1; }
+  @keyframes fall{ to{ transform:translateY(110vh) rotate(540deg); } }
+  @keyframes pop{ from{ transform:scale(.85); opacity:0; } to{ transform:scale(1); opacity:1; } }
+  @media (prefers-reduced-motion: reduce){ .cele-card{ animation:none; } .cele i{ display:none; } }
+
+  /* 홈 화면에 추가 안내 */
+  .install ol{ margin:6px 0 0; padding-left:20px; } .install li{ font-size:15px; line-height:1.6; padding:2px 0; }
 </style>
 </head>
 <body>
@@ -240,12 +322,22 @@
   <h1>내 정보</h1>
   <div class="box" id="me-summary"></div>
   <p class="note" style="margin-top:12px">정보를 바꾸려면 선생님께 말씀해 주세요.</p>
-  <button class="btn" onclick="showResult()">돌아가기</button>
+  <div class="box install" id="me-install" style="margin-top:20px"></div>
+  <button class="btn btn-2" style="margin-top:20px" onclick="if(confirm('로그아웃할까요? 다시 들어올 때 구글 로그인이 필요해요.')) logout()">로그아웃</button>
 </section>
 
 <section id="screen-form" class="screen hidden"></section>
 <section id="screen-result" class="screen hidden"></section>
 <section id="screen-perf" class="screen hidden"></section>
+<section id="screen-care" class="screen hidden"></section>
+
+<!-- 아래 메뉴: 승인된 학생에게만 보인다 -->
+<nav id="bnav" class="bnav hidden" aria-label="학생 메뉴">
+  <button type="button" data-nav="today"><span class="ic" aria-hidden="true">🏠</span>오늘</button>
+  <button type="button" data-nav="care"><span class="ic" aria-hidden="true">🥗</span>몸관리</button>
+  <button type="button" data-nav="perf"><span class="ic" aria-hidden="true">📈</span>실기 기록</button>
+  <button type="button" data-nav="me"><span class="ic" aria-hidden="true">👤</span>내 정보</button>
+</nav>
 
 <!-- 속도: 무거운 파일은 화면 글자를 먼저 보여 준 다음에 받는다 (예전엔 <head>에 있어서 다 받을 때까지 빈 화면) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-app-compat.min.js"></script>
@@ -345,12 +437,12 @@ function judge(t,an){
   const sleepLow=t.sleepMin<300, follow=t.painFollowUp;
   const special=[]; let status, headline;
 
-  if(painHigh){ status='RED'; headline=(areas?areas+' ':'')+'통증이 있어요. 훈련 전에 코치님께 먼저 말해 주세요.'; special.push((areas?areas+' ':'')+'통증 '+t.painLevel+'/10'); }
-  else if(t.sorenessImpact===3){ status='RED'; headline='근육통 때문에 움직이기 힘든 상태예요. 훈련 전에 코치님께 말해 주세요.'; special.push((sAreas||'근육통')+' · 훈련 어려움'); }
-  else if(t.readiness<=2){ status='RED'; headline='오늘 몸이 많이 무거워요. 훈련 전에 코치님께 말해 주세요.'; special.push('준비도 '+t.readiness+'/10'); }
-  else if(worse.some(r=>bad(r)>=2&&BODY_KEYS.includes(r.m.key))){ const r=worse.find(r=>bad(r)>=2&&BODY_KEYS.includes(r.m.key)); status='RED'; headline=PHRASE[r.m.key](r)+'. 훈련 전에 코치님께 말해 주세요.'; }
-  else if(painLow){ status='AMBER'; headline=(areas?areas+'에 ':'')+'약한 통증이 있어요. 코치님께 미리 말해 두세요.'; special.push((areas?areas+' ':'')+'통증 '+t.painLevel+'/10'); }
-  else if(follow===2){ status='AMBER'; headline='어제 아팠던 곳이 오늘 아침 더 아팠어요. 코치님께 말해 주세요.'; special.push('아침 통증 증가'); }
+  if(painHigh){ status='RED'; headline=(areas?areas+' ':'')+'통증이 있어요. 훈련 전에 선생님께 먼저 말해 주세요.'; special.push((areas?areas+' ':'')+'통증 '+t.painLevel+'/10'); }
+  else if(t.sorenessImpact===3){ status='RED'; headline='근육통 때문에 움직이기 힘든 상태예요. 훈련 전에 선생님께 말해 주세요.'; special.push((sAreas||'근육통')+' · 훈련 어려움'); }
+  else if(t.readiness<=2){ status='RED'; headline='오늘 몸이 많이 무거워요. 훈련 전에 선생님께 말해 주세요.'; special.push('준비도 '+t.readiness+'/10'); }
+  else if(worse.some(r=>bad(r)>=2&&BODY_KEYS.includes(r.m.key))){ const r=worse.find(r=>bad(r)>=2&&BODY_KEYS.includes(r.m.key)); status='RED'; headline=PHRASE[r.m.key](r)+'. 훈련 전에 선생님께 말해 주세요.'; }
+  else if(painLow){ status='AMBER'; headline=(areas?areas+'에 ':'')+'약한 통증이 있어요. 선생님께 미리 말해 두세요.'; special.push((areas?areas+' ':'')+'통증 '+t.painLevel+'/10'); }
+  else if(follow===2){ status='AMBER'; headline='어제 아팠던 곳이 오늘 아침 더 아팠어요. 선생님께 말해 주세요.'; special.push('아침 통증 증가'); }
   else if(sleepLow){ status='AMBER'; headline='어젯밤 '+fmtSleep(t.sleepMin)+'밖에 못 잤어요.'; special.push('수면 '+fmtSleep(t.sleepMin)); }
   else if(isW('sleepMin')&&(isW('fatigue')||isW('readiness'))){ status='AMBER'; headline='잠이 부족하고 몸도 무거운 날이에요.'; }
   else if(worse.filter(r=>bad(r)>=1.5).length>=2){ status='AMBER'; headline=PHRASE[worse[0].m.key](worse[0])+'.'; }
@@ -366,13 +458,13 @@ function judge(t,an){
 
   // 오늘 훈련 참고 (부하 처방은 코치 화면에만)
   let train;
-  if(status==='RED') train='오늘 훈련은 코치님이 상태를 보고 정해 줄 거예요. 혼자 무리하지 마세요.';
-  else if(status==='AMBER') train=(t.pain||follow===2)?'아픈 곳에 무리가 가는 동작은 코치님과 먼저 이야기하고 하세요.'
-    :t.sorenessImpact===2?'불편한 동작이 있으면 참지 말고 바로 코치님께 말하세요.'
+  if(status==='RED') train='오늘 훈련은 선생님이 상태를 보고 정해 줄 거예요. 혼자 무리하지 마세요.';
+  else if(status==='AMBER') train=(t.pain||follow===2)?'아픈 곳에 무리가 가는 동작은 선생님과 먼저 이야기하고 하세요.'
+    :t.sorenessImpact===2?'불편한 동작이 있으면 참지 말고 바로 선생님께 말하세요.'
     :'몸이 평소보다 무거운 날이에요. 웜업을 충분히 하고, 훈련 중에 이상하면 바로 말하세요.';
   else if(status==='YELLOW') train=isW('stress')?'훈련 전에 숨을 길게 내쉬면서 몸을 풀고 시작하세요.':(isW('soreness')||t.sorenessImpact===1)?'뻐근한 곳은 웜업으로 충분히 풀고 시작하세요.':'훈련 초반에 몸 상태를 먼저 확인하고 시작하세요.';
   else if(status==='GREEN') train=better.length?'측정이나 강한 훈련을 하기 좋은 상태예요.':'평소대로 훈련하면 돼요.';
-  else train='아직 오늘 값만 보고 있어요. 평소와 다르게 느껴지면 코치님께 말하세요.';
+  else train='아직 오늘 값만 보고 있어요. 평소와 다르게 느껴지면 선생님께 말하세요.';
 
   // 몸관리용 '신호': 평소보다 나빠졌거나, 평소 기준이 아직 없을 땐(최근 28일 체크인 6회 전) 점수 자체가 높거나 낮으면
   const ABS={sleepMin:v=>v<360,sleepQuality:v=>v<=3,fatigue:v=>v>=7,soreness:v=>v>=7,stress:v=>v>=7,readiness:v=>v<=3};
@@ -382,7 +474,7 @@ function judge(t,an){
   return {status,headline,reasons,train,coachTalk:coachMessage(ctx),care:buildCare(ctx)};
 }
 
-/* ---- 코치님께 드릴 말 (정중한 형식, 데이터에 따라 바뀜) ---- */
+/* ---- 선생님께 드릴 말 (정중한 형식, 데이터에 따라 바뀜) ---- */
 function coachMessage(c){
   const t=c.t, facts=[];
   let main=null, ask=null, usedSleep=false;
@@ -719,9 +811,17 @@ const auth=fbApp.auth();
 const db=fbApp.firestore();
 const $=id=>document.getElementById(id);
 
+const NAV_OF={'screen-result':'today','screen-form':'today','screen-care':'care','screen-perf':'perf','screen-me':'me'};
 function show(id){
   document.querySelectorAll('.screen').forEach(el=>el.classList.add('hidden'));
   $(id).classList.remove('hidden');
+  // 아래 메뉴: 승인된 학생 화면에서만 보이고, 지금 화면 버튼에 불이 들어온다
+  let cur=null; try{ cur=myStudent?NAV_OF[id]:null; }catch(e){}   // 시작 직후(학생 정보 준비 전)에도 멈추지 않게
+  const nav=$('bnav');
+  if(nav){
+    nav.classList.toggle('hidden',!cur); document.body.classList.toggle('with-nav',!!cur);
+    nav.querySelectorAll('[data-nav]').forEach(b=>{ if(b.dataset.nav===cur) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+  }
   window.scrollTo(0,0);
 }
 
@@ -876,9 +976,19 @@ async function editRequest(){
   const d=await db.collection('joinRequests').doc(auth.currentUser.uid).get();
   openProfile(d.exists?d.data():null);
 }
+/* 홈 화면에 추가 안내 (I8): 아이콘을 누르면 지금 쓰는 브라우저로 바로 열린다 → 로그인도 그대로 */
+function installHTML(){
+  const ua=navigator.userAgent||'', ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
+  const inApp=/KAKAOTALK|Instagram|FBAN|FBAV|NAVER|Line\//i.test(ua);
+  const steps=inApp?['먼저 오른쪽 위(또는 아래) 메뉴에서 <b>다른 브라우저로 열기</b>를 눌러요','Safari나 Chrome에서 아래 순서대로 해요']
+    :ios?['Safari 아래쪽 <b>공유 버튼</b>(네모에 위 화살표)을 눌러요','목록에서 <b>홈 화면에 추가</b>를 눌러요','오른쪽 위 <b>추가</b>를 누르면 끝']
+    :['Chrome 오른쪽 위 <b>⋮ 메뉴</b>를 눌러요','<b>홈 화면에 추가</b>를 눌러요','<b>추가</b>를 누르면 끝'];
+  return `<b>홈 화면에 HERO 아이콘 만들기</b><p class="note" style="margin:4px 0 0">매일 체크인할 때 주소를 찾지 않아도 돼요.</p><ol>${steps.map(x=>`<li>${x}</li>`).join('')}</ol>`;
+}
 async function openMe(){
   const d=await db.collection('joinRequests').doc(auth.currentUser.uid).get();
   $('me-summary').innerHTML=d.exists?summaryHTML(d.data()):`<div class="kv"><b>이름</b><span>${esc(myStudent.name)}</span></div>`;
+  $('me-install').innerHTML=installHTML();
   show('screen-me');
 }
 
@@ -945,9 +1055,10 @@ function formFromDoc(c){
           stressCauses:c.stressCauses||[],readiness:c.readiness,pain:c.pain,painAreas:normAreas(c.painAreas),
           painLevel:c.painLevel,painNote:c.painNote||'',painFollowUp:c.painFollowUp??null};
 }
-function openForm(){
+let formDate=null;   // 쓰다 만 체크인: 다른 메뉴에 다녀와도 오늘 적던 답은 그대로 둔다
+function openForm(keepDraft){
   const t=myCheckins.find(c=>c.date===todayStr());
-  form=t?formFromDoc(t):emptyForm();
+  if(!(keepDraft&&!t&&form&&formDate===todayStr())){ form=t?formFromDoc(t):emptyForm(); formDate=todayStr(); }
   renderForm(); show('screen-form');
 }
 
@@ -1102,48 +1213,134 @@ function rowHTML(r,today,ready){
     <div class="dv"><div class="dv-mid"></div><div class="dv-fill ${r.tone}" style="left:${left}%;width:${w}%"></div></div>
     <div class="row-sub"><span>${fmtDelta(m.key,r.delta)}</span><span class="${tagCls}">${tagTxt}</span></div>${ctxH}</div>`;
 }
+let detailOpen=false;   // '내 상태 자세히' 펼침 상태 (다시 그려도 유지)
 function showResult(){
   const date=todayStr(), today=myCheckins.find(c=>c.date===date);
-  if(!today){ openForm(); return; }
+  if(!today){ openForm(true); return; }
   const hist=historyFor(date), an=analyze(today,hist), j=judge(today,an), ui=STATUS_UI[j.status];
 
   $('screen-result').innerHTML=`
     <div class="head"><div><h1>${esc(myStudent.name||'학생')}님, 오늘 상태</h1>
-      <div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})}</div></div>
-      <div class="head-actions grid4"><button class="link" data-a="perf">실기 기록</button><button class="link" data-a="edit">기록 수정</button><button class="link" data-a="me">내 정보</button><button class="link" data-a="logout">로그아웃</button></div></div>
+      <div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})}</div></div></div>
 
     <div class="status" style="border-color:${ui.color};background:${ui.bg}">
       <div class="badge" style="color:${ui.color}">${ui.label}</div>
       <div class="headline">${esc(j.headline)}</div>
       ${j.reasons.length?`<div class="reasons">${j.reasons.map(r=>`<span>${esc(r)}</span>`).join('')}</div>`:''}
     </div>
-    ${today.pain?'<p class="pain-note">관절이나 뼈 통증은 참지 말고 코치님께 직접 보여 주세요. 이 앱은 진단하지 않아요.</p>':''}
+    <div class="status-foot"><button class="link" data-a="edit">체크인 고치기</button></div>
+    ${today.pain?'<p class="pain-note">관절이나 뼈 통증은 참지 말고 선생님께 직접 보여 주세요. 이 앱은 진단하지 않아요.</p>':''}
+
+    ${todoHTML(j,today)}
 
     <div class="sec"><div class="sec-t">오늘 훈련 참고</div><p>${esc(j.train)}</p></div>
     ${j.coachTalk?`<div class="sec"><h2 class="sec-t">선생님께 드릴 말</h2><div class="talk" id="talk">${esc(j.coachTalk)}</div>
       <div class="chips"><button class="chip" data-a="copy">복사하기</button></div></div>`:''}
-    <div class="sec"><h2 class="sec-t">오늘 몸관리</h2>
-      <div class="care"><b>영양</b><div><div class="care-n">${esc(j.care.nutrition.names.join(' · '))}</div>${careLines(j.care.nutrition.lines)}</div></div>
-      <div class="care"><b>수면</b><div><div class="care-n">${esc(j.care.sleep.names.join(' · '))}</div>${careLines(j.care.sleep.lines)}</div></div>
-      <div class="care"><b>회복</b><div>${j.care.recovery.length>1?`<div class="care-m" style="margin:0 0 6px">${j.care.recovery.length}가지 · 눌러서 펼치기</div>`:''}
-        ${j.care.recovery.map((r,i)=>`<details class="care-d" ${i===0?'open':''}><summary>${esc(r.name)}</summary>${careLines(r.lines)}</details>`).join('')}</div></div>
-      <p class="note" style="margin-top:8px;">음식 수치는 편의점 일반 제품 기준 대략값이에요. 삼각김밥은 참치마요처럼 마요네즈가 많은 것보다 비빔·불고기류를 골라요. 알레르기가 있으면 선생님과 바꿔요.</p></div>
 
-    <div class="sec" id="perf-sum">${perfSummaryHTML()}</div>
+    <div class="sec">${weekHTML()}</div>
 
-    <div class="sec"><div class="sec-t">${an.ready?'평소(최근 '+BASELINE_WINDOW_DAYS+'일)와 비교':'오늘 기록 · 평소 비교는 최근 '+BASELINE_WINDOW_DAYS+'일 중 '+BASELINE_MIN_DAYS+'번 기록하면 시작 ('+hist.length+'/'+BASELINE_MIN_DAYS+')'}</div>
+    <details class="more" id="more" ${detailOpen?'open':''}><summary>내 상태 자세히 <span class="note" style="font-weight:400">평소와 비교 · 그래프</span></summary>
+    <div class="sec" style="margin-top:0"><div class="sec-t">${an.ready?'평소(최근 '+BASELINE_WINDOW_DAYS+'일)와 비교':'오늘 기록 · 평소 비교는 최근 '+BASELINE_WINDOW_DAYS+'일 중 '+BASELINE_MIN_DAYS+'번 기록하면 시작 ('+hist.length+'/'+BASELINE_MIN_DAYS+')'}</div>
       ${an.rows.map(r=>rowHTML(r,today,an.ready)).join('')}</div>
 
     <div class="sec" style="padding-bottom:0"><div class="sec-t">최근 추이</div>
       <div class="chips" style="margin-top:0">${METRICS.map(m=>`<button class="chip ${trendKey===m.key?'on':''}" data-trend="${m.key}">${m.label}</button>`).join('')}</div>
       <div class="range"><button class="chip ${trendRange===7?'on':''}" data-range="7">7일</button><button class="chip ${trendRange===14?'on':''}" data-range="14">14일</button><button class="chip ${trendRange===28?'on':''}" data-range="28">28일</button></div>
       <div class="chart-box"><canvas id="trend" role="img" aria-label="${METRICS.find(m=>m.key===trendKey).label} 최근 ${trendRange}일 추이 그래프"></canvas></div>
-      <p class="note" style="margin-top:8px;">점선은 최근 평소 평균이에요.</p></div>${isDev()?devPanel():''}`;
-  show('screen-result'); drawTrend();
+      <p class="note" style="margin-top:8px;">점선은 최근 평소 평균이에요.</p></div></details>${isDev()?devPanel():''}`;
+  show('screen-result');
+  if(detailOpen) drawTrend();
+  $('more').addEventListener('toggle',e=>{ detailOpen=e.target.open; if(detailOpen) drawTrend(); });
 }
+
+/* ---- 오늘 할 것: 오늘 꼭 할 2~4가지만 체크 칸으로 (자세한 건 몸관리 화면) ---- */
+function todoItems(j,t){
+  const items=[];
+  if(['RED','AMBER'].includes(j.status)||t.pain) items.push({id:'talk',k:'훈련 전',v:'선생님께 오늘 몸 상태 직접 말하기'});
+  const rec=j.care.recovery[0];
+  if(rec&&rec.lines[0]) items.push({id:'rec',k:'회복 · '+rec.name,v:rec.lines[0].v,to:'recovery'});
+  const nl=j.care.nutrition.lines, n=nl.find(l=>l.k==='훈련 후 1시간 안')||nl[0];
+  if(n) items.push({id:'nut',k:'영양 · '+n.k,v:n.m?n.m:n.v,to:'nutrition'});
+  const sl=j.care.sleep.lines[0];
+  if(sl) items.push({id:'sleep',k:'수면 · '+j.care.sleep.names[0],v:sl.v,to:'sleep'});
+  return items.slice(0,4);
+}
+function todoKey(){ return 'heroTodo:'+((auth.currentUser&&auth.currentUser.uid)||'')+':'+todayStr(); }
+function todoDone(){ try{ const v=JSON.parse(lsGet(todoKey())||'[]'); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
+function todoHTML(j,t){
+  const items=todoItems(j,t), done=todoDone(), n=items.filter(x=>done.includes(x.id)).length;
+  return `<div class="todo-box" id="todo"><div class="todo-h"><b>오늘 할 것</b><span>${n===items.length?'다 했어요 👏':n+'/'+items.length+' 완료'}</span></div>
+    ${items.map(x=>{ const d=done.includes(x.id); return `<div class="todo ${d?'done':''}"><button class="todo-c" data-a="todo" data-id="${x.id}" role="checkbox" aria-checked="${d}"><i aria-hidden="true">${d?'✓':''}</i><span><span class="k">${esc(x.k)}</span><span class="v">${esc(x.v)}</span></span></button>${x.to?`<button class="todo-more" data-a="care" data-tab="${x.to}" aria-label="${esc(x.k)} 자세히">자세히 ›</button>`:''}</div>`; }).join('')}
+  </div>`;
+}
+function toggleTodo(id){
+  const d=todoDone(), i=d.indexOf(id); if(i>=0) d.splice(i,1); else d.push(id);
+  lsSet(todoKey(),JSON.stringify(d));
+  const date=todayStr(), t=myCheckins.find(c=>c.date===date); if(!t) return;
+  const box=$('todo'); if(box){ box.outerHTML=todoHTML(judge(t,analyze(t,historyFor(date))),t); const b=document.querySelector(`[data-a="todo"][data-id="${id}"]`); if(b) b.focus({preventScroll:true}); }
+}
+
+/* ---- 이번 주 체크인 (월~일) + 지난주와 비교 ---- */
+function weekStats(mon){
+  const days=[...Array(7)].map((_,i)=>addDays(mon,i)), list=myCheckins.filter(c=>days.includes(c.date));
+  const avg=k=>list.length?list.reduce((a,c)=>a+c[k],0)/list.length:null;
+  return {days,n:list.length,sleep:avg('sleepMin'),ready:avg('readiness')};
+}
+function weekHTML(){
+  const today=todayStr(), dow=(new Date(today+'T00:00:00').getDay()+6)%7, mon=addDays(today,-dow);
+  const has=new Set(myCheckins.map(c=>c.date)), w=weekStats(mon), lw=weekStats(addDays(mon,-7));
+  let streak=w.n>=2?1:0;   // 주 2번 이상 체크인한 주가 몇 주 이어졌나 (불러온 28일 안에서)
+  for(let k=1;k<=3;k++){ if(weekStats(addDays(mon,-7*k)).n>=2) streak++; else break; }
+  const label=['월','화','수','목','금','토','일'];
+  const dots=w.days.map((d,i)=>`<div class="${has.has(d)?'on':''} ${d===today?'today':''}">${label[i]}<i>${has.has(d)?'✓':''}</i></div>`).join('');
+  const lines=[];
+  lines.push(`이번 주 체크인 <b>${w.n}번</b> · 목표 주 3번${w.n>=3?' 달성 ✓':''}`);
+  if(streak>=2) lines.push(`주 2번 이상 체크인 <b>${streak}주 연속</b>이에요`);
+  if(w.n>=2&&lw.n>=2){
+    const ds=Math.round(w.sleep-lw.sleep), dr=w.ready-lw.ready;
+    lines.push(`지난주보다 평균 수면 <b>${Math.abs(ds)<10?'비슷':(ds>0?'+':'−')+(Math.abs(ds)<60?Math.abs(ds)+'분':fmtSleep(Math.abs(ds)))}</b> · 준비도 <b>${Math.abs(dr)<0.3?'비슷':(dr>0?'+':'−')+Math.abs(dr).toFixed(1)}</b>`);
+  }
+  return `<div class="sec-t">이번 주</div><div class="week" role="img" aria-label="이번 주 체크인 ${w.n}번">${dots}</div><div class="week-s">${lines.join('<br>')}</div>`;
+}
+
+/* ============ 몸관리 화면 (영양 · 수면 · 회복 탭) ============ */
+let careTab='nutrition';
+function openCare(tab){ if(tab) careTab=tab; renderCare(); show('screen-care'); }
+function renderCare(){
+  const date=todayStr(), t=myCheckins.find(c=>c.date===date);
+  const head=`<div class="head"><h1>오늘 몸관리</h1><div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})}</div></div>`;
+  if(!t){ $('screen-care').innerHTML=head+`<div class="box" style="margin-top:14px">오늘 체크인을 하면 내 몸 상태에 맞춘 <b>영양·수면·회복</b> 관리법이 나와요.</div><button class="btn" style="margin-top:14px" data-c="checkin">체크인 하기</button>`; return; }
+  const j=judge(t,analyze(t,historyFor(date))), ui=STATUS_UI[j.status], c=j.care;
+  const tabs=[['nutrition','영양',''],['sleep','수면',''],['recovery','회복',c.recovery.length>1?' <small>'+c.recovery.length+'</small>':'']];
+  let body='';
+  if(careTab==='nutrition') body=`<div class="ccard"><h3>${esc(c.nutrition.names.join(' · '))}</h3><div class="ctime">${careLines(c.nutrition.lines)}</div></div>
+    <p class="note" style="margin-top:12px">음식 수치는 편의점 일반 제품 기준 대략값이에요. 삼각김밥은 참치마요처럼 마요네즈가 많은 것보다 비빔·불고기류를 골라요. 알레르기가 있으면 선생님과 바꿔요.</p>`;
+  else if(careTab==='sleep') body=`<div class="ccard"><h3>${esc(c.sleep.names.join(' · '))}</h3><ul>${c.sleep.lines.map(l=>`<li>${esc(l.v)}</li>`).join('')}</ul></div>`;
+  else body=c.recovery.map(r=>`<div class="ccard"><h3>${esc(r.name)}</h3><ul>${r.lines.map(l=>`<li>${esc(l.v)}${l.m?`<div class="care-m">${esc(l.m)}</div>`:''}${l.alt?`<div class="care-m">볼이 없으면 · ${esc(l.alt)}</div>`:''}</li>`).join('')}</ul></div>`).join('');
+  $('screen-care').innerHTML=head+`<div class="cstate"><b style="color:${ui.color};border-color:${ui.color}">${ui.label}</b><span>${esc(j.headline)}</span></div>
+    <div class="seg" role="tablist" aria-label="몸관리 종류">${tabs.map(([k,l,x])=>`<button role="tab" aria-selected="${careTab===k}" data-c="tab" data-tab="${k}">${l}${x}</button>`).join('')}</div>
+    <div role="tabpanel">${body}</div>`;
+}
+$('screen-care').addEventListener('click',e=>{
+  const el=e.target.closest('[data-c]'); if(!el) return;
+  if(el.dataset.c==='tab'){ careTab=el.dataset.tab; renderCare(); const b=document.querySelector(`#screen-care [data-tab="${careTab}"]`); if(b) b.focus({preventScroll:true}); }
+  else if(el.dataset.c==='checkin') openForm(true);
+});
+
+/* ============ 아래 메뉴 ============ */
+$('bnav').addEventListener('click',e=>{
+  const b=e.target.closest('[data-nav]'); if(!b||!myStudent) return;
+  const k=b.dataset.nav;
+  if(k==='today'){ if(myCheckins.some(c=>c.date===todayStr())) showResult(); else openForm(true); }
+  else if(k==='care') openCare();
+  else if(k==='perf') openPerf();
+  else if(k==='me') openMe();
+});
 $('screen-result').addEventListener('click',e=>{
   const el=e.target.closest('[data-a],[data-trend],[data-range]'); if(!el) return;
   if(el.dataset.a==='edit') openForm();
+  else if(el.dataset.a==='todo') toggleTodo(el.dataset.id);
+  else if(el.dataset.a==='care') openCare(el.dataset.tab);
   else if(el.dataset.a==='perf') openPerf();
   else if(el.dataset.a==='perf-ev') openPerf(el.dataset.ev);
   else if(el.dataset.a==='logout'){ if(confirm('로그아웃할까요? 다시 들어올 때 구글 로그인이 필요해요.')) logout(); }
@@ -1269,8 +1466,7 @@ function listHTML(ev,recs){
 function renderPerf(){
   const box=$('screen-perf');
   const keep={date:$('pf-date')?$('pf-date').value:'', val:$('pf-val')?$('pf-val').value:''};
-  const head=`<div class="head"><div><h1>실기 기록</h1><div class="date">기록하면 지난번·개인 최고·목표와 바로 비교해 줘요</div></div>
-    <div class="head-actions"><button class="link" data-p="back">← 오늘 상태</button></div></div>`;
+  const head=`<div class="head"><div><h1>실기 기록</h1><div class="date">기록하면 지난번·개인 최고·목표와 바로 비교해 줘요</div></div></div>`;
   if(perfChart){ perfChart.destroy(); perfChart=null; }
   if(perf.status==='error'){ box.innerHTML=head+'<div class="box">실기 기록을 불러오지 못했어요. 인터넷을 확인하고 <button class="link" data-p="retry">다시 시도</button>해 주세요.</div>'; return; }
   if(perf.status!=='ready'){ box.innerHTML=head+'<p class="note">불러오는 중...</p>'; return; }
@@ -1357,6 +1553,7 @@ async function savePerf(){
     perf.savedNote=(pin.note?pin.note+'로 바꿔서 저장했어요. ':'')+(lastNow&&lastNow.rid===rid?'':PERF.md(date)+' '+PERF.withUnit(ev,v)+' 저장했어요. 아래 피드백은 가장 최근 기록 기준이에요.');
     if($('pf-val')) $('pf-val').value='';
     renderPerf();
+    celebrateIfBest(ev,v,rid);
     const fb=$('pf-fb'); if(fb) fb.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
   }catch(e){
     clearTimeout(slow); perf.saving=false;
@@ -1366,6 +1563,27 @@ async function savePerf(){
     e2.className='err';
     e2.textContent=e.code==='permission-denied'?'기록 저장 권한이 아직 없어요. 선생님께 "실기 기록 저장이 안 돼요"라고 말씀해 주세요.':'저장 실패: '+(e.code||e.message)+' · 다시 눌러 주세요.';
   }
+}
+/* ---- 개인 최고·목표 달성 축하 (나와 선생님만 보는 기록. 순위는 없음) ---- */
+function celebrateIfBest(ev,v,rid){
+  if(!PERF.isKnown(ev)) return;
+  const others=perfRecs(ev).filter(r=>r.rid!==rid);
+  const pb=others.length>0&&others.every(r=>PERF.better(ev,v,r.value));
+  const tg=perfTarget(ev), t=tg===null?NaN:Number(tg), reach=x=>Number.isFinite(t)&&(PERF.isLower(ev)?x<=t:x>=t);
+  const goal=reach(v)&&!others.some(r=>reach(r.value));
+  if(!pb&&!goal) return;
+  const prev=pb?others.reduce((b,r)=>PERF.better(ev,r.value,b.value)?r:b,others[0]):null;
+  const sub=(pb?'이전 최고 '+PERF.withUnit(ev,prev.value)+' ('+PERF.md(prev.date)+')보다 좋아졌어요.':'')+(goal?(pb?'<br>':'')+'목표 '+esc(PERF.withUnit(ev,t))+' 달성!':'');
+  const colors=['#c6ff3d','#ff9f1c','#4fc3ff','#ff4b33','#ffd23f'];
+  const bits=[...Array(24)].map((_,i)=>`<i style="left:${(i*37)%100}%;background:${colors[i%5]};animation-duration:${1.6+(i%5)*0.35}s;animation-delay:${(i%6)*0.08}s"></i>`).join('');
+  const box=document.createElement('div');
+  box.className='cele'; box.setAttribute('role','dialog'); box.setAttribute('aria-modal','true'); box.setAttribute('aria-label',pb?'개인 최고 기록':'목표 달성');
+  box.innerHTML=bits+`<div class="cele-card"><div class="cele-burst" aria-hidden="true">${pb?'🏅':'🎯'}</div><div class="cele-t">${pb?'개인 최고 기록!':'목표 달성!'}</div>
+    <div class="cele-v">${esc(PERF.withUnit(ev,v))}</div><div class="cele-s">${esc(ev)}<br>${sub}</div><button class="btn" type="button">좋아요</button></div>`;
+  const close=()=>{ box.remove(); const fb=$('pf-fb'); if(fb) fb.scrollIntoView({block:'start'}); };
+  box.addEventListener('click',e=>{ if(e.target===box||e.target.closest('.btn')) close(); });
+  box.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
+  document.body.appendChild(box); box.querySelector('.btn').focus();
 }
 async function deletePerf(rid){
   const r=perf.mine.find(x=>x.rid===rid); if(!r) return;

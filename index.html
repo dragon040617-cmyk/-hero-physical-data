@@ -24,6 +24,9 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="HERO">
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin>
@@ -344,7 +347,9 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .branch-chips{ display:flex; flex-wrap:wrap; gap:4px 12px; font-size:13px; }
   @media (max-width:900px){ .branch-grid{ grid-template-columns:1fr; } }
   .brief-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
-  .brief-tile{ border-radius:12px; padding:12px 14px; border:1px solid var(--line); background:var(--surface); }
+  .brief-tile{ border-radius:12px; padding:12px 14px; border:1px solid var(--line); background:var(--surface); text-align:left; font:inherit; color:inherit; cursor:pointer; width:100%; min-height:72px; }
+  .brief-tile.on{ border-width:2px; background:var(--surface-2); }
+  .pb-tag{ display:inline-block; font-size:11.5px; font-weight:800; color:#0d1a03; background:var(--lime); border-radius:999px; padding:1px 8px; margin-right:4px; }
   .brief-tile .n{ font-size:26px; font-weight:800; }
   .brief-row{ display:flex; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line); cursor:pointer; }
   .brief-row:last-child{ border-bottom:none; }
@@ -1269,7 +1274,19 @@ function renderTeamOverview(){
   const by={RED:[],AMBER:[],YELLOW:[],GREEN:[],BASE:[],NONE:[]};
   list.forEach(s=>{ const st=statusOf(s); by[st||'NONE'].push(s); });
   const done=list.length-by.NONE.length;
-  const tile=(k,label)=>`<div class="brief-tile" style="border-color:${STATUS_COLOR[k]}55;"><div class="stat-note" style="color:${STATUS_COLOR[k]};">${label}</div><div class="n" style="color:${STATUS_COLOR[k]};">${by[k].length}</div></div>`;
+  // [I1] 색 칸을 누르면 그 색 학생만 (한 번 더 누르면 전체)
+  const filt=state.briefFilter||'';
+  const cnt=k=>k==='GREEN'?by.GREEN.length+by.BASE.length:by[k].length;
+  const tile=(k,label)=>`<button type="button" class="brief-tile ${filt===k?'on':''}" aria-pressed="${filt===k}" style="border-color:${STATUS_COLOR[k]}${filt===k?'':'55'};" onclick="setBriefFilter('${k}')"><div class="stat-note" style="color:${STATUS_COLOR[k]};">${label}</div><div class="n" style="color:${STATUS_COLOR[k]};">${cnt(k)}</div></button>`;
+  const sorted=k=>(k==='GREEN'?[...by.GREEN,...by.BASE]:by[k].slice()).sort((a,b)=>sevScore(b)-sevScore(a));
+  // [I4] 최근 7일 같은 부위 통증 3번 이상 → 맨 위 고정 (오늘 통증이 있는 학생만 지난 기록을 읽는다)
+  ensurePainHistory(list);
+  const pinned=list.map(s=>({s,rp:repeatPain(s)})).filter(x=>x.rp).sort((a,b)=>b.rp.n-a.rp.n);
+  const pinnedIds=new Set(pinned.map(x=>x.s.id));
+  const listBlock=(k,items,mk)=>{ const all=state.briefMore[k]||filt===k, show=all?items:items.slice(0,5);
+    return `<div class="card" style="padding:0;">${show.map(mk).join('')||'<div class="empty-mini" style="padding:14px;">해당 학생 없음</div>'}</div>`
+      +(items.length>show.length?`<button class="ghost-btn" style="width:100%; margin-top:8px;" onclick="state.briefMore['${k}']=true; rerender();">+ ${items.length-show.length}명 더 보기</button>`:''); };
+  const rowSev=s=>row(s,painNote(s)+(pinnedIds.has(s.id)?'<div class="stat-note" style="margin-top:2px; color:#ff9f1c;">📌 같은 부위 통증 반복</div>':''));
   const row=(s,extra)=>{ const t=todayCkOf(s.id); const r=(t&&t.reasons)||[];
     return `<div class="brief-row" role="button" tabindex="0" onclick="selectStudent('${s.id}')">
       <div><b>${esc(s.name)}</b> <span class="stat-note">${esc(s.branch||'')}${s.grade?' · '+esc(s.grade):''}</span>
@@ -1319,24 +1336,35 @@ function renderTeamOverview(){
           <button class="ghost-btn" style="flex:0 0 auto; padding:8px 14px; min-height:40px;" onclick="refreshCheckins()">↻ 새로 불러오기</button>
         </div>
       </div>
-      ${!branch&&branchCards?`<div class="section-title" style="margin-top:0;">지점별 현황</div><div class="stat-note section-hint">카드를 누르면 그 지점만 보여요</div><div class="branch-grid">${branchCards}</div><div class="lane-divider"></div>`:''}
       ${branch?`<div style="margin-bottom:12px;"><button class="ghost-btn" style="padding:7px 12px;" onclick="state.briefBranch=''; rerender();">← 전체 지점 보기</button> <b style="margin-left:6px;">${esc(branch)}</b></div>`:''}
       <div class="brief-grid">${tile('RED','빨강 · 즉시 확인')}${tile('AMBER','주황 · 볼륨 조정')}${tile('YELLOW','노랑 · 주의')}${tile('GREEN','초록 · 정상')}</div>
-      ${by.BASE.length?`<div class="stat-note" style="margin-top:8px;">기준 수립 중(최근 28일 체크인 6회 미만) ${by.BASE.length}명은 정상 그룹에 포함했어요.</div>`:''}
+      <div class="stat-note" style="margin-top:8px;">색 칸을 누르면 그 학생만 보여요.${by.BASE.length?` 기준 수립 중(최근 28일 체크인 6회 미만) ${by.BASE.length}명은 초록에 포함했어요.`:''}</div>
+
+      ${filt?`
+      <div class="lane-divider"></div>
+      <div class="section-title" style="color:${STATUS_COLOR[filt]};">${{RED:'빨강 · 즉시 확인',AMBER:'주황 · 볼륨 조정',YELLOW:'노랑 · 주의',GREEN:'초록 · 정상'}[filt]} (${cnt(filt)}명) · 위험한 순서</div>
+      ${listBlock(filt,sorted(filt),rowSev)}
+      <button class="ghost-btn" style="margin-top:10px;" onclick="setBriefFilter('${filt}')">← 전체 브리핑 보기</button>
+      `:`
+      ${pinned.length?`<div class="lane-divider"></div>
+      <div class="section-title" style="color:#ff9f1c;">📌 같은 부위 통증 반복 · 최근 7일 3번 이상</div>
+      <div class="card" style="padding:0;">${pinned.map(x=>row(x.s,`<div class="stat-note" style="margin-top:3px; color:#ff9f1c;">${esc(x.rp.area)} 통증 7일 중 ${x.rp.n}번 · 부하를 줄이고 보호자 연락 고려</div>`+painNote(x.s))).join('')}</div>
+      <div class="stat-note" style="margin-top:6px;">일시적인 근육통보다 과사용·부상 신호일 수 있어요. 진단이 아니라 확인이 필요하다는 표시예요.</div>`:''}
 
       <div class="lane-divider"></div>
       <div class="section-title" style="color:${STATUS_COLOR.RED};">즉시 확인 · 훈련 전 대면 확인</div>
-      <div class="card" style="padding:0;">${by.RED.map(s=>row(s,painNote(s))).join('')||'<div class="empty-mini" style="padding:14px;">해당 학생 없음</div>'}</div>
-      <div class="stat-note" style="margin-top:6px;">점프·스프린트·착지 세션 제외, 충격 없는 대체 훈련. 학생을 누르면 확인 포인트가 나와요.</div>
+      ${listBlock('RED',sorted('RED'),rowSev)}
+      <div class="stat-note" style="margin-top:6px;">위험한 순서(통증 강도 → 움직임 영향 → 준비도)로 5명까지. 점프·스프린트·착지 세션 제외, 충격 없는 대체 훈련.</div>
 
       <div class="lane-divider"></div>
       <div class="section-title" style="color:${STATUS_COLOR.AMBER};">볼륨 조정 · 강도 유지, 볼륨 40~50% 축소</div>
-      <div class="card" style="padding:0;">${by.AMBER.map(s=>row(s,painNote(s))).join('')||'<div class="empty-mini" style="padding:14px;">해당 학생 없음</div>'}</div>
+      ${listBlock('AMBER',sorted('AMBER'),rowSev)}
 
       <div class="lane-divider"></div>
       <div class="section-title" style="color:${STATUS_COLOR.YELLOW};">주의 · 반응 관찰</div>
-      <div class="card" style="padding:0;">${by.YELLOW.map(s=>row(s)).join('')||'<div class="empty-mini" style="padding:14px;">해당 학생 없음</div>'}</div>
+      ${listBlock('YELLOW',sorted('YELLOW'),s=>row(s))}
 
+      ${!branch&&branchCards?`<div class="lane-divider"></div><div class="section-title">지점별 현황</div><div class="stat-note section-hint">카드를 누르면 그 지점만 보여요</div><div class="branch-grid">${branchCards}</div>`:''}
       <div class="lane-divider"></div>
       <div class="section-title">오늘 그룹 편성 (추천)</div>
       <div class="grid grid-3">
@@ -1372,7 +1400,33 @@ function renderTeamOverview(){
         </div>
         <div id="teamRankList"></div>
       </div>
+      `}
     </main>`;
+}
+state.briefFilter=''; state.briefMore={}; state.histReq={};
+function setBriefFilter(k){ state.briefFilter = state.briefFilter===k ? '' : k; state.briefMore={}; rerender(); window.scrollTo(0,0); }
+// 위험한 순서: 통증 강도 → 근육통 때문에 움직임이 불편한 정도 → 준비도가 낮은 정도 → 이유 개수
+function sevScore(s){ const t=todayCkOf(s.id); if(!t) return -1;
+  return (t.pain?(Number(t.painLevel)||0)*100:0)+(Number(t.sorenessImpact)||0)*20+(10-(Number(t.readiness)||5))*2+(t.reasons||[]).length; }
+// [I4] 오늘 아픈 학생의 최근 7일(오늘 포함)에서 같은 부위 통증이 3번 이상인가
+function repeatPain(s){
+  const t=todayCkOf(s.id); if(!t||!t.pain) return null;
+  const h=state.hist[s.id]; if(!h) return null;
+  const today=HC.todayStr(), from=HC.addDays(today,-6), cnt={};
+  [...h.filter(c=>c.date>=from&&c.date<today), t].forEach(c=>{ if(c.pain) new Set((c.painAreas||[]).map(a=>a==='허벅지'?'허벅지 앞':a)).forEach(a=>cnt[a]=(cnt[a]||0)+1); });
+  const hit=Object.entries(cnt).filter(([,n])=>n>=3).sort((a,b)=>b[1]-a[1])[0];
+  return hit?{area:hit[0],n:hit[1]}:null;
+}
+// 오늘 통증이 있는 학생만 지난 28일 기록을 한 번씩 읽는다 (읽기 비용: 아픈 학생 수 × 최대 29)
+function ensurePainHistory(list){
+  list.forEach(s=>{ const t=todayCkOf(s.id);
+    if(t&&t.pain&&!state.hist[s.id]&&!state.histReq[s.id]){ state.histReq[s.id]=1; loadHistory(s.id,false,true).then(()=>softRerender()); } });
+}
+// [I2] 학생이 오늘 넣은 기록이 그 종목 개인 최고인가 (선생님 기록 포함 비교)
+function isPerfPB(s,r){
+  if(!PERF.isKnown(r.event)) return false;
+  const others=(s.records[r.event]||[]).filter(x=>!(x.rid&&x.rid===r.rid));
+  return others.length>0 && others.every(x=>PERF.better(r.event,r.value,x.value));
 }
 // 브리핑: 오늘 학생이 직접 입력한 실기 기록 (이상한 값은 ⚠ 로 표시해서 코치가 확인하게)
 function todayPerfRows(list){
@@ -1382,7 +1436,7 @@ function todayPerfRows(list){
     const shown=recs.find(x=>x.date===today);   // 같은 날 선생님 기록이 있으면 그 값이 보인다
     rows.push(`<div class="brief-row" role="button" tabindex="0" onclick="openStudentRecords('${jsAttrEsc(s.id)}','${jsAttrEsc(r.event)}')">
       <div><b>${esc(s.name)}</b> <span class="stat-note">${esc(r.event)} · ${esc(PERF.withUnit(r.event,r.value))}${shown&&shown.by==='coach'?' (선생님 기록이 우선)':''}</span>
-      <div class="stat-note t-${warn?'warn':fb.tone}" style="margin-top:3px;">${warn?'⚠ 범위 밖 값 · 확인 필요':esc(fb.headline)}</div></div><span class="stat-note">›</span></div>`);
+      <div class="stat-note t-${warn?'warn':fb.tone}" style="margin-top:3px;">${warn?'⚠ 범위 밖 값 · 확인 필요':(isPerfPB(s,r)?'<span class="pb-tag">🎉 PB</span> 개인 최고 기록 · 칭찬해 주세요':esc(fb.headline))}</div></div><span class="stat-note">›</span></div>`);
   }));
   return rows.join('');
 }
@@ -2588,7 +2642,7 @@ function initFirebase(){
         if(unsubscribeClassLogs){ unsubscribeClassLogs(); unsubscribeClassLogs=null; }
         if(unsubscribeJoin){ unsubscribeJoin(); unsubscribeJoin=null; }
         hideAuthWait();
-        state.students=[]; state.studentsLoaded=false; state.todayCk={}; state.hist={}; state.perf={}; state.perfFull={}; state.perfAllAt=0; ckStudentKey='';
+        state.students=[]; state.studentsLoaded=false; state.todayCk={}; state.hist={}; state.histReq={}; state.perf={}; state.perfFull={}; state.perfAllAt=0; ckStudentKey='';
         document.getElementById('loginScreen').style.display='';
         document.getElementById('app').style.display='none';
       }
@@ -2673,8 +2727,11 @@ function subscribeStudents(){
         targets: (d.targets && typeof d.targets==='object') ? d.targets : {}
       });
     });
+    const firstLoad = !state.studentsLoaded;
     state.students = list;
     state.studentsLoaded = true;
+    // [I1] 로그인 직후 첫 화면 = 오늘 브리핑 ("오늘 누구를 먼저 봐야 하지?"를 바로)
+    if(firstLoad && !state.joinOpen && !state.classLogOpen){ state.teamViewOpen = true; setTimeout(()=>loadAllPerf(), 0); }
     if(!state.selectedId || !list.find(s=>s.id===state.selectedId)){
       state.selectedId = list[0]?.id || null;
     }
@@ -2682,7 +2739,7 @@ function subscribeStudents(){
     softRerender();
     const key=list.map(x=>x.id).sort().join(',');
     if(key!==ckStudentKey){ ckStudentKey=key; loadTodayCheckins(true); }   // 학생 명단이 바뀌면 오늘 체크인 다시 읽기
-    if(state.selectedId){ loadHistory(state.selectedId); loadPerf(state.selectedId); }
+    if(state.selectedId && !state.teamViewOpen){ loadHistory(state.selectedId); loadPerf(state.selectedId); }
   }, err=>{
     if(err && err.code==='permission-denied'){
       showAccountProblem('이 계정('+currentCoachEmail+')은 코치로 등록되어 있지 않아요. Firebase 보안 규칙의 코치 이메일 목록에 이 이메일이 있는지 확인해 주세요.');
@@ -2791,12 +2848,12 @@ function judge(t,an){
   const sleepLow=t.sleepMin<300, follow=t.painFollowUp;
   const special=[]; let status, headline;
 
-  if(painHigh){ status='RED'; headline=(areas?areas+' ':'')+'통증이 있어요. 훈련 전에 코치님께 먼저 말해 주세요.'; special.push((areas?areas+' ':'')+'통증 '+t.painLevel+'/10'); }
-  else if(t.sorenessImpact===3){ status='RED'; headline='근육통 때문에 움직이기 힘든 상태예요. 훈련 전에 코치님께 말해 주세요.'; special.push((sAreas||'근육통')+' · 훈련 어려움'); }
-  else if(t.readiness<=2){ status='RED'; headline='오늘 몸이 많이 무거워요. 훈련 전에 코치님께 말해 주세요.'; special.push('준비도 '+t.readiness+'/10'); }
-  else if(worse.some(r=>bad(r)>=2&&BODY_KEYS.includes(r.m.key))){ const r=worse.find(r=>bad(r)>=2&&BODY_KEYS.includes(r.m.key)); status='RED'; headline=PHRASE[r.m.key](r)+'. 훈련 전에 코치님께 말해 주세요.'; }
-  else if(painLow){ status='AMBER'; headline=(areas?areas+'에 ':'')+'약한 통증이 있어요. 코치님께 미리 말해 두세요.'; special.push((areas?areas+' ':'')+'통증 '+t.painLevel+'/10'); }
-  else if(follow===2){ status='AMBER'; headline='어제 아팠던 곳이 오늘 아침 더 아팠어요. 코치님께 말해 주세요.'; special.push('아침 통증 증가'); }
+  if(painHigh){ status='RED'; headline=(areas?areas+' ':'')+'통증이 있어요. 훈련 전에 선생님께 먼저 말해 주세요.'; special.push((areas?areas+' ':'')+'통증 '+t.painLevel+'/10'); }
+  else if(t.sorenessImpact===3){ status='RED'; headline='근육통 때문에 움직이기 힘든 상태예요. 훈련 전에 선생님께 말해 주세요.'; special.push((sAreas||'근육통')+' · 훈련 어려움'); }
+  else if(t.readiness<=2){ status='RED'; headline='오늘 몸이 많이 무거워요. 훈련 전에 선생님께 말해 주세요.'; special.push('준비도 '+t.readiness+'/10'); }
+  else if(worse.some(r=>bad(r)>=2&&BODY_KEYS.includes(r.m.key))){ const r=worse.find(r=>bad(r)>=2&&BODY_KEYS.includes(r.m.key)); status='RED'; headline=PHRASE[r.m.key](r)+'. 훈련 전에 선생님께 말해 주세요.'; }
+  else if(painLow){ status='AMBER'; headline=(areas?areas+'에 ':'')+'약한 통증이 있어요. 선생님께 미리 말해 두세요.'; special.push((areas?areas+' ':'')+'통증 '+t.painLevel+'/10'); }
+  else if(follow===2){ status='AMBER'; headline='어제 아팠던 곳이 오늘 아침 더 아팠어요. 선생님께 말해 주세요.'; special.push('아침 통증 증가'); }
   else if(sleepLow){ status='AMBER'; headline='어젯밤 '+fmtSleep(t.sleepMin)+'밖에 못 잤어요.'; special.push('수면 '+fmtSleep(t.sleepMin)); }
   else if(isW('sleepMin')&&(isW('fatigue')||isW('readiness'))){ status='AMBER'; headline='잠이 부족하고 몸도 무거운 날이에요.'; }
   else if(worse.filter(r=>bad(r)>=1.5).length>=2){ status='AMBER'; headline=PHRASE[worse[0].m.key](worse[0])+'.'; }
@@ -2812,13 +2869,13 @@ function judge(t,an){
 
   // 오늘 훈련 참고 (부하 처방은 코치 화면에만)
   let train;
-  if(status==='RED') train='오늘 훈련은 코치님이 상태를 보고 정해 줄 거예요. 혼자 무리하지 마세요.';
-  else if(status==='AMBER') train=(t.pain||follow===2)?'아픈 곳에 무리가 가는 동작은 코치님과 먼저 이야기하고 하세요.'
-    :t.sorenessImpact===2?'불편한 동작이 있으면 참지 말고 바로 코치님께 말하세요.'
+  if(status==='RED') train='오늘 훈련은 선생님이 상태를 보고 정해 줄 거예요. 혼자 무리하지 마세요.';
+  else if(status==='AMBER') train=(t.pain||follow===2)?'아픈 곳에 무리가 가는 동작은 선생님과 먼저 이야기하고 하세요.'
+    :t.sorenessImpact===2?'불편한 동작이 있으면 참지 말고 바로 선생님께 말하세요.'
     :'몸이 평소보다 무거운 날이에요. 웜업을 충분히 하고, 훈련 중에 이상하면 바로 말하세요.';
   else if(status==='YELLOW') train=isW('stress')?'훈련 전에 숨을 길게 내쉬면서 몸을 풀고 시작하세요.':(isW('soreness')||t.sorenessImpact===1)?'뻐근한 곳은 웜업으로 충분히 풀고 시작하세요.':'훈련 초반에 몸 상태를 먼저 확인하고 시작하세요.';
   else if(status==='GREEN') train=better.length?'측정이나 강한 훈련을 하기 좋은 상태예요.':'평소대로 훈련하면 돼요.';
-  else train='아직 오늘 값만 보고 있어요. 평소와 다르게 느껴지면 코치님께 말하세요.';
+  else train='아직 오늘 값만 보고 있어요. 평소와 다르게 느껴지면 선생님께 말하세요.';
 
   // 몸관리용 '신호': 평소보다 나빠졌거나, 평소 기준이 아직 없을 땐(최근 28일 체크인 6회 전) 점수 자체가 높거나 낮으면
   const ABS={sleepMin:v=>v<360,sleepQuality:v=>v<=3,fatigue:v=>v>=7,soreness:v=>v>=7,stress:v=>v>=7,readiness:v=>v<=3};
@@ -2828,7 +2885,7 @@ function judge(t,an){
   return {status,headline,reasons,train,coachTalk:coachMessage(ctx),care:buildCare(ctx)};
 }
 
-/* ---- 코치님께 드릴 말 (정중한 형식, 데이터에 따라 바뀜) ---- */
+/* ---- 선생님께 드릴 말 (정중한 형식, 데이터에 따라 바뀜) ---- */
 function coachMessage(c){
   const t=c.t, facts=[];
   let main=null, ask=null, usedSleep=false;
@@ -3153,7 +3210,7 @@ return {LIBRARY,UNIT,LOWER,RANGE,rangeOf,numOf,safeEvent,isKnown,unitOf,withUnit
    코치는 피로도를 입력하지 않는다. 학생이 입력한 students/{id}/checkins/{날짜} 를 읽기만 한다.
    - 오늘 기록: 학생마다 1건씩 (학생 수만큼 읽기)
    - 지난 기록: 학생을 선택할 때 그 학생만 최근 28일 */
-state.todayCk = {}; state.hist = {}; state.ckFetchedAt = 0; state.ckLoading = false; state.ckDate = '';
+state.todayCk = {}; state.hist = {}; state.histReq = {}; state.ckFetchedAt = 0; state.ckLoading = false; state.ckDate = '';
 let ckStudentKey = '';
 /* 학생이 쓴 체크인을 코치 화면에 넣기 전에 '소독'한다.
    학생 기기에서 온 값은 믿지 않는다: 숫자는 숫자로, 부위 이름은 짧은 글자로, 판정은 정해진 5가지 중 하나로만.
@@ -3284,14 +3341,14 @@ async function loadHistory(sid, force, quiet){
   applyCheckins(); softRerender();
   return ok;
 }
-function refreshCheckins(){ state.hist={}; state.perfFull={}; loadTodayCheckins(true); if(state.selectedId){ loadHistory(state.selectedId,true); loadPerf(state.selectedId,true); } if(state.teamViewOpen) loadAllPerf(true); showToast('체크인·실기 기록을 새로 불러왔어요'); }
+function refreshCheckins(){ state.hist={}; state.histReq={}; state.perfFull={}; loadTodayCheckins(true); if(state.selectedId){ loadHistory(state.selectedId,true); loadPerf(state.selectedId,true); } if(state.teamViewOpen) loadAllPerf(true); showToast('체크인·실기 기록을 새로 불러왔어요'); }
 /* 코치 화면을 켜 둔 채 다음 날이 되거나, 오래 다른 앱을 보다 돌아오면 '어제 체크인'이 오늘처럼 보인다.
    화면에 다시 나타날 때 날짜가 바뀌었거나 5분이 지났으면 새로 불러온다. */
 function refreshIfStale(){
   if(!db||!currentCoachEmail||document.visibilityState!=='visible') return;
   const dayChanged=state.ckDate&&state.ckDate!==HC.todayStr();
   if(dayChanged||Date.now()-state.ckFetchedAt>10*60*1000){
-    if(dayChanged){ state.todayCk={}; state.hist={}; }
+    if(dayChanged){ state.todayCk={}; state.hist={}; state.histReq={}; }
     loadTodayCheckins(true); if(state.selectedId){ loadHistory(state.selectedId,true); loadPerf(state.selectedId,true); }
     if(state.teamViewOpen) loadAllPerf(false);
   }
