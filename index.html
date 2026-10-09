@@ -347,7 +347,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .branch-chips{ display:flex; flex-wrap:wrap; gap:4px 12px; font-size:13px; }
   @media (max-width:900px){ .branch-grid{ grid-template-columns:1fr; } }
   .brief-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
-  .brief-tile{ border-radius:12px; padding:12px 14px; border:1px solid var(--line); background:var(--surface); text-align:left; font:inherit; color:inherit; cursor:pointer; width:100%; min-height:72px; }
+  .brief-tile{ border-radius:12px; padding:12px 14px; border:1px solid var(--line); background:var(--surface); text-align:left; font:inherit; color:inherit; cursor:pointer; width:100%; min-height:72px; display:flex; flex-direction:column; justify-content:flex-start; }
   .brief-tile.on{ border-width:2px; background:var(--surface-2); }
   .tile-names{ margin-top:2px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .pb-tag{ display:inline-block; font-size:11.5px; font-weight:800; color:#0d1a03; background:var(--lime); border-radius:999px; padding:1px 8px; margin-right:4px; }
@@ -1284,8 +1284,8 @@ function renderTeamOverview(){
   ensurePainHistory(list);
   const pinned=list.map(s=>({s,rp:repeatPain(s)})).filter(x=>x.rp).sort((a,b)=>b.rp.n-a.rp.n);
   const pinnedIds=new Set(pinned.map(x=>x.s.id));
-  const listBlock=(k,items,mk)=>{ const all=state.briefMore[k]||filt===k, show=all?items:items.slice(0,5);
-    return `<div class="card" style="padding:0;">${show.map(mk).join('')||'<div class="empty-mini" style="padding:14px;">해당 학생 없음</div>'}</div>`
+  const listBlock=(k,items,mk,moved)=>{ const all=state.briefMore[k]||filt===k, show=all?items:items.slice(0,5);
+    return `<div class="card" style="padding:0;">${show.map(mk).join('')||`<div class="empty-mini" style="padding:14px;">${moved?`위 📌 칸에 ${moved}명`:'해당 학생 없음'}</div>`}</div>`
       +(items.length>show.length?`<button class="ghost-btn" style="width:100%; margin-top:8px;" onclick="state.briefMore['${k}']=true; rerender();">+ ${items.length-show.length}명 더 보기</button>`:''); };
   const rowSev=s=>row(s,painNote(s)+(pinnedIds.has(s.id)?'<div class="stat-note" style="margin-top:2px; color:#ff9f1c;">📌 같은 부위 통증 반복</div>':''));
   const row=(s,extra)=>{ const t=todayCkOf(s.id); const r=(t&&t.reasons)||[];
@@ -1354,12 +1354,12 @@ function renderTeamOverview(){
 
       <div class="lane-divider"></div>
       <div class="section-title" style="color:${STATUS_COLOR.RED};">즉시 확인 · 훈련 전 대면 확인</div>
-      ${listBlock('RED',sorted('RED').filter(x=>!pinnedIds.has(x.id)),rowSev)}
-      <div class="stat-note" style="margin-top:6px;">${pinned.some(x=>statusOf(x.s)==='RED')?'위 📌 학생은 여기서 빼고 보여요. ':''}위험한 순서(통증 강도 → 움직임 영향 → 준비도)로 5명까지. 점프·스프린트·착지 세션 제외, 충격 없는 대체 훈련.</div>
+      ${listBlock('RED',sorted('RED').filter(x=>!pinnedIds.has(x.id)),rowSev,by.RED.filter(x=>pinnedIds.has(x.id)).length)}
+      <div class="stat-note" style="margin-top:6px;">위험한 순서(통증 강도 → 움직임 영향 → 준비도)로 5명까지. 점프·스프린트·착지 세션 제외, 충격 없는 대체 훈련.</div>
 
       <div class="lane-divider"></div>
       <div class="section-title" style="color:${STATUS_COLOR.AMBER};">볼륨 조정 · 강도 유지, 볼륨 40~50% 축소</div>
-      ${listBlock('AMBER',sorted('AMBER').filter(x=>!pinnedIds.has(x.id)),rowSev)}
+      ${listBlock('AMBER',sorted('AMBER').filter(x=>!pinnedIds.has(x.id)),rowSev,by.AMBER.filter(x=>pinnedIds.has(x.id)).length)}
 
       <div class="lane-divider"></div>
       <div class="section-title" style="color:${STATUS_COLOR.YELLOW};">주의 · 반응 관찰</div>
