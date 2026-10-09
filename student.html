@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <meta name="apple-mobile-web-app-title" content="HERO">
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin>
@@ -186,7 +187,7 @@
   .bnav button[aria-current="page"]{ color:var(--lime); background:var(--lime-soft); }
   .bnav button[aria-current="page"] .ic{ filter:none; opacity:1; }
   @media (min-width:768px){ .bnav{ max-width:560px; margin:0 auto; border:1px solid var(--line); border-bottom:0; border-radius:18px 18px 0 0; } }   /* 아이패드: 내용 칸과 같은 폭, 가운데 */
-  body.with-nav .screen{ padding-bottom:calc(100px + env(safe-area-inset-bottom)); }
+  body.with-nav .screen{ padding-bottom:calc(100px + env(safe-area-inset-bottom)); min-height:calc(100vh + 1px); min-height:calc(100lvh + 1px); }   /* 짧은 화면(몸관리·내 정보)도 긴 화면과 똑같이 스크롤되게 → 아이폰 주소창이 화면마다 커졌다 작아졌다 하지 않게 */
   body.with-nav .submit-bar{ bottom:calc(66px + env(safe-area-inset-bottom)); padding-bottom:12px; z-index:4; }   /* 체크인 저장 버튼이 아래 메뉴에 가리지 않게 */
 
   /* 오늘 할 것 */
@@ -203,7 +204,7 @@
   .todo.done .todo-c .v{ color:var(--dim); text-decoration:line-through; }
   .todo-more{ background:none; border:0; color:var(--muted); font:inherit; font-size:13px; min-height:44px; padding:0 4px; cursor:pointer; white-space:nowrap; }
   .status{ position:relative; }
-  .status-edit{ position:absolute; top:4px; right:8px; font-size:13.5px; padding:0 8px; }   /* 상태 카드 오른쪽 위 (따로 한 줄을 차지하지 않게) */
+  .edit-big{ height:48px; margin-top:10px; font-size:15.5px; }   /* 오늘 검사 다시 고치기: 누르기 쉬운 큰 버튼 */
 
   /* 이번 주 체크인 */
   .week{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; margin:6px 0 10px; }
@@ -813,7 +814,8 @@ const db=fbApp.firestore();
 const $=id=>document.getElementById(id);
 
 const NAV_OF={'screen-result':'today','screen-form':'today','screen-care':'care','screen-perf':'perf','screen-me':'me'};
-function show(id){
+let navPopping=false;   // 뒤로 가기(옆으로 밀기)로 화면을 바꾸는 중이면 기록을 또 쌓지 않는다
+function show(id,fromPop){
   document.querySelectorAll('.screen').forEach(el=>el.classList.add('hidden'));
   $(id).classList.remove('hidden');
   // 아래 메뉴: 승인된 학생 화면에서만 보이고, 지금 화면 버튼에 불이 들어온다
@@ -822,6 +824,14 @@ function show(id){
   if(nav){
     nav.classList.toggle('hidden',!cur); document.body.classList.toggle('with-nav',!!cur);
     nav.querySelectorAll('[data-nav]').forEach(b=>{ if(b.dataset.nav===cur) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+  }
+  // 휴대폰 '뒤로 가기'(아이폰 옆으로 밀기 포함)가 사이트를 나가지 않고 이전 화면으로 돌아가게, 화면을 바꿀 때마다 방문 기록을 남긴다
+  if(cur&&!fromPop&&!navPopping){
+    try{
+      const h=history.state, st={scr:id};
+      if(!h||!h.scr) history.replaceState(st,'');
+      else if(h.scr!==id){ if(h.scr==='screen-form'&&id==='screen-result') history.replaceState(st,''); else history.pushState(st,''); }   // 저장 뒤 결과 화면에서 뒤로 가면 빈 체크인 폼이 아니라 그 전 화면으로
+    }catch(e){}
   }
   window.scrollTo(0,0);
 }
@@ -986,11 +996,11 @@ function installHTML(){
     :['Chrome 오른쪽 위 <b>⋮ 메뉴</b>를 눌러요','<b>홈 화면에 추가</b>를 눌러요','<b>추가</b>를 누르면 끝'];
   return `<b>홈 화면에 HERO 아이콘 만들기</b><p class="note" style="margin:4px 0 0">매일 체크인할 때 주소를 찾지 않아도 돼요.</p><ol>${steps.map(x=>`<li>${x}</li>`).join('')}</ol>`;
 }
-async function openMe(){
+async function openMe(fromPop){
   const d=await db.collection('joinRequests').doc(auth.currentUser.uid).get();
   $('me-summary').innerHTML=d.exists?summaryHTML(d.data()):`<div class="kv"><b>이름</b><span>${esc(myStudent.name)}</span></div>`;
   $('me-install').innerHTML=installHTML();
-  show('screen-me');
+  show('screen-me',fromPop);
 }
 
 auth.onAuthStateChanged(async user=>{
@@ -1214,7 +1224,6 @@ function rowHTML(r,today,ready){
     <div class="dv"><div class="dv-mid"></div><div class="dv-fill ${r.tone}" style="left:${left}%;width:${w}%"></div></div>
     <div class="row-sub"><span>${fmtDelta(m.key,r.delta)}</span><span class="${tagCls}">${tagTxt}</span></div>${ctxH}</div>`;
 }
-let detailOpen=false;   // '내 상태 자세히' 펼침 상태 (다시 그려도 유지)
 function showResult(){
   const date=todayStr(), today=myCheckins.find(c=>c.date===date);
   if(!today){ openForm(true); return; }
@@ -1225,11 +1234,11 @@ function showResult(){
       <div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})}</div></div></div>
 
     <div class="status" style="border-color:${ui.color};background:${ui.bg}">
-      <button class="link status-edit" data-a="edit">체크인 고치기</button>
       <div class="badge" style="color:${ui.color}">${ui.label}</div>
       <div class="headline">${esc(j.headline)}</div>
       ${j.reasons.length?`<div class="reasons">${j.reasons.map(r=>`<span>${esc(r)}</span>`).join('')}</div>`:''}
     </div>
+    <button class="btn btn-2 edit-big" data-a="edit">✏️ 검사 고치기</button>
     ${today.pain?'<p class="pain-note">관절이나 뼈 통증은 참지 말고 선생님께 직접 보여 주세요. 이 앱은 진단하지 않아요.</p>':''}
 
     ${todoHTML(j,today)}
@@ -1240,19 +1249,17 @@ function showResult(){
 
     <div class="sec">${weekHTML()}</div>
 
-    <details class="more" id="more" ${detailOpen?'open':''}><summary>내 상태 자세히 <span class="note" style="font-weight:400">평소와 비교 · 그래프</span></summary>
     ${weekCompareHTML()}
-    <div class="sec" style="margin-top:0"><div class="sec-t">${an.ready?'평소(최근 '+BASELINE_WINDOW_DAYS+'일)와 비교':'오늘 기록 · 평소 비교는 최근 '+BASELINE_WINDOW_DAYS+'일 중 '+BASELINE_MIN_DAYS+'번 기록하면 시작 ('+hist.length+'/'+BASELINE_MIN_DAYS+')'}</div>
+    <div class="sec"><div class="sec-t">${an.ready?'평소(최근 '+BASELINE_WINDOW_DAYS+'일)와 비교':'오늘 기록 · 평소 비교는 최근 '+BASELINE_WINDOW_DAYS+'일 중 '+BASELINE_MIN_DAYS+'번 기록하면 시작 ('+hist.length+'/'+BASELINE_MIN_DAYS+')'}</div>
       ${an.rows.map(r=>rowHTML(r,today,an.ready)).join('')}</div>
 
     <div class="sec" style="padding-bottom:0"><div class="sec-t">최근 추이</div>
       <div class="chips" style="margin-top:0">${METRICS.map(m=>`<button class="chip ${trendKey===m.key?'on':''}" data-trend="${m.key}">${m.label}</button>`).join('')}</div>
       <div class="range"><button class="chip ${trendRange===7?'on':''}" data-range="7">7일</button><button class="chip ${trendRange===14?'on':''}" data-range="14">14일</button><button class="chip ${trendRange===28?'on':''}" data-range="28">28일</button></div>
       <div class="chart-box"><canvas id="trend" role="img" aria-label="${METRICS.find(m=>m.key===trendKey).label} 최근 ${trendRange}일 추이 그래프"></canvas></div>
-      <p class="note" style="margin-top:8px;">점선은 최근 평소 평균이에요.</p></div></details>${isDev()?devPanel():''}`;
+      <p class="note" style="margin-top:8px;">점선은 최근 평소 평균이에요.</p></div>${isDev()?devPanel():''}`;
   show('screen-result');
-  if(detailOpen) drawTrend();
-  $('more').addEventListener('toggle',e=>{ detailOpen=e.target.open; if(detailOpen) drawTrend(); });
+  drawTrend();
 }
 
 /* ---- 오늘 할 것: 오늘 꼭 할 2~4가지만 체크 칸으로 (자세한 건 몸관리 화면) ---- */
@@ -1312,7 +1319,7 @@ function weekCompareHTML(){   // 지난주와 비교 (자세히 안에)
     const ds=Math.round(w.sleep-lw.sleep), dr=w.ready-lw.ready;
     lines.push(`지난주보다 평균 수면 <b>${Math.abs(ds)<10?'비슷':(ds>0?'+':'−')+(Math.abs(ds)<60?Math.abs(ds)+'분':fmtSleep(Math.abs(ds)))}</b> · 준비도 <b>${Math.abs(dr)<0.3?'비슷':(dr>0?'+':'−')+Math.abs(dr).toFixed(1)}</b>`);
   }
-  return lines.length?`<div class="sec" style="margin-top:0"><div class="sec-t">이번 주 vs 지난주</div><div class="week-s">${lines.join('<br>')}</div></div>`:'';
+  return lines.length?`<div class="sec"><div class="sec-t">이번 주 vs 지난주</div><div class="week-s">${lines.join('<br>')}</div></div>`:'';
 }
 
 /* ============ 몸관리 화면 (영양 · 수면 · 회복 탭) ============ */
@@ -1337,6 +1344,20 @@ $('screen-care').addEventListener('click',e=>{
   const el=e.target.closest('[data-c]'); if(!el) return;
   if(el.dataset.c==='tab'){ careTab=el.dataset.tab; renderCare(); const b=document.querySelector(`#screen-care [data-tab="${careTab}"]`); if(b) b.focus({preventScroll:true}); }
   else if(el.dataset.c==='checkin') openForm(true);
+});
+
+/* ============ 뒤로 가기 ============ */
+window.addEventListener('popstate',e=>{
+  const st=e.state; if(!st||!st.scr||!myStudent) return;
+  const cel=document.querySelector('.cele'); if(cel) cel.remove();
+  navPopping=true;
+  try{
+    if(st.scr==='screen-result'){ if(myCheckins.some(c=>c.date===todayStr())) showResult(); else openForm(true); }
+    else if(st.scr==='screen-care') openCare();
+    else if(st.scr==='screen-perf') openPerf();
+    else if(st.scr==='screen-me') openMe(true);
+    else if(st.scr==='screen-form') openForm(true);
+  }finally{ navPopping=false; }
 });
 
 /* ============ 아래 메뉴 ============ */
