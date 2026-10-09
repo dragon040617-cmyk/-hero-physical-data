@@ -182,11 +182,12 @@
   .bnav.hidden{ display:none; }
   .bnav button{ background:none; border:0; border-radius:12px; color:var(--dim); font:inherit; font-size:12.5px; font-weight:600; min-height:54px;
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; }
-  .bnav button .ic{ font-size:20px; line-height:1; filter:grayscale(1); opacity:.75; }
+  .bnav button .ic{ font-size:20px; line-height:1; filter:grayscale(.5); opacity:.9; }
   .bnav button[aria-current="page"]{ color:var(--lime); background:var(--lime-soft); }
   .bnav button[aria-current="page"] .ic{ filter:none; opacity:1; }
-  @media (min-width:768px){ .bnav{ max-width:600px; margin:0 auto; border:1px solid var(--line); border-bottom:0; border-radius:18px 18px 0 0; } }
+  @media (min-width:768px){ .bnav{ max-width:560px; margin:0 auto; border:1px solid var(--line); border-bottom:0; border-radius:18px 18px 0 0; } }   /* 아이패드: 내용 칸과 같은 폭, 가운데 */
   body.with-nav .screen{ padding-bottom:calc(100px + env(safe-area-inset-bottom)); }
+  body.with-nav .submit-bar{ bottom:calc(66px + env(safe-area-inset-bottom)); padding-bottom:12px; z-index:4; }   /* 체크인 저장 버튼이 아래 메뉴에 가리지 않게 */
 
   /* 오늘 할 것 */
   .todo-box{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:6px 14px 10px; margin-top:16px; }
@@ -197,12 +198,12 @@
   .todo-c{ display:grid; grid-template-columns:28px minmax(0,1fr); gap:10px; align-items:start; background:none; border:0; color:var(--text); font:inherit; text-align:left; padding:12px 0; min-height:48px; cursor:pointer; }
   .todo-c i{ width:24px; height:24px; border-radius:50%; border:2px solid var(--dim); display:flex; align-items:center; justify-content:center; font-style:normal; font-size:14px; color:#0d1a03; margin-top:1px; }
   .todo-c .k{ display:block; font-size:12.5px; color:var(--lime); margin-bottom:1px; }
-  .todo-c .v{ font-size:15px; line-height:1.5; }
+  .todo-c .v{ font-size:15px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .todo.done .todo-c i{ background:var(--lime); border-color:var(--lime); }
   .todo.done .todo-c .v{ color:var(--dim); text-decoration:line-through; }
   .todo-more{ background:none; border:0; color:var(--muted); font:inherit; font-size:13px; min-height:44px; padding:0 4px; cursor:pointer; white-space:nowrap; }
-  .status-foot{ display:flex; justify-content:flex-end; margin-top:6px; }
-  .status-foot .link{ font-size:14px; padding:0 4px; }
+  .status{ position:relative; }
+  .status-edit{ position:absolute; top:4px; right:8px; font-size:13.5px; padding:0 8px; }   /* 상태 카드 오른쪽 위 (따로 한 줄을 차지하지 않게) */
 
   /* 이번 주 체크인 */
   .week{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; margin:6px 0 10px; }
@@ -223,7 +224,7 @@
   /* 몸관리 화면 */
   .seg{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:4px; margin:14px 0 4px; position:sticky; top:calc(6px + env(safe-area-inset-top)); z-index:5; }
   .seg button{ min-height:46px; border:0; border-radius:10px; background:none; color:var(--muted); font:inherit; font-size:15px; font-weight:700; cursor:pointer; }
-  .seg button[aria-selected="true"]{ background:var(--lime); color:#0d1a03; }
+  .seg button[aria-selected="true"]{ background:var(--lime-soft); color:var(--lime); box-shadow:inset 0 0 0 1px var(--lime); }   /* 아래 메뉴와 같은 '선택됨' 모양 */
   .seg button small{ font-size:12px; font-weight:600; opacity:.8; }
   .cstate{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:6px; font-size:14px; color:var(--muted); }
   .cstate b{ font-size:13px; border:1px solid; border-radius:999px; padding:1px 10px; }
@@ -1224,11 +1225,11 @@ function showResult(){
       <div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})}</div></div></div>
 
     <div class="status" style="border-color:${ui.color};background:${ui.bg}">
+      <button class="link status-edit" data-a="edit">체크인 고치기</button>
       <div class="badge" style="color:${ui.color}">${ui.label}</div>
       <div class="headline">${esc(j.headline)}</div>
       ${j.reasons.length?`<div class="reasons">${j.reasons.map(r=>`<span>${esc(r)}</span>`).join('')}</div>`:''}
     </div>
-    <div class="status-foot"><button class="link" data-a="edit">체크인 고치기</button></div>
     ${today.pain?'<p class="pain-note">관절이나 뼈 통증은 참지 말고 선생님께 직접 보여 주세요. 이 앱은 진단하지 않아요.</p>':''}
 
     ${todoHTML(j,today)}
@@ -1240,6 +1241,7 @@ function showResult(){
     <div class="sec">${weekHTML()}</div>
 
     <details class="more" id="more" ${detailOpen?'open':''}><summary>내 상태 자세히 <span class="note" style="font-weight:400">평소와 비교 · 그래프</span></summary>
+    ${weekCompareHTML()}
     <div class="sec" style="margin-top:0"><div class="sec-t">${an.ready?'평소(최근 '+BASELINE_WINDOW_DAYS+'일)와 비교':'오늘 기록 · 평소 비교는 최근 '+BASELINE_WINDOW_DAYS+'일 중 '+BASELINE_MIN_DAYS+'번 기록하면 시작 ('+hist.length+'/'+BASELINE_MIN_DAYS+')'}</div>
       ${an.rows.map(r=>rowHTML(r,today,an.ready)).join('')}</div>
 
@@ -1258,12 +1260,18 @@ function todoItems(j,t){
   const items=[];
   if(['RED','AMBER'].includes(j.status)||t.pain) items.push({id:'talk',k:'훈련 전',v:'선생님께 오늘 몸 상태 직접 말하기'});
   const rec=j.care.recovery[0];
-  if(rec&&rec.lines[0]) items.push({id:'rec',k:'회복 · '+rec.name,v:rec.lines[0].v,to:'recovery'});
+  if(rec&&rec.lines[0]) items.push({id:'rec',k:'회복 · '+rec.name,v:shortTodo(rec.lines[0].v),to:'recovery'});
   const nl=j.care.nutrition.lines, n=nl.find(l=>l.k==='훈련 후 1시간 안')||nl[0];
   if(n) items.push({id:'nut',k:'영양 · '+n.k,v:n.m?n.m:n.v,to:'nutrition'});
   const sl=j.care.sleep.lines[0];
   if(sl) items.push({id:'sleep',k:'수면 · '+j.care.sleep.names[0],v:sl.v,to:'sleep'});
   return items.slice(0,4);
+}
+// 할 일은 짧게: '벽 스쿼트 버티기: 벽에 등을 대고 …, 45초 × 3세트 (…)' → '벽 스쿼트 버티기 · 45초 × 3세트' (자세한 방법은 몸관리에)
+function shortTodo(v){
+  const i=v.indexOf(':'); if(i<0) return v;
+  const name=v.slice(0,i).trim(), rest=v.slice(i+1), dose=rest.match(/\d+\s*(초|분|회|번)\s*[×x]\s*\d+\s*(세트|회|번)/);   // '45초 × 3세트' 같은 양만 붙인다
+  return dose?name+' · '+dose[0].replace(/\s+/g,' '):name;
 }
 function todoKey(){ return 'heroTodo:'+((auth.currentUser&&auth.currentUser.uid)||'')+':'+todayStr(); }
 function todoDone(){ try{ const v=JSON.parse(lsGet(todoKey())||'[]'); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
@@ -1294,13 +1302,17 @@ function weekHTML(){
   const label=['월','화','수','목','금','토','일'];
   const dots=w.days.map((d,i)=>`<div class="${has.has(d)?'on':''} ${d===today?'today':''}">${label[i]}<i>${has.has(d)?'✓':''}</i></div>`).join('');
   const lines=[];
-  lines.push(`이번 주 체크인 <b>${w.n}번</b> · 목표 주 3번${w.n>=3?' 달성 ✓':''}`);
-  if(streak>=2) lines.push(`주 2번 이상 체크인 <b>${streak}주 연속</b>이에요`);
+  lines.push(`이번 주 <b>${w.n}/3번</b>${w.n>=3?' 달성 ✓':''}${streak>=2?` · 주 2번 이상 <b>${streak}주 연속</b> 🔥`:''}`);
+  return `<div class="sec-t">이번 주 체크인</div><div class="week" role="img" aria-label="이번 주 체크인 ${w.n}번">${dots}</div><div class="week-s">${lines.join('<br>')}</div>`;
+}
+function weekCompareHTML(){   // 지난주와 비교 (자세히 안에)
+  const today=todayStr(), dow=(new Date(today+'T00:00:00').getDay()+6)%7, mon=addDays(today,-dow);
+  const w=weekStats(mon), lw=weekStats(addDays(mon,-7)), lines=[];
   if(w.n>=2&&lw.n>=2){
     const ds=Math.round(w.sleep-lw.sleep), dr=w.ready-lw.ready;
     lines.push(`지난주보다 평균 수면 <b>${Math.abs(ds)<10?'비슷':(ds>0?'+':'−')+(Math.abs(ds)<60?Math.abs(ds)+'분':fmtSleep(Math.abs(ds)))}</b> · 준비도 <b>${Math.abs(dr)<0.3?'비슷':(dr>0?'+':'−')+Math.abs(dr).toFixed(1)}</b>`);
   }
-  return `<div class="sec-t">이번 주</div><div class="week" role="img" aria-label="이번 주 체크인 ${w.n}번">${dots}</div><div class="week-s">${lines.join('<br>')}</div>`;
+  return lines.length?`<div class="sec" style="margin-top:0"><div class="sec-t">이번 주 vs 지난주</div><div class="week-s">${lines.join('<br>')}</div></div>`:'';
 }
 
 /* ============ 몸관리 화면 (영양 · 수면 · 회복 탭) ============ */
@@ -1311,9 +1323,9 @@ function renderCare(){
   const head=`<div class="head"><h1>오늘 몸관리</h1><div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})}</div></div>`;
   if(!t){ $('screen-care').innerHTML=head+`<div class="box" style="margin-top:14px">오늘 체크인을 하면 내 몸 상태에 맞춘 <b>영양·수면·회복</b> 관리법이 나와요.</div><button class="btn" style="margin-top:14px" data-c="checkin">체크인 하기</button>`; return; }
   const j=judge(t,analyze(t,historyFor(date))), ui=STATUS_UI[j.status], c=j.care;
-  const tabs=[['nutrition','영양',''],['sleep','수면',''],['recovery','회복',c.recovery.length>1?' <small>'+c.recovery.length+'</small>':'']];
+  const tabs=[['nutrition','영양',''],['sleep','수면',''],['recovery','회복','']];
   let body='';
-  if(careTab==='nutrition') body=`<div class="ccard"><h3>${esc(c.nutrition.names.join(' · '))}</h3><div class="ctime">${careLines(c.nutrition.lines)}</div></div>
+  if(careTab==='nutrition') body=`<div class="ccard"><h3>먹는 시간표 <span class="note" style="font-weight:500">· ${esc(c.nutrition.names.join(' · '))}</span></h3><div class="ctime">${careLines(c.nutrition.lines)}</div></div>
     <p class="note" style="margin-top:12px">음식 수치는 편의점 일반 제품 기준 대략값이에요. 삼각김밥은 참치마요처럼 마요네즈가 많은 것보다 비빔·불고기류를 골라요. 알레르기가 있으면 선생님과 바꿔요.</p>`;
   else if(careTab==='sleep') body=`<div class="ccard"><h3>${esc(c.sleep.names.join(' · '))}</h3><ul>${c.sleep.lines.map(l=>`<li>${esc(l.v)}</li>`).join('')}</ul></div>`;
   else body=c.recovery.map(r=>`<div class="ccard"><h3>${esc(r.name)}</h3><ul>${r.lines.map(l=>`<li>${esc(l.v)}${l.m?`<div class="care-m">${esc(l.m)}</div>`:''}${l.alt?`<div class="care-m">볼이 없으면 · ${esc(l.alt)}</div>`:''}</li>`).join('')}</ul></div>`).join('');
@@ -1566,14 +1578,14 @@ async function savePerf(){
 }
 /* ---- 개인 최고·목표 달성 축하 (나와 선생님만 보는 기록. 순위는 없음) ---- */
 function celebrateIfBest(ev,v,rid){
-  if(!PERF.isKnown(ev)) return;
+  if(!PERF.isKnown(ev)||PERF.rangeWarn(ev,v)) return;   // 범위 밖 값(단위 실수일 수 있음)은 축하하지 않는다
   const others=perfRecs(ev).filter(r=>r.rid!==rid);
   const pb=others.length>0&&others.every(r=>PERF.better(ev,v,r.value));
   const tg=perfTarget(ev), t=tg===null?NaN:Number(tg), reach=x=>Number.isFinite(t)&&(PERF.isLower(ev)?x<=t:x>=t);
   const goal=reach(v)&&!others.some(r=>reach(r.value));
   if(!pb&&!goal) return;
   const prev=pb?others.reduce((b,r)=>PERF.better(ev,r.value,b.value)?r:b,others[0]):null;
-  const sub=(pb?'이전 최고 '+PERF.withUnit(ev,prev.value)+' ('+PERF.md(prev.date)+')보다 좋아졌어요.':'')+(goal?(pb?'<br>':'')+'목표 '+esc(PERF.withUnit(ev,t))+' 달성!':'');
+  const sub=(pb?'이전 최고 '+PERF.withUnit(ev,prev.value)+' → '+(PERF.isLower(ev)?'−':'+')+PERF.withUnit(ev,Math.round(Math.abs(v-prev.value)*100)/100):'')+(goal?(pb?'<br>':'')+'목표 '+esc(PERF.withUnit(ev,t))+' 달성!':'');
   const colors=['#c6ff3d','#ff9f1c','#4fc3ff','#ff4b33','#ffd23f'];
   const bits=[...Array(24)].map((_,i)=>`<i style="left:${(i*37)%100}%;background:${colors[i%5]};animation-duration:${1.6+(i%5)*0.35}s;animation-delay:${(i%6)*0.08}s"></i>`).join('');
   const box=document.createElement('div');
