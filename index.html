@@ -489,6 +489,20 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .log-form-grid input, .log-form-grid select{ font-size:15px; padding:11px 12px; }
   .log-textarea-field{ margin-bottom:18px; }
   .chk-pill-row{ display:flex; gap:8px; flex-wrap:wrap; padding-top:6px; }
+  .ins-head{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .ins-head > label{ margin:0; }
+  .ins-btn{ background:transparent; border:1px dashed var(--line); border-radius:16px; padding:5px 12px; font-size:12.5px; font-weight:700; color:var(--text-dim); cursor:pointer; min-height:32px; }
+  .ins-btn:hover{ color:var(--lime); border-color:var(--lime); }
+  .ins-panel{ margin-top:10px; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); }
+  .ins-panel[hidden]{ display:none; }
+  .ins-add-row, .ins-edit-row{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+  .ins-add-row input, .ins-edit-row input{ flex:1; min-width:0; font-size:16px; padding:9px 11px; }
+  .ins-edit-row .ins-del{ flex:0 0 auto; background:transparent; border:1px solid var(--line); border-radius:10px; padding:8px 10px; color:var(--text-dim); cursor:pointer; font-size:13px; }
+  .ins-edit-row.removed input{ text-decoration:line-through; opacity:.45; }
+  .ins-edit-row.removed .ins-del{ color:var(--lime); border-color:var(--lime); }
+  .ins-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:4px; }
+  .ins-actions button{ flex:0 0 auto; padding:8px 18px; font-size:13px; height:38px; min-width:72px; }
+  .ins-hint{ font-size:12px; color:var(--text-dim); margin:2px 0 8px; }
 
   .record-row{ margin-bottom:16px; }
   .record-row:last-child{ margin-bottom:0; }
@@ -793,6 +807,8 @@ const BRANCHES = ["해운대점","사직점","주례점"];
 const CLASS_TYPES = ["해운대수업","사직수업","주례수업","수시집중반","해운대 수시반","사직 수시반"];
 const MAIN_INSTRUCTORS = ["정식쌤","선영쌤","현우쌤","현식쌤","민규쌤"];
 const ASSISTANT_INSTRUCTORS = ["용민쌤","유빈쌤","재언쌤","지환쌤","검균쌤","정호쌤","여을쌤","태산쌤","은성쌤","승현쌤"];
+// 강사 명단: 처음엔 위 기본값, 선생님이 ＋/✏️로 바꾸면 Firestore settings/instructors 에 저장되어 모든 코치에게 같이 보인다
+let INSTRUCTORS = { main:[...MAIN_INSTRUCTORS], assistant:[...ASSISTANT_INSTRUCTORS] };
 const JUMP_DROP_STEP = 5;      // % 단위 임계값
 const JUMP_STREAK_ESCALATE = 4; // 연속 하락일수 임계값
 const JUMP_LEVELS = [
@@ -1584,18 +1600,8 @@ function renderClassLogView(){
             <input type="text" name="classTypeCustom" placeholder="예: 해운대 심화반">
           </div>
 
-          <div class="field log-textarea-field">
-            <label>메인강사</label>
-            <div class="chk-pill-row">
-              ${MAIN_INSTRUCTORS.map(n=>`<label class="chk-pill chk-pill-glow"><input type="checkbox" name="instructor" value="${n}"> ${n}</label>`).join('')}
-            </div>
-          </div>
-          <div class="field log-textarea-field">
-            <label>보조강사</label>
-            <div class="chk-pill-row">
-              ${ASSISTANT_INSTRUCTORS.map(n=>`<label class="chk-pill chk-pill-glow"><input type="checkbox" name="assistant" value="${n}"> ${n}</label>`).join('')}
-            </div>
-          </div>
+          ${insGroupHTML('main')}
+          ${insGroupHTML('assistant')}
           <div class="field log-textarea-field">
             <label>수업진행</label>
             <div class="chk-pill-row">
@@ -1626,6 +1632,142 @@ function toggleCustomClassType(sel){
   const field = document.getElementById('customClassTypeField');
   if(!field) return;
   field.style.display = sel.value==='__custom__' ? '' : 'none';
+}
+/* ---- 강사 명단 ＋ 추가 / ✏️ 수정 ---- */
+const INS_META = { main:{label:'메인강사', field:'instructor'}, assistant:{label:'보조강사', field:'assistant'} };
+function insPillsHTML(kind){
+  const f=INS_META[kind].field;
+  const list=INSTRUCTORS[kind]||[];
+  if(!list.length) return `<span class="ins-hint">아직 등록된 강사가 없어요. ＋ 추가를 눌러 주세요.</span>`;
+  return list.map(n=>`<label class="chk-pill chk-pill-glow"><input type="checkbox" name="${f}" value="${esc(n)}"> ${esc(n)}</label>`).join('');
+}
+// 체크는 속성이 아니라 값으로 켠다 (그래야 '일지 저장' 뒤 폼 초기화 때 체크가 풀린다)
+function insSetChecked(row, names){
+  const set=new Set(names||[]);
+  row.querySelectorAll('input[type=checkbox]').forEach(i=>{ i.checked=set.has(i.value); });
+}
+function insGroupHTML(kind){
+  const m=INS_META[kind];
+  return `<div class="field log-textarea-field" id="ins-${kind}">
+    <div class="ins-head">
+      <label>${m.label}</label>
+      <button type="button" class="ins-btn" onclick="insOpen('${kind}','add')">＋ 추가</button>
+      <button type="button" class="ins-btn" onclick="insOpen('${kind}','edit')">✏️ 수정</button>
+    </div>
+    <div class="chk-pill-row" id="ins-row-${kind}">${insPillsHTML(kind)}</div>
+    <div class="ins-panel" id="ins-panel-${kind}" hidden onkeydown="if(event.key==='Enter'&&event.target.tagName==='INPUT'){event.preventDefault();}"></div>
+  </div>`;
+}
+function insChecked(kind){
+  const row=document.getElementById('ins-row-'+kind); if(!row) return [];
+  return [...row.querySelectorAll('input:checked')].map(i=>i.value);
+}
+function insRefreshRows(renameMap){
+  ['main','assistant'].forEach(k=>{
+    const row=document.getElementById('ins-row-'+k); if(!row) return;
+    const keep=insChecked(k).map(n=>(renameMap&&renameMap[k]&&renameMap[k][n])||n);
+    row.innerHTML=insPillsHTML(k); insSetChecked(row, keep);
+  });
+}
+// '민수' 처럼 적으면 '민수쌤'으로 맞춰 준다 (기존 명단과 같은 모양)
+function insNormalize(v){
+  v=String(v||'').replace(/\s+/g,' ').trim();
+  if(!v) return '';
+  if(!/(쌤|선생님|코치|강사)$/.test(v)) v+='쌤';
+  return v;
+}
+function insOpen(kind, mode){
+  const panel=document.getElementById('ins-panel-'+kind); if(!panel) return;
+  if(!panel.hidden && panel.dataset.mode===mode){ insClose(kind); return; }
+  panel.dataset.mode=mode; panel.hidden=false;
+  const label=INS_META[kind].label;
+  if(mode==='add'){
+    panel.innerHTML=`<div class="ins-hint">새로 온 ${label} 이름 (예: 민수 → 민수쌤으로 저장)</div>
+      <div class="ins-add-row"><input type="text" id="ins-add-${kind}" maxlength="12" placeholder="이름" enterkeyhint="done"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();insAdd('${kind}');}"></div>
+      <div class="ins-actions"><button type="button" class="ghost-btn" onclick="insClose('${kind}')">취소</button>
+        <button type="button" class="submit-btn" onclick="insAdd('${kind}')">추가</button></div>`;
+    const inp=document.getElementById('ins-add-'+kind); if(inp) inp.focus();
+  }else{
+    const list=INSTRUCTORS[kind]||[];
+    panel.innerHTML=`<div class="ins-hint">이름을 고치거나 🗑로 빼세요. 지난 일지에 적힌 이름은 그대로 남아요.</div>
+      ${list.map((n,i)=>`<div class="ins-edit-row" data-old="${esc(n)}">
+        <input type="text" maxlength="12" value="${esc(n)}">
+        <button type="button" class="ins-del" onclick="insToggleDel(this)" aria-label="${esc(n)} 빼기">🗑</button></div>`).join('') || '<div class="ins-hint">등록된 강사가 없어요.</div>'}
+      <div class="ins-actions"><button type="button" class="ghost-btn" onclick="insClose('${kind}')">취소</button>
+        <button type="button" class="submit-btn" onclick="insSaveEdit('${kind}')">저장</button></div>`;
+  }
+}
+function insClose(kind){
+  const panel=document.getElementById('ins-panel-'+kind); if(!panel) return;
+  panel.hidden=true; panel.innerHTML=''; panel.dataset.mode='';
+  flushRerender();
+}
+function insToggleDel(btn){
+  const row=btn.closest('.ins-edit-row'); row.classList.toggle('removed');
+  btn.textContent=row.classList.contains('removed')?'되살리기':'🗑';
+}
+async function insPersist(next){
+  if(!db){ showToast('Firebase 설정이 필요합니다'); return false; }
+  markUserWrite();
+  try{
+    await db.collection('settings').doc('instructors').set({main:next.main, assistant:next.assistant, updatedAt:Date.now(), updatedBy:currentCoachEmail||''});
+    return true;
+  }catch(err){ showToast('강사 명단 저장 실패: '+err.message); return false; }
+}
+async function insAdd(kind){
+  const inp=document.getElementById('ins-add-'+kind); if(!inp) return;
+  const name=insNormalize(inp.value);
+  if(!name){ showToast('이름을 적어 주세요'); inp.focus(); return; }
+  if(name.length>12){ showToast('이름은 12자까지 적을 수 있어요'); return; }
+  if((INSTRUCTORS[kind]||[]).includes(name)){ showToast(name+'은(는) 이미 있어요'); return; }
+  const next={main:[...INSTRUCTORS.main], assistant:[...INSTRUCTORS.assistant]};
+  next[kind].push(name);
+  const keep=insChecked(kind);
+  if(!(await insPersist(next))) return;
+  INSTRUCTORS=next;
+  const row=document.getElementById('ins-row-'+kind);
+  if(row){ row.innerHTML=insPillsHTML(kind); insSetChecked(row,[...keep,name]); }   // 방금 추가한 사람은 바로 체크
+  inp.value='';
+  showToast(name+' 추가했어요');
+  insClose(kind);
+}
+async function insSaveEdit(kind){
+  const panel=document.getElementById('ins-panel-'+kind); if(!panel) return;
+  const rows=[...panel.querySelectorAll('.ins-edit-row')];
+  const list=[], rename={}, seen=new Set();
+  for(const r of rows){
+    if(r.classList.contains('removed')) continue;
+    const old=r.dataset.old, name=insNormalize(r.querySelector('input').value);
+    if(!name){ showToast('빈 이름이 있어요. 지우려면 🗑를 눌러 주세요'); return; }
+    if(name.length>12){ showToast('이름은 12자까지 적을 수 있어요'); return; }
+    if(seen.has(name)){ showToast(name+'이(가) 두 번 있어요'); return; }
+    seen.add(name); list.push(name); if(old!==name) rename[old]=name;
+  }
+  const removed=rows.filter(r=>r.classList.contains('removed')).map(r=>r.dataset.old);
+  if(removed.length && !confirm(removed.join(', ')+' 을(를) 명단에서 뺄까요?\n(지난 일지 기록은 그대로 남아요)')) return;
+  const next={main:[...INSTRUCTORS.main], assistant:[...INSTRUCTORS.assistant]};
+  next[kind]=list;
+  if(!(await insPersist(next))) return;
+  INSTRUCTORS=next;
+  insRefreshRows({[kind]:rename});
+  showToast('강사 명단을 저장했어요');
+  insClose(kind);
+}
+let unsubscribeInstructors=null;
+function subscribeInstructors(){
+  if(!db) return;
+  if(unsubscribeInstructors) unsubscribeInstructors();
+  unsubscribeInstructors=db.collection('settings').doc('instructors').onSnapshot(doc=>{
+    const d=doc.exists?doc.data():null;
+    if(!d) return;   // 아직 아무도 안 바꿨으면 기본 명단 사용
+    const clean=a=>Array.isArray(a)?a.filter(x=>typeof x==='string'&&x.trim()).slice(0,40):null;
+    const m=clean(d.main), a=clean(d.assistant);
+    INSTRUCTORS={ main:m||[...MAIN_INSTRUCTORS], assistant:a||[...ASSISTANT_INSTRUCTORS] };
+    // 다른 선생님이 바꾼 경우: 열려 있는 편집칸이 없을 때만 체크 상태 유지하며 버튼 줄만 새로 그림
+    const busy=[...document.querySelectorAll('.ins-panel')].some(p=>!p.hidden);
+    if(!busy) insRefreshRows();
+  }, err=>{ if(err.code!=='permission-denied') showToast('강사 명단 불러오기 오류: '+err.message); });
 }
 let classLogSaving=false;   // '일지 저장'을 두 번 누르면 같은 일지가 두 개 생기던 문제 방지
 async function submitClassLog(e){
@@ -2639,12 +2781,14 @@ function initFirebase(){
         subscribeStudents();
         subscribeClassLogs();
         subscribeJoinRequests();
+        subscribeInstructors();
         syncPublicBranches();
       }else{
         currentCoachEmail='';
         if(unsubscribeStudents){ unsubscribeStudents(); unsubscribeStudents=null; }
         if(unsubscribeClassLogs){ unsubscribeClassLogs(); unsubscribeClassLogs=null; }
         if(unsubscribeJoin){ unsubscribeJoin(); unsubscribeJoin=null; }
+        if(unsubscribeInstructors){ unsubscribeInstructors(); unsubscribeInstructors=null; }
         hideAuthWait();
         state.students=[]; state.studentsLoaded=false; state.todayCk={}; state.hist={}; state.histReq={}; state.perf={}; state.perfFull={}; state.perfAllAt=0; ckStudentKey='';
         document.getElementById('loginScreen').style.display='';
