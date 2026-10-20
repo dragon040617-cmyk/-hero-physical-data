@@ -1767,7 +1767,7 @@ function renderClassLogView(){
           </div>
           <div class="field" id="customClassTypeField" style="display:none; margin-top:2px; margin-bottom:16px;">
             <label>수업 종류 직접 입력</label>
-            <input type="text" name="classTypeCustom" placeholder="예: 해운대 심화반">
+            <input type="text" name="classTypeCustom" maxlength="30" placeholder="예: 해운대 심화반">
           </div>
 
           ${insGroupHTML('main')}
@@ -1781,13 +1781,13 @@ function renderClassLogView(){
 
           <div class="field log-textarea-field">
             <label>수업내용</label>
-            <textarea name="content" rows="6" class="log-textarea" placeholder="오늘 진행한 훈련 내용을 적어주세요"></textarea>
+            <textarea name="content" rows="6" maxlength="3000" class="log-textarea" placeholder="오늘 진행한 훈련 내용을 적어주세요"></textarea>
           </div>
           <div class="field log-textarea-field">
             <label>특이사항</label>
-            <textarea name="notes" rows="6" class="log-textarea" placeholder="학생 컨디션, 부상, 분위기 등"></textarea>
+            <textarea name="notes" rows="6" maxlength="3000" class="log-textarea" placeholder="학생 컨디션, 부상, 분위기 등"></textarea>
           </div>
-          <div class="field log-textarea-field"><label>청소</label><input type="text" name="cleaning" placeholder="예: 지하 바닥 청소"></div>
+          <div class="field log-textarea-field"><label>청소</label><input type="text" name="cleaning" maxlength="100" placeholder="예: 지하 바닥 청소"></div>
 
           <div class="log-form-actions">
             <button type="button" class="ghost-btn log-cancel-btn" onclick="closeLogForm()">취소</button>
@@ -1971,7 +1971,10 @@ async function submitClassLog(e){
   };
   if(editing){ logObj.updatedAt=Date.now(); logObj.updatedBy=currentCoachEmail||''; }
   if(state.editLogId && !editing){ showToast('고치던 일지를 찾을 수 없어요 (다른 선생님이 지웠을 수 있어요)'); return; }
-  if(!PERF.validDate(logObj.date)){ showToast('날짜를 다시 골라 주세요'); return; }
+  if(!PERF.validDate(logObj.date) || logObj.date<'2025-01-01'){ showToast('날짜를 다시 골라 주세요'); return; }
+  if(logObj.date>todayStr()){ showToast('아직 오지 않은 날에는 일지를 쓸 수 없어요'); return; }
+  // 붙여넣기로 maxlength를 넘는 경우까지 한 번 더 자른다
+  logObj.content=logObj.content.slice(0,3000); logObj.notes=logObj.notes.slice(0,3000); logObj.cleaning=logObj.cleaning.slice(0,100); logObj.classType=logObj.classType.slice(0,30);
   const btn = e.target.querySelector('button[type="submit"],button:not([type])');
   classLogSaving=true; if(btn){ btn.disabled=true; btn.style.opacity='0.6'; }
   let ok=false;
