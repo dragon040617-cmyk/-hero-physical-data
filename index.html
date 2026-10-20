@@ -3934,7 +3934,7 @@ function payDynHTML(){
   if(!state.studentsLoaded) return '<div class="empty-mini">학생 명단 불러오는 중…</div>';
   const ym=state.payYM, rows=payRows(), today=HC.todayStr(), future=ym>today.slice(0,7);
   const items=rows.map(s=>{ const p=payOf(s,ym), r=payRec(s,ym), d=daysOf(s), busy=!!state.payBusy[s.id];
-    const cancel = r && r.canceled ? `<div class="pi-cancel">취소됨 ${r.canceledAt?md(new Date(r.canceledAt).toISOString().slice(0,10)):''} · 사유: ${esc(r.cancelReason||'-')}</div>` : '';
+    const cancel = r && r.canceled ? `<div class="pi-cancel">취소됨 ${r.canceledAt?md(localYmd(new Date(r.canceledAt))):''} · 사유: ${esc(r.cancelReason||'-')}</div>` : '';
     return `<div class="pay-item ${p?'paid':'unpaid'}">
       <div class="pi-who"><b>${esc(s.name)}</b><span>${esc(s.branch||'지점 없음')} · ${esc(s.grade||'')}</span></div>
       <div class="pi-meta"><span><em>요일</em> ${d.length?d.join('·'):'미설정'}</span><span><em>주</em> ${d.length?d.length+'회':'-'}</span><span><em>수강료</em> ${won(feeOf(s))}</span></div>
