@@ -575,6 +575,68 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .row-del{ white-space:nowrap; flex-shrink:0; }
   .cl-top{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   .log-form-card[hidden]{ display:none; }
+  .mgmt-tabs{ display:flex; gap:6px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:4px; margin:4px 0 16px; max-width:420px; }
+  .mgmt-tabs button{ flex:1; min-height:42px; border:none; border-radius:9px; background:transparent; color:var(--text-muted); font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
+  .mgmt-tabs button.on{ background:var(--lime); color:#0d1a03; font-weight:800; }
+  .mgmt-search{ display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+  .mgmt-search .student-search{ margin:0; flex:1 1 180px; min-width:0; min-height:44px; font-size:16px; }
+  .mgmt-search select.student-search{ flex:0 1 160px; }
+  .mgmt-list{ display:flex; flex-direction:column; gap:8px; }
+  .mgmt-row{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px; color:var(--text); cursor:pointer; font-family:inherit; }
+  .mr-av{ width:40px; height:40px; flex:0 0 auto; border-radius:10px; background:var(--surface-2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-weight:800; }
+  .mr-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+  .mr-top{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; } .mr-top b{ font-size:15.5px; overflow-wrap:anywhere; }
+  .mr-top em{ font-style:normal; font-size:11.5px; font-weight:800; padding:2px 8px; border-radius:10px; border:1px solid; }
+  .mr-sub{ font-size:12.5px; color:var(--text-dim); } .mr-days{ font-size:12.5px; color:var(--text-muted); }
+  .mr-pay{ flex:0 0 auto; font-size:12px; font-weight:800; padding:6px 10px; border-radius:12px; color:#ff9f1c; border:1px dashed #ff9f1c88; white-space:nowrap; }
+  .mr-pay.on{ color:var(--lime); border:1px solid rgba(198,255,61,.4); background:var(--lime-soft); }
+  .pay-nav{ max-width:420px; margin-bottom:12px; }
+  .pay-cards{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-bottom:12px; }
+  .pay-cardx{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px; text-align:left; color:var(--text); font-family:inherit; min-width:0; }
+  button.pay-cardx{ cursor:pointer; } .pay-cardx.unpaid.on{ border-color:#ff9f1c; }
+  .pc-h{ font-size:11.5px; color:var(--text-dim); font-weight:700; } .pc-n{ font-size:22px; font-weight:800; margin-top:4px; } .pc-n small{ font-size:12px; color:var(--text-muted); font-weight:600; }
+  .pc-f{ font-size:11px; color:#ff9f1c; font-weight:800; margin-top:2px; }
+  .pc-bar{ height:6px; background:var(--surface-2); border-radius:3px; margin-top:6px; overflow:hidden; } .pc-bar i{ display:block; height:100%; background:var(--lime); border-radius:3px; }
+  .pay-fbtn{ flex:0 0 auto; min-height:44px; padding:0 16px; border-radius:10px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); font-weight:800; cursor:pointer; font-family:inherit; }
+  .pay-fbtn.on{ border-color:var(--lime); color:var(--lime); background:var(--lime-soft); }
+  .pay-filter{ padding:14px; display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+  .pf-h{ font-size:12px; color:var(--text-dim); font-weight:700; }
+  .pf-row{ display:flex; gap:6px; flex-wrap:wrap; }
+  .pf-reset{ align-self:flex-end; flex:0 0 auto; padding:9px 14px; }
+  .pay-tools{ display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; font-size:12.5px; color:var(--text-muted); margin-bottom:10px; }
+  .pt-btns{ display:flex; gap:6px; } .pt-btns .ghost-btn{ flex:0 0 auto; padding:9px 12px; font-size:12.5px; }
+  .pay-head{ display:none; }
+  .pay-items{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  .pay-item{ display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"who btn" "meta meta" "pay pay"; gap:8px 10px; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px; }
+  .pay-item.unpaid{ border-color:rgba(255,159,28,.45); }
+  .pi-who{ grid-area:who; min-width:0; display:flex; flex-direction:column; gap:2px; } .pi-who b{ font-size:16px; overflow-wrap:anywhere; } .pi-who span{ font-size:12.5px; color:var(--text-dim); }
+  .pi-meta{ grid-area:meta; display:flex; flex-wrap:wrap; gap:4px 12px; font-size:13px; color:var(--text-muted); } .pi-meta em{ font-style:normal; color:var(--text-dim); font-weight:700; margin-right:2px; }
+  .pi-pay{ grid-area:pay; display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:13px; min-width:0; }
+  .pi-pay:empty{ display:none; }
+  .pi-date{ display:flex; align-items:center; gap:6px; color:var(--lime); font-weight:700; } .pi-date input{ width:160px; min-height:40px; font-size:16px; padding:6px 10px; }
+  .pay-cancel textarea{ font-size:16px; width:100%; box-sizing:border-box; }
+  .pi-amt{ color:var(--lime); font-weight:700; }
+  .pi-cancel{ color:#ff9f1c; font-size:12.5px; overflow-wrap:anywhere; }
+  .pay-btn{ grid-area:btn; min-height:44px; min-width:112px; padding:0 14px; border-radius:11px; border:1px solid var(--lime); background:var(--surface-2); color:var(--lime); font-weight:800; font-size:13.5px; cursor:pointer; font-family:inherit; white-space:nowrap; }
+  .pay-btn.on{ background:var(--lime); color:#0d1a03; }
+  .pay-btn:disabled{ opacity:.5; cursor:not-allowed; }
+  @media (min-width:1000px){
+    .pay-head{ display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1.8fr) minmax(0,1.6fr) 140px; gap:12px; padding:0 14px 6px; font-size:12px; color:var(--text-dim); font-weight:700; }
+    .pay-item{ grid-template-columns:minmax(0,1.2fr) minmax(0,1.8fr) minmax(0,1.6fr) 140px; grid-template-areas:"who meta pay btn"; }
+    .pi-pay:empty{ display:block; }
+  }
+  .branch-stat{ padding:14px; display:flex; flex-direction:column; gap:8px; }
+  .bs-row{ display:grid; grid-template-columns:64px minmax(0,1fr) 90px auto; gap:10px; align-items:center; font-size:12.5px; }
+  .bs-row .pc-bar{ margin:0; height:8px; } .bs-n{ color:var(--text-muted); text-align:right; }
+  .bs-copy{ flex:0 0 auto; padding:7px 10px; font-size:12px; }
+  .day-pick{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; }
+  .day-btn{ position:relative; display:block; margin:0; }
+  .day-btn input{ position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
+  .day-btn span{ display:flex; align-items:center; justify-content:center; height:44px; border-radius:10px; background:var(--surface-2); border:1px solid var(--line); color:var(--text-muted); font-weight:800; font-size:14px; }
+  .day-btn input:checked + span{ background:var(--lime); border-color:var(--lime); color:#0d1a03; }
+  .day-btn input:focus-visible + span{ outline:2px solid #fff; outline-offset:2px; }
+  .modal-actions .confirm.danger{ background:#ff4b33; color:#fff; }
+  .pay-chip:disabled{ opacity:.5; }
   .ck-cal-card{ padding:16px; display:grid; grid-template-columns:minmax(0,1fr); gap:16px; align-items:start; }
   @media (min-width:1100px){ .ck-cal-card{ grid-template-columns:minmax(0,480px) minmax(0,1fr); } }
   .ckc-left, .ckc-right{ display:flex; flex-direction:column; gap:12px; min-width:0; }
@@ -1115,7 +1177,7 @@ function renderSidebar(){
       <button class="add-btn sb-dup" style="background:var(--surface-2); border:1px solid ${pendingJoins().length?'var(--lime)':'var(--line)'}; color:${pendingJoins().length?'var(--lime)':'var(--text-dim)'};" onclick="openJoinView()">✅ 가입 승인 대기 ${pendingJoins().length}명</button>
       <button class="add-btn sb-dup" style="background:var(--surface-2); border:1px solid var(--lime); color:var(--lime); margin-top:-6px; position:relative;" onclick="openTeamView()">📋 오늘 브리핑${dangerCount>0?` <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:var(--accent); color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">위험 ${dangerCount}</span>`:''}</button>
       <button class="add-btn sb-dup" style="background:var(--lime); color:#0d1a03; margin-top:-6px;" onclick="openClassLogView()">📝 수업일지</button>
-      <button class="add-btn sb-dup" style="background:var(--surface-2); border:1px solid var(--line); color:var(--text); margin-top:-6px; margin-bottom:12px;" onclick="openPayView()">💳 학원비 결제 확인 · ${payDoneCount()}/${state.students.length}</button>
+      <button class="add-btn" style="background:var(--surface-2); border:1px solid var(--line); color:var(--text); margin-top:-6px; margin-bottom:12px;" onclick="openMgmt('pay')">👥 학생관리 · ${payLabel(HC.todayStr().slice(0,7))} ${payDoneCount()}/${state.students.length}</button>
       <input class="student-search" id="searchInput" placeholder="학생 이름 검색" value="${esc(q)}" oninput="filterStudentList()" style="margin-bottom:8px;">
       <select id="branchFilter" class="student-search" onchange="state.sidebarBranchFilter=this.value; filterStudentList();" style="margin-bottom:12px;">
         <option value="" ${!branchFilter?'selected':''}>전체 지점</option>
@@ -2418,22 +2480,22 @@ function rerenderInner(){
       <button class="hamburger" onclick="toggleSidebar()" aria-label="학생 목록 열기">☰</button>
       <span class="mobile-brand">HERO PHYSICAL DATA</span>
       <button class="mt-btn" onclick="logout()">로그아웃</button>
-    </div>` + renderSidebar() + (state.payOpen ? renderPayView() : state.joinOpen ? renderJoinView() : state.teamViewOpen ? renderTeamOverview() : state.classLogOpen ? renderClassLogView() : renderMain())
+    </div>` + renderSidebar() + (state.mgmtOpen ? renderMgmtView() : state.joinOpen ? renderJoinView() : state.teamViewOpen ? renderTeamOverview() : state.classLogOpen ? renderClassLogView() : renderMain())
     + renderBottomNav();
   destroyCharts();
-  if(state.payOpen){}
+  if(state.mgmtOpen){ setTimeout(()=>{ const qi=document.getElementById(state.mgmtTab==='pay'?'payQ':'listQ'); if(qi && state._mgmtFocus){ qi.focus(); state._mgmtFocus=false; } },0); }
   else if(state.teamViewOpen){ updateMissingListPreview(); }
   else if(!state.classLogOpen) drawCharts();
   document.getElementById('sidebarBackdrop')?.classList.toggle('show', state.mobileSidebarOpen);
 }
 function renderBottomNav(){
-  const tab = state.joinOpen ? 'join' : state.teamViewOpen ? 'team' : state.classLogOpen ? 'log' : 'student';
+  const tab = state.mgmtOpen ? 'student' : state.joinOpen ? 'join' : state.teamViewOpen ? 'team' : state.classLogOpen ? 'log' : 'student';
   const pend = pendingJoins().length;
   const danger = state.students.filter(s=>computeFatigueMetrics(s).riskLevel==='danger').length;   // 옆 메뉴의 '위험 N' 표시를 휴대폰 아래 메뉴에도
   return `
     <nav class="bottom-nav">
       <button class="bn-item ${tab==='student'?'active':''}" onclick="bottomNavGo('student')">
-        <span class="bn-icon">🧑‍🎓</span><span>학생</span>
+        <span class="bn-icon">🧑‍🎓</span><span>학생관리</span>
       </button>
       <button class="bn-item ${tab==='team'?'active':''}" onclick="bottomNavGo('team')">
         <span class="bn-icon" style="position:relative;">📋${danger?`<span class="bn-badge">${danger}</span>`:''}</span><span>브리핑</span>
@@ -2447,26 +2509,20 @@ function renderBottomNav(){
     </nav>`;
 }
 function bottomNavGo(tab){
-  state.joinOpen=false; state.payOpen=false;
+  state.joinOpen=false; state.mgmtOpen=false;
   if(tab==='join'){ openJoinView(); }
   else if(tab==='team'){ openTeamView(); }
   else if(tab==='log'){ openClassLogView(); }
-  else{
-    state.teamViewOpen=false; state.classLogOpen=false;
-    if(!state.selectedId && state.students.length) state.selectedId = state.students[0].id;
-    if(state.selectedId){ loadHistory(state.selectedId); loadPerf(state.selectedId); }   // 첫 화면이 브리핑이라 아직 안 읽었을 수 있다
-    state.mobileSidebarOpen = true;
-    rerender();
-  }
+  else{ openMgmt(state.mgmtTab||'list'); }   // 휴대폰: '학생관리' = 한 페이지 (학생 목록 · 학원비)
 }
 function toggleSidebar(){
   state.mobileSidebarOpen = !state.mobileSidebarOpen;
   rerender();
 }
-function selectStudent(id){ state.payOpen=false; loadHistory(id); loadPerf(id,false,false,0,true); state.joinOpen=false; state.selectedId=id; state.activeTab='overview'; state.classLogOpen=false; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
-function openClassLogView(){ state.payOpen=false; state.joinOpen=false; state.classLogOpen=true; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
+function selectStudent(id){ state.mgmtOpen=false; loadHistory(id); loadPerf(id,false,false,0,true); state.joinOpen=false; state.selectedId=id; state.activeTab='overview'; state.classLogOpen=false; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
+function openClassLogView(){ state.mgmtOpen=false; state.joinOpen=false; state.classLogOpen=true; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
 function closeClassLogView(){ state.classLogOpen=false; rerender(); }
-function openTeamView(){ state.payOpen=false; loadBriefLogs(); loadTodayCheckins(); loadAllPerf(); state.joinOpen=false; state.teamViewOpen=true; state.classLogOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
+function openTeamView(){ state.mgmtOpen=false; loadBriefLogs(); loadTodayCheckins(); loadAllPerf(); state.joinOpen=false; state.teamViewOpen=true; state.classLogOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
 function closeTeamView(){ state.teamViewOpen=false; if(state.selectedId){ loadHistory(state.selectedId); loadPerf(state.selectedId); } rerender(); }
 function setTab(tab){ state.activeTab=tab; rerender(); }
 function selectEvent(sid, ev){ state.selectedEventByStudent[sid]=ev; rerender(); }
@@ -2668,6 +2724,12 @@ function openEditStudentModal(sid){
           </select>
         </div>
         <div class="field"><label>목표</label><input name="target" value="${esc(s.target||'')}"></div>
+        <div class="field"><label>수업 요일 <b id="dayCnt" style="color:var(--lime); margin-left:6px;">${daysOf(s).length?'주 '+daysOf(s).length+'회':'미설정'}</b></label>
+          <div class="day-pick">${WEEK.map(w=>`<label class="day-btn"><input type="checkbox" name="days" value="${w}" ${daysOf(s).includes(w)?'checked':''} onchange="const n=this.form.querySelectorAll('input[name=days]:checked').length; document.getElementById('dayCnt').textContent=n?'주 '+n+'회':'미설정';"><span>${w}</span></label>`).join('')}</div>
+          <div class="stat-note" style="margin-top:4px;">고른 요일 수로 주당 횟수가 자동 계산돼요</div></div>
+        <div class="field"><label for="feeIn">월 수강료</label>
+          <div style="display:flex; align-items:center; gap:8px;"><input id="feeIn" name="fee" inputmode="numeric" autocomplete="off" placeholder="미설정" value="${feeOf(s)!=null?feeOf(s).toLocaleString('ko-KR'):''}" oninput="const d=this.value.replace(/[^0-9]/g,'').replace(/^0+/,'').slice(0,8); this.value=d?Number(d).toLocaleString('ko-KR'):'';" style="text-align:right;"><span>원</span></div>
+          <div class="stat-note" style="margin-top:4px;">숫자만 입력 · 비우면 미설정 · 바꿔도 지난 결제 금액은 그대로예요</div></div>
         <div class="field">
           <label>재활이 필요했던 부상 이력</label>
           <select name="rehabHistory">
@@ -2695,6 +2757,11 @@ async function submitEditStudent(e, sid){
   s.branch = cleanField(f.get('branch'),20);
   s.target = cleanField(f.get('target'),60);
   s.rehabHistory = f.get('rehabHistory')==='true';
+  const days = WEEK.filter(w=>f.getAll('days').includes(w));
+  const feeDigits = String(f.get('fee')||'').replace(/[^0-9]/g,'');
+  const fee = feeDigits ? Number(feeDigits) : null;
+  if(fee!=null && (fee<1000 || fee>10000000)){ showToast('수강료를 다시 확인해 주세요 (1,000원 ~ 10,000,000원)'); return; }
+  s.days = days; s.fee = fee;
   closeModal();
   const ok = await saveStudent(s);
   if(ok) showToast('학생 정보가 수정되었습니다');
@@ -3749,72 +3816,236 @@ function logBranch(l){ const t=logTypeOf(l)||''; return BRANCHES.find(b=>t.inclu
 const FORM_SHORT={'기술':'기','웨이트':'웨','스피드(야외)':'스','실내 체력':'체','재활':'재','테스트':'테'};
 function formShort(f){ return FORM_SHORT[f] || String(f||'').slice(0,1); }
 
-/* ---- 학원비 결제 확인: students/{id}.pay['YYYY-MM'] = {date, by, at} ---- */
+/* ==== 학생관리 페이지 (학생 목록 · 학원비) ====
+   데이터: students/{id}.days = ['월','수','금'] (주당 횟수는 요일 수로 계산, 따로 저장 안 함)
+           students/{id}.fee  = 월 수강료(원, 없으면 미설정)
+           students/{id}.pay['YYYY-MM'] = { date, by, at, amount?, updatedAt?, updatedBy?,
+                                            canceled?, canceledAt?, canceledBy?, cancelReason?, history?[] }
+   예전 기록 { date, by, at } 은 그대로 '결제 완료'로 읽는다. 취소는 지우지 않고 canceled + 사유로 남긴다. */
+const WEEK=['월','화','수','목','금','토','일'];
+function daysOf(s){ return Array.isArray(s.days) ? WEEK.filter(w=>s.days.includes(w)) : []; }
+function feeOf(s){ const n=Number(s.fee); return Number.isFinite(n) && n>0 ? Math.round(n) : null; }
+function won(n){ return n==null ? '미설정' : Number(n).toLocaleString('ko-KR')+'원'; }
 function payLabel(ym){ return Number(ym.slice(5,7))+'월결제'; }
-function payOf(s, ym){ return (s.pay && typeof s.pay==='object' && s.pay[ym] && s.pay[ym].date) ? s.pay[ym] : null; }
+function payRec(s, ym){ const p=s && s.pay && typeof s.pay==='object' ? s.pay[ym] : null; return p && typeof p==='object' ? p : null; }
+function payOf(s, ym){ const p=payRec(s, ym); return p && !p.canceled && PERF.validDate(p.date) ? p : null; }
 function payDoneCount(){ const ym=HC.todayStr().slice(0,7); return state.students.filter(s=>payOf(s,ym)).length; }
+function md(d){ return Number(d.slice(5,7))+'/'+Number(d.slice(8)); }
 function payChipHTML(s){
   const ym=HC.todayStr().slice(0,7), p=payOf(s,ym);
-  return `<button type="button" class="pay-chip ${p?'on':''}" onclick="togglePay('${s.id}','${ym}')" title="누르면 ${payLabel(ym)} 체크/해제">${p?'✓ ':'○ '}${payLabel(ym)}${p?' · '+Number(p.date.slice(5,7))+'/'+Number(p.date.slice(8)):''}</button>`;
+  return `<button type="button" class="pay-chip ${p?'on':''}" ${state.payBusy[s.id]?'disabled':''} onclick="payCheck('${s.id}','${ym}')" aria-label="${esc(s.name)} ${payLabel(ym)} ${p?'완료, 누르면 취소':'체크'}">${p?'✓ ':'○ '}${payLabel(ym)}${p?' · '+md(p.date):''}</button>`;
 }
-let paySaving=false;
-async function setPay(sid, ym, date){
-  const s=getStudent(sid); if(!s || paySaving) return false;
-  const prev = s.pay ? JSON.parse(JSON.stringify(s.pay)) : undefined;
-  const pay = Object.assign({}, (s.pay && typeof s.pay==='object') ? s.pay : {});
-  if(date){
-    if(!PERF.validDate(date) || date>HC.todayStr() || date<'2025-01-01'){ showToast('결제한 날을 오늘이나 그 전으로 골라 주세요'); return false; }
-    pay[ym]={ date, by:currentCoachEmail||'', at:Date.now() };
-  } else delete pay[ym];
-  s.pay=pay;
-  paySaving=true;
-  let ok=false;
-  try{ ok=await saveStudent(s); } finally{ paySaving=false; }
-  if(!ok){ s.pay=prev; }
-  rerender();
-  if(ok) showToast(date ? `${s.name} ${payLabel(ym)} 확인 (${Number(date.slice(5,7))}/${Number(date.slice(8))})` : `${s.name} ${payLabel(ym)} 체크를 풀었어요`);
-  return ok;
+// --- 순수 함수: 필터 · 정렬 (화면과 분리) ---
+function cntMatch(n, c){ return !c || (c==='4' ? n>=4 : n===Number(c)); }
+function payFilter(list, ym, f){
+  const q=(f.q||'').trim();
+  return list.filter(s=>(!f.br || s.branch===f.br) && (!q || String(s.name).includes(q))
+    && (!f.st || (f.st==='paid')===!!payOf(s,ym)) && cntMatch(daysOf(s).length, f.cnt) && (!f.day || daysOf(s).includes(f.day)));
 }
-function togglePay(sid, ym){
-  const s=getStudent(sid); if(!s) return;
-  if(payOf(s,ym)){ if(!confirm(`${s.name} ${payLabel(ym)} 체크를 풀까요?`)) return; setPay(sid, ym, ''); }
-  else setPay(sid, ym, HC.todayStr());
+function paySort(list, ym){
+  return list.slice().sort((a,b)=>(!!payOf(a,ym))-(!!payOf(b,ym)) || (a.branch||'힣').localeCompare(b.branch||'힣') || String(a.name).localeCompare(String(b.name)));
 }
-function payDateChange(sid, ym, el){ if(el.value) setPay(sid, ym, el.value); }
-state.payYM = HC.todayStr().slice(0,7); state.payBranch = '';
-function openPayView(){ state.payOpen=true; state.joinOpen=false; state.teamViewOpen=false; state.classLogOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
-function payMove(step){ let [y,m]=state.payYM.split('-').map(Number); m+=step; if(m<1){m=12;y--;} if(m>12){m=1;y++;} state.payYM=`${y}-${String(m).padStart(2,'0')}`; rerender(); }
-function copyUnpaid(){
-  const ym=state.payYM, list=state.students.filter(s=>(!state.payBranch||s.branch===state.payBranch) && !payOf(s,ym));
-  const text=`[${payLabel(ym)} 미확인 ${list.length}명]\n`+list.map(s=>`${s.name}${s.branch?' ('+s.branch+')':''}`).join('\n');
-  (navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject()).then(()=>showToast('명단을 복사했어요')).catch(()=>{ prompt('아래 내용을 길게 눌러 복사하세요', text); });
+state.mgmtTab='list'; state.payYM=HC.todayStr().slice(0,7);
+state.payF={ q:'', br:'', st:'', cnt:'', day:'' }; state.payFOpen=false; state.payBusy={};
+state.listQ=''; state.listBr='';
+function openMgmt(tab){
+  state.mgmtOpen=true; if(tab) state.mgmtTab=tab;
+  state.joinOpen=false; state.teamViewOpen=false; state.classLogOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false;
+  rerender(); window.scrollTo(0,0);
 }
-function renderPayView(){
-  const ym=state.payYM, [y,m]=ym.split('-').map(Number), br=state.payBranch;
-  const list=state.students.filter(s=>!br||s.branch===br).slice().sort((a,b)=>(!!payOf(a,ym))-(!!payOf(b,ym)) || (a.branch||'').localeCompare(b.branch||'') || a.name.localeCompare(b.name));
-  const done=list.filter(s=>payOf(s,ym)).length;
-  const future=ym>HC.todayStr().slice(0,7);
-  const rows=list.map(s=>{ const p=payOf(s,ym);
-    return `<div class="pay-row">
-      <div class="pay-who"><b>${esc(s.name)}</b><span>${esc(s.branch||'지점 없음')} · ${esc(s.grade||'')}</span></div>
-      ${p?`<input type="date" class="pay-date" value="${p.date}" max="${HC.todayStr()}" aria-label="${esc(s.name)} 결제한 날" onchange="payDateChange('${s.id}','${ym}',this)">`:''}
-      <button type="button" class="pay-chip ${p?'on':''}" ${future?'disabled':''} onclick="togglePay('${s.id}','${ym}')">${p?'✓ ':'○ '}${payLabel(ym)}</button>
-    </div>`; }).join('') || '<div class="empty-mini">학생이 없어요.</div>';
-  return `<main>
-    <div class="topbar"><div class="heading"><div><h2>학원비 결제 확인</h2><div class="tagline">체크하면 오늘 날짜로 기록되고, 학생 컨디션 캘린더에도 표시돼요</div></div></div></div>
-    <div class="lane-divider"></div>
-    <div class="card pay-card">
-      <div class="cal-nav">
-        <button type="button" class="cal-arrow" onclick="payMove(-1)" aria-label="이전 달">‹</button>
-        <div class="cal-month">${y}년 ${payLabel(ym)}</div>
-        <button type="button" class="cal-arrow" onclick="payMove(1)" aria-label="다음 달">›</button>
-      </div>
-      <div class="cal-chips">${['',...BRANCHES].map(b=>`<button type="button" class="cal-chip${br===b?' on':''}" onclick="state.payBranch='${b}'; rerender();">${b||'전체'}</button>`).join('')}</div>
-      <div class="pay-sum"><span><b>${done}</b> / ${list.length}명 확인</span><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="copyUnpaid()">📋 미확인 명단 복사</button></div>
-      ${future?'<div class="stat-note">아직 오지 않은 달이에요. 이번 달이 되면 체크할 수 있어요.</div>':''}
-      <div class="pay-list">${rows}</div>
-    </div>
+function mgmtSetTab(t){ state.mgmtTab=t; rerender(); }
+function renderMgmtView(){
+  const tabs=[['list','학생 목록'],['pay','학원비']];
+  return `<main class="mgmt">
+    <div class="topbar"><div class="heading"><div><h2>학생관리</h2><div class="tagline">학생별 수업 일정과 월별 결제 현황을 관리합니다</div></div></div></div>
+    <div class="mgmt-tabs" role="tablist">${tabs.map(([k,l])=>`<button type="button" role="tab" aria-selected="${state.mgmtTab===k}" class="${state.mgmtTab===k?'on':''}" onclick="mgmtSetTab('${k}')">${l}</button>`).join('')}</div>
+    ${state.mgmtTab==='pay' ? renderPayTab() : renderListTab()}
   </main>`;
+}
+// --- 학생 목록 탭 ---
+function renderListTab(){
+  return `<div class="mgmt-search">
+      <input type="search" id="listQ" class="student-search" placeholder="학생 이름 검색" aria-label="학생 이름 검색" value="${esc(state.listQ)}" oninput="state.listQ=this.value; listRefresh();">
+      <select class="student-search" aria-label="지점" onchange="state.listBr=this.value; listRefresh();">
+        <option value="">전체 지점</option>${BRANCHES.map(b=>`<option ${state.listBr===b?'selected':''}>${b}</option>`).join('')}
+      </select>
+    </div>
+    <div id="listDyn">${listDynHTML()}</div>`;
+}
+function listDynHTML(){
+  const ym=HC.todayStr().slice(0,7), q=state.listQ.trim();
+  const list=state.students.filter(s=>(!state.listBr||s.branch===state.listBr) && (!q||String(s.name).includes(q))).sort((a,b)=>(a.branch||'힣').localeCompare(b.branch||'힣')||String(a.name).localeCompare(String(b.name)));
+  if(!state.studentsLoaded) return '<div class="empty-mini">학생 명단 불러오는 중…</div>';
+  if(!list.length) return `<div class="empty-mini">${q||state.listBr?'조건에 맞는 학생이 없어요':'학생이 없어요. 새 학생은 가입 승인으로 들어와요.'}</div>`;
+  return `<div class="stat-note" style="margin-bottom:10px;">${list.length}명 · 누르면 학생 상세(종합 리포트·캘린더)로 이동</div>
+    <div class="mgmt-list">${list.map(s=>{ const st=statusOf(s), c=st?STATUS_COLOR[st]:'#8b94a9', d=daysOf(s), p=payOf(s,ym);
+      return `<button type="button" class="mgmt-row" onclick="selectStudent('${s.id}')">
+        <span class="mr-av">${esc(String(s.name).slice(0,1))}</span>
+        <span class="mr-main"><span class="mr-top"><b>${esc(s.name)}</b><em style="color:${c}; border-color:${c}66; background:${c}1a;">${st?(CK_LABEL[st]||st):'미입력'}</em></span>
+          <span class="mr-sub">${esc(s.branch||'지점 없음')} · ${esc(s.grade||'')}</span>
+          <span class="mr-days">${d.length?d.join('·')+' · 주 '+d.length+'회':'수업 요일 미설정'}</span></span>
+        <span class="mr-pay ${p?'on':''}">${p?'✓ '+payLabel(ym):Number(ym.slice(5,7))+'월 미결제'}</span>
+      </button>`; }).join('')}</div>`;
+}
+function listRefresh(){ const el=document.getElementById('listDyn'); if(el) el.innerHTML=listDynHTML(); }
+// --- 학원비 탭 ---
+function renderPayTab(){
+  const [y,m]=state.payYM.split('-').map(Number), f=state.payF;
+  const fc=(f.br?1:0)+(f.st?1:0)+(f.cnt?1:0)+(f.day?1:0);
+  return `<div class="cal-nav pay-nav">
+      <button type="button" class="cal-arrow" onclick="payMove(-1)" aria-label="이전 달">‹</button>
+      <div class="cal-month">${y}년 ${payLabel(state.payYM)}</div>
+      <button type="button" class="cal-arrow" onclick="payMove(1)" aria-label="다음 달">›</button>
+    </div>
+    <div id="paySum">${paySumHTML()}</div>
+    <div class="mgmt-search">
+      <input type="search" id="payQ" class="student-search" placeholder="학생 이름 검색" aria-label="학생 이름 검색" value="${esc(f.q)}" oninput="state.payF.q=this.value; payRefresh();">
+      <button type="button" id="payFBtn" class="pay-fbtn ${fc||state.payFOpen?'on':''}" aria-expanded="${state.payFOpen}" onclick="state.payFOpen=!state.payFOpen; payRefresh();">필터${fc?' · '+fc:''}</button>
+    </div>
+    <div id="payFilters">${payFiltersHTML()}</div>
+    <div id="payDyn">${payDynHTML()}</div>`;
+}
+function payMove(step){ let [y,m]=state.payYM.split('-').map(Number); m+=step; if(m<1){m=12;y--;} if(m>12){m=1;y++;} state.payYM=`${y}-${String(m).padStart(2,'0')}`; rerender(); }
+function paySetF(k, v){ state.payF[k] = state.payF[k]===v ? '' : v; payRefresh(); }
+function payResetF(){ const q=state.payF.q; state.payF={ q, br:'', st:'', cnt:'', day:'' }; payRefresh(); }
+function paySumHTML(){
+  const ym=state.payYM, base=state.students.filter(s=>!state.payF.br||s.branch===state.payF.br);
+  const done=base.filter(s=>payOf(s,ym)).length, total=base.length, rate=total?Math.round(done/total*100):0, onlyU=state.payF.st==='unpaid';
+  return `<div class="pay-cards">
+    <div class="pay-cardx"><div class="pc-h">결제 완료</div><div class="pc-n" style="color:var(--lime);">${done}<small> / ${total}명</small></div></div>
+    <button type="button" class="pay-cardx unpaid ${onlyU?'on':''}" onclick="paySetF('st','unpaid')" aria-pressed="${onlyU}"><div class="pc-h">미결제</div><div class="pc-n" style="color:#ff9f1c;">${total-done}<small>명</small></div><div class="pc-f">${onlyU?'전체 보기':'미결제만 보기'}</div></button>
+    <div class="pay-cardx"><div class="pc-h">확인율</div><div class="pc-n">${rate}%</div><div class="pc-bar"><i style="width:${rate}%"></i></div></div>
+  </div>`;
+}
+function payFiltersHTML(){
+  if(!state.payFOpen) return '';
+  const f=state.payF;
+  const chips=(k,opts)=>opts.map(([v,l])=>`<button type="button" class="cal-chip${f[k]===v?' on':''}" aria-pressed="${f[k]===v}" onclick="paySetF('${k}','${v}')">${l}</button>`).join('');
+  return `<div class="card pay-filter">
+    <div class="pf-h">지점</div><div class="pf-row">${chips('br',[['','전체'],...BRANCHES.map(b=>[b,b])])}</div>
+    <div class="pf-h">결제 상태</div><div class="pf-row">${chips('st',[['','전체'],['paid','결제 완료'],['unpaid','미결제']])}</div>
+    <div class="pf-h">주당 수업 횟수</div><div class="pf-row">${chips('cnt',[['','전체'],['1','주 1회'],['2','주 2회'],['3','주 3회'],['4','주 4회 이상']])}</div>
+    <div class="pf-h">수업 요일 (이 요일에 수업이 있는 학생)</div><div class="pf-row">${chips('day',[['','전체'],...WEEK.map(w=>[w,w])])}</div>
+    <button type="button" class="ghost-btn pf-reset" onclick="payResetF()">필터 초기화</button>
+  </div>`;
+}
+function payRows(){ const ym=state.payYM; return paySort(payFilter(state.students, ym, state.payF), ym); }
+function payDynHTML(){
+  if(!state.studentsLoaded) return '<div class="empty-mini">학생 명단 불러오는 중…</div>';
+  const ym=state.payYM, rows=payRows(), today=HC.todayStr(), future=ym>today.slice(0,7);
+  const items=rows.map(s=>{ const p=payOf(s,ym), r=payRec(s,ym), d=daysOf(s), busy=!!state.payBusy[s.id];
+    const cancel = r && r.canceled ? `<div class="pi-cancel">취소됨 ${r.canceledAt?md(new Date(r.canceledAt).toISOString().slice(0,10)):''} · 사유: ${esc(r.cancelReason||'-')}</div>` : '';
+    return `<div class="pay-item ${p?'paid':'unpaid'}">
+      <div class="pi-who"><b>${esc(s.name)}</b><span>${esc(s.branch||'지점 없음')} · ${esc(s.grade||'')}</span></div>
+      <div class="pi-meta"><span><em>요일</em> ${d.length?d.join('·'):'미설정'}</span><span><em>주</em> ${d.length?d.length+'회':'-'}</span><span><em>수강료</em> ${won(feeOf(s))}</span></div>
+      <div class="pi-pay">${p?`<label class="pi-date"><span>결제일</span><input type="date" value="${p.date}" max="${today}" aria-label="${esc(s.name)} 결제일" ${busy?'disabled':''} onchange="payDate('${s.id}','${ym}',this)"></label><span class="pi-amt">${p.amount!=null?won(p.amount):'금액 미기록'}</span>`:cancel}</div>
+      <button type="button" class="pay-btn ${p?'on':''}" ${busy||future?'disabled':''} onclick="payCheck('${s.id}','${ym}')" aria-label="${esc(s.name)} ${Number(ym.slice(5,7))}월 ${p?'결제 완료, 누르면 취소':'결제 체크'}">${busy?'저장 중…':p?'✓ 결제 완료':'결제 체크'}</button>
+    </div>`; }).join('');
+  const ust=BRANCHES.map(b=>{ const bl=state.students.filter(s=>s.branch===b), dn=bl.filter(s=>payOf(s,ym)).length, rt=bl.length?Math.round(dn/bl.length*100):0;
+    return `<div class="bs-row"><span>${b}</span><div class="pc-bar"><i style="width:${rt}%"></i></div><span class="bs-n">${dn}/${bl.length} · ${rt}%</span><button type="button" class="ghost-btn bs-copy" onclick="copyUnpaid('${b}')" aria-label="${b} 미결제 명단 복사">미결제 복사</button></div>`; }).join('');
+  return `<div class="pay-tools"><span>${rows.length}명 표시 · 미결제 먼저</span><span class="pt-btns">
+      <button type="button" class="ghost-btn" onclick="copyUnpaid()">📋 미결제 명단 복사</button>
+      <button type="button" class="ghost-btn" onclick="payCSV()">CSV 저장</button></span></div>
+    ${future?'<div class="stat-note" style="margin-bottom:10px;">아직 오지 않은 달이에요. 그 달이 되면 체크할 수 있어요.</div>':''}
+    <div class="pay-head"><span>학생</span><span>수업 일정 · 수강료</span><span>결제일 · 금액</span><span></span></div>
+    <div class="pay-items">${items || `<div class="empty-mini">${state.students.length?'조건에 맞는 학생이 없어요':'학생이 없어요'}</div>`}</div>
+    <div class="card branch-stat"><div class="pf-h" style="margin-bottom:8px;">지점별 현황</div>${ust}
+      <button type="button" class="ghost-btn" style="margin-top:8px;" onclick="copyUnpaid('*')">전체 지점 미결제 명단 복사</button></div>`;
+}
+function payRefresh(){
+  const a=document.getElementById('paySum'), b=document.getElementById('payFilters'), c=document.getElementById('payDyn'), btn=document.getElementById('payFBtn');
+  if(!a){ if(state.mgmtOpen) softRerender(); return; }
+  a.innerHTML=paySumHTML(); b.innerHTML=payFiltersHTML(); c.innerHTML=payDynHTML();
+  const f=state.payF, fc=(f.br?1:0)+(f.st?1:0)+(f.cnt?1:0)+(f.day?1:0);
+  if(btn){ btn.textContent='필터'+(fc?' · '+fc:''); btn.classList.toggle('on', !!(fc||state.payFOpen)); btn.setAttribute('aria-expanded', state.payFOpen); }
+}
+function payRefreshAll(){
+  if(state.mgmtOpen){ if(state.mgmtTab==='pay') payRefresh(); else listRefresh(); }
+  else if(!state.teamViewOpen && !state.classLogOpen && !state.joinOpen) softRerender();
+}
+function unpaidLine(s){ const d=daysOf(s); return `${s.name} | ${s.branch||'지점 없음'} | ${d.length?'주 '+d.length+'회':'횟수 미설정'} | ${d.length?d.join('·'):'요일 미설정'}`; }
+function copyUnpaid(br){
+  const ym=state.payYM, [y,m]=ym.split('-').map(Number);
+  // br 없음 = 지금 필터 결과 그대로, '*' = 전체 지점, 지점 이름 = 그 지점 전체
+  const src = br==='*' ? state.students : br ? state.students.filter(s=>s.branch===br) : payFilter(state.students, ym, state.payF);
+  const list=paySort(src, ym).filter(s=>!payOf(s,ym));
+  const text=`[${y}년 ${m}월 미결제 명단${br&&br!=='*'?' · '+br:''}] ${list.length}명\n`+list.map(unpaidLine).join('\n');
+  const done=()=>showToast(`미결제 ${list.length}명 명단을 복사했어요`);
+  (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(done).catch(()=>{ prompt('아래 내용을 길게 눌러 복사하세요', text); });
+}
+function payCSV(){
+  const ym=state.payYM, rows=payRows();
+  const q=v=>{ const t=String(v==null?'':v); return /[",\n]/.test(t) ? '"'+t.replace(/"/g,'""')+'"' : t; };
+  const head=['학생 이름','지점','학년','수업 요일','주당 횟수','월 수강료','월','결제 상태','결제일','결제 금액','취소 사유'];
+  const lines=rows.map(s=>{ const p=payOf(s,ym), r=payRec(s,ym), d=daysOf(s);
+    return [s.name, s.branch||'', s.grade||'', d.join('·'), d.length||'', feeOf(s)??'', ym, p?'결제 완료':(r&&r.canceled?'취소됨':'미결제'), p?p.date:'', p&&p.amount!=null?p.amount:'', r&&r.canceled?(r.cancelReason||''):''].map(q).join(','); });
+  const blob=new Blob(['﻿'+[head.join(','),...lines].join('\r\n')], {type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`학원비_${ym}.csv`; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  showToast(`지금 보이는 ${rows.length}명을 CSV로 저장했어요`);
+}
+// --- 저장: 결제 칸 하나만 고친다 (다른 학생 정보를 덮어쓰지 않게) ---
+async function payWrite(s, ym, rec, okMsg){
+  if(!db){ showToast('Firebase 설정이 필요합니다'); return false; }
+  if(navigator.onLine===false){ showToast('인터넷이 끊겨 있어요. 연결된 뒤 다시 해 주세요'); return false; }
+  if(state.payBusy[s.id]) return false;
+  state.payBusy[s.id]=1; payRefreshAll();
+  markUserWrite();
+  try{
+    await db.collection('students').doc(s.id).update({ ['pay.'+ym]: rec });
+    s.pay=Object.assign({}, (s.pay&&typeof s.pay==='object')?s.pay:{}, { [ym]:rec });
+    showToast(okMsg); return true;
+  }catch(e){
+    showToast('저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'저장 권한이 없어요':e&&e.code==='unavailable'?'인터넷 연결을 확인해 주세요':(e&&e.message||'다시 시도해 주세요')));
+    return false;
+  }finally{ delete state.payBusy[s.id]; payRefreshAll(); }
+}
+function histEntry(r){ return { date:r.date||null, amount:r.amount??null, by:r.by||'', at:r.at||null, canceledAt:r.canceledAt||null, canceledBy:r.canceledBy||'', reason:r.cancelReason||'' }; }
+async function payCheck(sid, ym){
+  const s=getStudent(sid); if(!s || state.payBusy[sid]) return;
+  if(payOf(s,ym)){ openPayCancel(sid, ym); return; }
+  const today=HC.todayStr();
+  if(ym>today.slice(0,7)){ showToast('아직 오지 않은 달이에요'); return; }
+  const prev=payRec(s,ym);
+  const rec={ date:today, by:currentCoachEmail||'', at:Date.now() };
+  const fee=feeOf(s); if(fee!=null) rec.amount=fee;   // 체크하는 순간의 수강료를 같이 남김 (나중에 수강료가 바뀌어도 그대로)
+  const hist=[...((prev&&Array.isArray(prev.history))?prev.history:[]), ...(prev&&prev.canceled?[histEntry(prev)]:[])].slice(-20);
+  if(hist.length) rec.history=hist;
+  await payWrite(s, ym, rec, `${s.name} ${payLabel(ym)} 확인 · ${md(today)}`);
+}
+async function payDate(sid, ym, el){
+  const s=getStudent(sid), p=s&&payOf(s,ym); if(!p) return;
+  const v=el.value, today=HC.todayStr();
+  if(!PERF.validDate(v) || v>today || v<'2025-01-01'){ showToast('결제한 날을 오늘이나 그 전으로 골라 주세요'); el.value=p.date; return; }
+  if(v===p.date) return;
+  const ok=await payWrite(s, ym, Object.assign({}, p, { date:v, updatedAt:Date.now(), updatedBy:currentCoachEmail||'' }), `${s.name} 결제일을 ${md(v)}로 고쳤어요`);
+  if(!ok) el.value=p.date;
+}
+const CANCEL_REASONS=['환불 요청','다른 학생으로 잘못 체크','다른 달 결제로 옮김','결제 취소(카드 취소)'];
+function openPayCancel(sid, ym){
+  const s=getStudent(sid), p=s&&payOf(s,ym); if(!p) return;
+  openModal(`<div class="modal pay-cancel" role="dialog" aria-labelledby="pcTitle">
+    <h3 id="pcTitle">${esc(s.name)} 학생의 ${Number(ym.slice(5,7))}월 결제 확인을 취소할까요?</h3>
+    <div class="stat-note" style="margin-bottom:10px;">결제일 ${md(p.date)} · ${p.amount!=null?won(p.amount):'금액 미기록'}</div>
+    <div class="insight-box flag" style="margin:0 0 12px;"><b>취소 사유를 꼭 적어 주세요.</b><br>누가 봐도 알 수 있게 적어 주세요 (예: 어머님 요청으로 환불, 다른 학생 칸에 잘못 체크). 취소해도 기록은 지워지지 않고 '취소됨'으로 남아요.</div>
+    <div class="pf-row" style="margin-bottom:8px;">${CANCEL_REASONS.map(r=>`<button type="button" class="cal-chip" onclick="const t=document.getElementById('pcReason'); t.value=t.value?t.value+' / ${r}':'${r}'; t.focus();">${r}</button>`).join('')}</div>
+    <div class="field"><label for="pcReason">취소 사유 (필수)</label><textarea id="pcReason" rows="3" maxlength="200" placeholder="취소한 이유를 적어 주세요"></textarea></div>
+    <div id="pcErr" class="stat-note" style="color:#ff7a66; min-height:18px;" role="alert"></div>
+    <div class="modal-actions">
+      <button type="button" class="cancel" onclick="closeModal()">닫기 (취소 안 함)</button>
+      <button type="button" class="confirm danger" id="pcOk" onclick="submitPayCancel('${sid}','${ym}')">결제 취소하기</button>
+    </div></div>`);
+  setTimeout(()=>document.getElementById('pcReason')?.focus(), 50);
+}
+async function submitPayCancel(sid, ym){
+  const s=getStudent(sid), p=s&&payOf(s,ym), t=document.getElementById('pcReason'), err=document.getElementById('pcErr'), btn=document.getElementById('pcOk');
+  if(!p){ closeModal(); return; }
+  const reason=(t&&t.value||'').trim().slice(0,200);
+  if(reason.length<2){ if(err) err.textContent='취소 사유를 2글자 이상 적어 주세요'; t&&t.focus(); return; }
+  if(btn){ btn.disabled=true; btn.textContent='저장 중…'; }
+  const ok=await payWrite(s, ym, Object.assign({}, p, { canceled:true, canceledAt:Date.now(), canceledBy:currentCoachEmail||'', cancelReason:reason }), `${s.name} ${payLabel(ym)} 확인을 취소했어요 (사유 기록됨)`);
+  if(ok) closeModal();
+  else{ if(err) err.textContent='저장하지 못해서 취소되지 않았어요. 인터넷을 확인하고 다시 눌러 주세요.'; if(btn){ btn.disabled=false; btn.textContent='결제 취소하기'; } }
 }
 
 /* ---- 브리핑: 지점별 수업 특이사항 요약 (수업일지 '특이사항'에서 핵심만) ---- */
@@ -3909,7 +4140,7 @@ function ckCalHTML(s){
   const formsOf=ds=>[...new Set((myLogs[ds]||[]).flatMap(l=>[].concat(l.progress||[])).filter(Boolean))];
   // 학원비 결제한 날 (이 달에 결제한 기록이면 몇 월 결제든 표시)
   const payOn={};
-  Object.entries((s.pay&&typeof s.pay==='object')?s.pay:{}).forEach(([k,v])=>{ if(v&&v.date&&v.date.startsWith(ym)) (payOn[v.date]=payOn[v.date]||[]).push(payLabel(k)); });
+  Object.entries((s.pay&&typeof s.pay==='object')?s.pay:{}).forEach(([k,v])=>{ if(v&&!v.canceled&&v.date&&v.date.startsWith(ym)) (payOn[v.date]=payOn[v.date]||[]).push(payLabel(k)); });
   const [y,m]=ym.split('-').map(Number);
   const first=new Date(y,m-1,1).getDay(), last=new Date(y,m,0).getDate(), today=HC.todayStr();
   const cnt={GREEN:0,YELLOW:0,AMBER:0,RED:0,BASE:0};
@@ -4031,7 +4262,7 @@ function syncPublicBranches(){
   if(!db) return;
   db.collection('settings').doc('public').set({branches:BRANCHES},{merge:true}).catch(()=>{});
 }
-function openJoinView(){ state.payOpen=false; state.joinOpen=true; state.teamViewOpen=false; state.classLogOpen=false; state.mobileSidebarOpen=false; rerender(); }
+function openJoinView(){ state.mgmtOpen=false; state.joinOpen=true; state.teamViewOpen=false; state.classLogOpen=false; state.mobileSidebarOpen=false; rerender(); }
 function renderJoinView(){
   const list = pendingJoins();
   const cards = list.map(r=>{
