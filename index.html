@@ -574,6 +574,48 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .log-card-head > div{ min-width:0; }
   .row-del{ white-space:nowrap; flex-shrink:0; }
   .cl-top{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .log-form-card[hidden]{ display:none; }
+  .cal-wrap{ display:grid; grid-template-columns:minmax(0,460px) minmax(0,1fr); gap:24px; align-items:start; }
+  @media (max-width:900px){ .cal-wrap{ grid-template-columns:minmax(0,1fr); } }
+  .cal-card{ padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .cal-nav{ display:flex; align-items:center; gap:6px; }
+  .cal-arrow{ width:44px; height:44px; border-radius:10px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); font-size:22px; line-height:1; cursor:pointer; }
+  .cal-month{ flex:1; text-align:center; font-size:18px; font-weight:800; }
+  .cal-today-btn{ height:44px; padding:0 14px; border-radius:10px; border:1px solid var(--lime); background:var(--lime-soft); color:var(--lime); font-weight:800; font-size:13px; cursor:pointer; }
+  .cal-chips{ display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; }
+  .cal-chip{ flex:0 0 auto; height:36px; padding:0 12px; border-radius:18px; border:1px solid var(--line); background:var(--surface-2); color:var(--text-muted); font-size:12.5px; font-weight:700; cursor:pointer; white-space:nowrap; }
+  .cal-chip.on{ color:var(--lime); border-color:var(--lime); background:var(--lime-soft); }
+  .cal-week, .cal-grid{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
+  .cal-week{ text-align:center; font-size:11.5px; font-weight:700; color:var(--text-dim); }
+  .cal-week .sun{ color:#ff7a66; } .cal-week .sat{ color:#8fb0ff; }
+  .cal-blank{ height:52px; }
+  .cal-day{ height:52px; min-width:0; padding:0; border-radius:10px; border:1px solid transparent; background:transparent; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:#5d6578; font-family:inherit; }
+  .cal-num{ font-size:15px; font-weight:600; }
+  .cal-day.sun{ color:#ff7a66; } .cal-day.sat{ color:#8fb0ff; }
+  .cal-day.has{ background:var(--surface-2); border-color:var(--line); color:var(--text); }
+  .cal-day.has .cal-num{ font-weight:800; }
+  .cal-day.has.sun{ color:#ff7a66; } .cal-day.has.sat{ color:#8fb0ff; }
+  .cal-day.today{ border:2px solid var(--lime); }
+  .cal-day.sel{ background:var(--lime); border-color:var(--lime); color:#0d1a03; }
+  .cal-day.sel .cal-num{ font-weight:800; }
+  .cal-day.sel .cal-dots i{ background:#0d1a03 !important; }
+  .cal-dots{ display:flex; gap:3px; height:6px; }
+  .cal-dots i{ width:6px; height:6px; border-radius:50%; display:block; }
+  .cal-loading{ font-size:12.5px; color:var(--text-dim); text-align:center; }
+  .cal-sum-btn{ display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:44px; padding:0 14px; border-radius:10px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); font-size:13.5px; cursor:pointer; font-family:inherit; }
+  .cal-sum-btn b{ color:var(--lime); }
+  .cal-sum-more{ color:var(--text-muted); font-size:12.5px; }
+  .cal-sum{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .cal-sum-box{ background:var(--surface-2); border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .cal-sum-h{ font-size:12px; color:var(--text-dim); font-weight:700; }
+  .cal-sum-row{ display:flex; justify-content:space-between; gap:8px; font-size:13px; }
+  .cal-sum-row span{ overflow-wrap:anywhere; }
+  .cal-day-head{ display:flex; align-items:baseline; justify-content:space-between; margin:4px 2px 12px; }
+  .cal-day-title{ font-size:18px; font-weight:800; }
+  .cal-day-count{ font-size:12.5px; color:var(--text-muted); }
+  .cal-empty{ border:1px dashed var(--line); border-radius:14px; padding:24px 16px; text-align:center; color:var(--text-muted); font-size:14px; display:flex; flex-direction:column; align-items:center; gap:12px; }
+  .cal-write-btn{ min-height:44px; padding:0 18px; border-radius:10px; border:1px solid var(--lime); background:transparent; color:var(--lime); font-weight:800; font-size:13.5px; cursor:pointer; font-family:inherit; }
   .cl-top select{ flex:1 1 160px; min-width:0; max-width:100%; }
   /* 아이폰 날짜 칸은 자기 크기를 고집해서 칸 밖으로 나가는 경우가 있어 모양을 일반 입력칸처럼 맞춘다 */
   input[type=date]{ -webkit-appearance:none; appearance:none; display:block; min-width:0; max-width:100%; min-height:44px; }
@@ -865,6 +907,7 @@ let state = {
   sidebarBranchFilter: '',
   classLogOpen: false,
   classLogs: [],
+  calYM: todayStr().slice(0,7), calSel: todayStr(), calType: '', calSumOpen: false, calLoading: false, logFormOpen: false,
   isStudentMode: false,
   studentSelfId: null,
   teamViewOpen: false,
@@ -1549,44 +1592,111 @@ function buildClassLogCardsHTML(logs){
       </div>`;
   }).join('') || `<div class="empty-mini">아직 작성된 수업일지가 없습니다.</div>`;
 }
-function filterClassLogList(){
-  const listEl = document.getElementById('classLogList');
-  const sel = document.getElementById('classLogTypeFilter');
-  if(!listEl) return;
-  const type = sel ? sel.value : '';
-  const logs = (state.classLogs||[]).filter(l=> !type || (l.classType||[l.branch,l.className].filter(Boolean).join(' '))===type);
-  listEl.innerHTML = buildClassLogCardsHTML(logs);
+/* ---- 수업일지 캘린더: 날짜를 누르면 그날 일지만 ---- */
+function logTypeOf(l){ return l.classType || [l.branch,l.className].filter(Boolean).join(' '); }
+function calYmParts(){ const [y,m]=state.calYM.split('-').map(Number); return {y,m}; }
+function calMonthLogs(){ return (state.classLogs||[]).filter(l=> (l.date||'').startsWith(state.calYM)); }
+function calFiltered(logs){ return state.calType ? logs.filter(l=>logTypeOf(l)===state.calType) : logs; }
+function calGridHTML(){
+  const {y,m}=calYmParts();
+  const first=new Date(y,m-1,1).getDay(), last=new Date(y,m,0).getDate();
+  const today=todayStr();
+  const monthLogs=calFiltered(calMonthLogs());
+  const byDate={}; monthLogs.forEach(l=>{ (byDate[l.date]=byDate[l.date]||[]).push(l); });
+  let cells='';
+  for(let i=0;i<first;i++) cells+='<div class="cal-blank"></div>';
+  for(let d=1; d<=last; d++){
+    const ds=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dl=byDate[ds]||[], wd=(first+d-1)%7;
+    const types=[...new Set(dl.map(logTypeOf))].slice(0,3);
+    const cls=['cal-day', dl.length?'has':'', ds===state.calSel?'sel':'', ds===today?'today':'', wd===0?'sun':wd===6?'sat':''].filter(Boolean).join(' ');
+    cells+=`<button type="button" class="${cls}" onclick="calPick('${ds}')" aria-label="${m}월 ${d}일, 일지 ${dl.length}개"><span class="cal-num">${d}</span><span class="cal-dots">${types.map(t=>`<i style="background:${classTypeColor(t)}"></i>`).join('')}</span></button>`;
+  }
+  // 요약: 수업한 날 수 · 일지 수 · 종류별 · 강사별(메인+보조) 출강
+  const days=Object.keys(byDate).length;
+  const tc={}, cc={};
+  monthLogs.forEach(l=>{ const t=logTypeOf(l)||'종류 없음'; tc[t]=(tc[t]||0)+1;
+    [].concat(l.instructor||[], l.assistant||[]).forEach(n=>{ if(n) cc[n]=(cc[n]||0)+1; }); });
+  const rows=o=>Object.entries(o).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="cal-sum-row"><span>${esc(k)}</span><b>${v}회</b></div>`).join('') || '<div class="cal-sum-row"><span>없음</span></div>';
+  const allTypes=[...new Set(calMonthLogs().map(logTypeOf).filter(Boolean))];
+  if(state.calType && !allTypes.includes(state.calType)) allTypes.push(state.calType);
+  const chips=['', ...allTypes].map(t=>{ const on=state.calType===t, c=t?classTypeColor(t):'var(--lime)';
+    return `<button type="button" class="cal-chip${on?' on':''}" style="${on?`color:${c};border-color:${c};background:${c}22;`:''}" onclick="calSetType(${JSON.stringify(t).replace(/"/g,'&quot;')})">${t?esc(t):'전체'}</button>`; }).join('');
+  return `
+    <div class="cal-nav">
+      <button type="button" class="cal-arrow" onclick="calMove(-1)" aria-label="이전 달">‹</button>
+      <div class="cal-month">${y}년 ${m}월</div>
+      <button type="button" class="cal-arrow" onclick="calMove(1)" aria-label="다음 달">›</button>
+      <button type="button" class="cal-today-btn" onclick="calGoToday()">오늘</button>
+    </div>
+    ${allTypes.length?`<div class="cal-chips">${chips}</div>`:''}
+    <div class="cal-week"><span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span></div>
+    <div class="cal-grid">${cells}</div>
+    ${state.calLoading?'<div class="cal-loading">불러오는 중…</div>':''}
+    <button type="button" class="cal-sum-btn" onclick="calToggleSum()"><span><b>${days}일</b> 수업 · 일지 <b>${monthLogs.length}개</b></span><span class="cal-sum-more">${state.calSumOpen?'요약 닫기':'이번 달 요약 보기'}</span></button>
+    ${state.calSumOpen?`<div class="cal-sum"><div class="cal-sum-box"><div class="cal-sum-h">수업 종류별</div>${rows(tc)}</div><div class="cal-sum-box"><div class="cal-sum-h">강사별 출강</div>${rows(cc)}</div></div>`:''}`;
+}
+function calDayHTML(){
+  const ds=state.calSel, [y,m,d]=ds.split('-').map(Number);
+  const wk=['일','월','화','수','목','금','토'][new Date(y,m-1,d).getDay()];
+  const logs=calFiltered((state.classLogs||[]).filter(l=>l.date===ds));
+  const future=ds>todayStr();
+  return `<div class="cal-day-head"><div class="cal-day-title">${m}월 ${d}일 (${wk})</div><div class="cal-day-count">${logs.length?`수업 ${logs.length}개`:''}</div></div>
+    ${logs.length ? buildClassLogCardsHTML(logs) : `<div class="cal-empty"><div>${future?'아직 오지 않은 날이에요':state.calType?`이 날 ${esc(state.calType)} 일지가 없어요`:'이 날 쓴 수업일지가 없어요'}</div>${future?'':`<button type="button" class="cal-write-btn" onclick="openLogForm('${ds}')">+ 이 날 일지 쓰기</button>`}</div>`}`;
+}
+// 달력·일지 부분만 다시 그린다 (작성 중인 일지 칸은 그대로 둔다)
+function refreshCal(){
+  const g=document.getElementById('clCal'), dy=document.getElementById('clDay');
+  if(!g || !dy){ if(state.classLogOpen) softRerender(); return; }
+  g.innerHTML=calGridHTML(); dy.innerHTML=calDayHTML();
+}
+function calPick(ds){ state.calSel=ds; refreshCal(); const dy=document.getElementById('clDay'); if(dy && window.innerWidth<900) dy.scrollIntoView({behavior:'smooth', block:'start'}); }
+function calSetType(t){ state.calType=t; refreshCal(); }
+function calToggleSum(){ state.calSumOpen=!state.calSumOpen; refreshCal(); }
+function calSetMonth(ym, sel){
+  const changed = ym!==state.calYM;
+  state.calYM=ym; state.calSel=sel || `${ym}-01`;
+  if(changed) subscribeClassLogs(); else refreshCal();
+}
+function calMove(step){
+  let {y,m}=calYmParts(); m+=step; if(m<1){ m=12; y--; } if(m>12){ m=1; y++; }
+  const ym=`${y}-${String(m).padStart(2,'0')}`;
+  calSetMonth(ym, todayStr().startsWith(ym) ? todayStr() : `${ym}-01`);
+}
+function calGoToday(){ calSetMonth(todayStr().slice(0,7), todayStr()); }
+function openLogForm(ds){
+  const card=document.getElementById('logFormCard'); if(!card) return;
+  const opening = card.hidden || !!ds;
+  card.hidden = !opening; state.logFormOpen = opening;
+  const btn=document.getElementById('logFormToggle'); if(btn) btn.textContent = opening ? '작성 닫기' : '+ 일지 쓰기';
+  if(opening){
+    const di=card.querySelector('input[name="date"]');
+    if(di && ds) di.value=ds;
+    card.scrollIntoView({behavior:'smooth', block:'start'});
+  }
 }
 function renderClassLogView(){
-  const logs = state.classLogs || [];
-  const usedTypes = [...new Set(logs.map(l=> l.classType || [l.branch,l.className].filter(Boolean).join(' ')).filter(Boolean))];
-  const logCards = buildClassLogCardsHTML(logs);
-
   return `
     <main>
       <div class="topbar">
         <div class="heading">
           <div>
             <h2>수업일지</h2>
-            <div class="tagline">${todayStr()} · ${logs.length>=state.classLogLimit?'최근':'총'} ${logs.length}건</div>
+            <div class="tagline">날짜를 누르면 그날 일지만 보여요</div>
           </div>
         </div>
         <div class="cl-top">
-          ${usedTypes.length ? `
-          <select id="classLogTypeFilter" class="student-search" style="margin-bottom:0;" onchange="filterClassLogList()">
-            <option value="">전체 수업 종류</option>
-            ${usedTypes.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('')}
-          </select>` : ''}
+          <button type="button" id="logFormToggle" class="submit-btn" style="flex:0 0 auto; white-space:nowrap; height:40px;" onclick="openLogForm(state.logFormOpen?'':state.calSel>todayStr()?todayStr():state.calSel)">${state.logFormOpen?'작성 닫기':'+ 일지 쓰기'}</button>
           <button class="ghost-btn" style="padding:9px 16px; flex:0 0 auto; white-space:nowrap;" onclick="closeClassLogView()">닫기</button>
         </div>
       </div>
       <div class="lane-divider"></div>
 
-      <div class="card log-form-card">
+      <div class="card log-form-card" id="logFormCard" ${state.logFormOpen?'':'hidden'}>
         <h3 class="log-form-title">새 수업일지 작성</h3>
         <form onsubmit="submitClassLog(event)">
           <div class="log-form-grid">
-            <div class="field"><label>날짜</label><input type="date" name="date" value="${todayStr()}" required></div>
+            <div class="field"><label>날짜</label><input type="date" name="date" value="${state.calSel>todayStr()?todayStr():state.calSel}" required></div>
             <div class="field">
               <label>수업 종류</label>
               <select name="classType" id="classTypeSelect" onchange="toggleCustomClassType(this)">
@@ -1623,9 +1733,10 @@ function renderClassLogView(){
         </form>
       </div>
 
-      <div class="section-title">지난 수업일지</div>
-      <div id="classLogList">${logCards}</div>
-      ${logs.length>=state.classLogLimit?`<button class="ghost-btn" style="width:100%; margin-top:12px;" onclick="moreClassLogs()">이전 일지 더 보기 (지금 최근 ${state.classLogLimit}개)</button>`:''}
+      <div class="cal-wrap">
+        <div class="card cal-card" id="clCal">${calGridHTML()}</div>
+        <div class="cal-daylist" id="clDay">${calDayHTML()}</div>
+      </div>
     </main>`;
 }
 function toggleCustomClassType(sel){
@@ -1803,6 +1914,10 @@ async function submitClassLog(e){
   if(!ok){ showToast('저장에 실패했어요. 다시 시도해주세요.'); return; }
   showToast('수업일지가 저장되었습니다');
   e.target.reset();
+  state.logFormOpen=false;
+  { const card=document.getElementById('logFormCard'); if(card) card.hidden=true;
+    const tb=document.getElementById('logFormToggle'); if(tb) tb.textContent='+ 일지 쓰기'; }
+  calSetMonth(logObj.date.slice(0,7), logObj.date);
   const dateInput = e.target.querySelector('input[name="date"]');
   if(dateInput) dateInput.value = todayStr();
   const customField = document.getElementById('customClassTypeField');
@@ -3694,14 +3809,19 @@ async function saveStudent(s){
 function subscribeClassLogs(){
   if(!db) return;
   if(unsubscribeClassLogs) unsubscribeClassLogs();
-  // 읽기 비용: 일지가 1년이면 1,000개가 넘는다. 화면을 열 때마다 전부 읽지 않고 최근 것부터 정해진 개수만 듣는다
-  unsubscribeClassLogs = db.collection('classLogs').orderBy('date','desc').limit(state.classLogLimit).onSnapshot(snap=>{
+  // 읽기 비용: 일지가 1년이면 1,000개가 넘는다. 캘린더에 보이는 '그 달' 일지만 듣는다
+  const ym = state.calYM;
+  state.calLoading = true; state.classLogs = [];
+  if(state.classLogOpen) refreshCal();
+  unsubscribeClassLogs = db.collection('classLogs').where('date','>=',ym+'-01').where('date','<=',ym+'-31').orderBy('date','desc').onSnapshot(snap=>{
+    if(ym!==state.calYM) return;
     const list = [];
     snap.forEach(doc=> list.push({ id: doc.id, ...doc.data() }));
     list.sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (b.createdAt||0)-(a.createdAt||0));
-    state.classLogs = list;
-    if(state.classLogOpen) softRerender();
+    state.classLogs = list; state.calLoading = false;
+    if(state.classLogOpen) refreshCal();
   }, err=>{
+    state.calLoading = false;
     if(err && err.code==='permission-denied'){
       // 권한 문제는 학생 목록 쪽에서 '코치로 등록되지 않은 계정' 화면으로 한 번에 안내한다 (중복 알림 방지)
       return;
@@ -3710,8 +3830,6 @@ function subscribeClassLogs(){
     }
   });
 }
-state.classLogLimit = 120;
-function moreClassLogs(){ state.classLogLimit += 120; subscribeClassLogs(); }
 async function saveClassLog(logObj){
   if(!db){ showToast('Firebase 설정이 필요합니다'); return false; }
   markUserWrite();
