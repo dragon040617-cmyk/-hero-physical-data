@@ -60,6 +60,30 @@
   .box{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
   .lbl{ display:block; font-size:13px; color:var(--muted); margin-bottom:6px; font-weight:600; }
   #me-edit .box input.txt, #me-edit .box select.txt{ background:var(--bg,#12151c); }
+  .month-open{ margin-top:14px; }
+  .m-top{ display:flex; align-items:center; gap:10px; margin-bottom:14px; } .m-top h1{ margin:0; }
+  .m-back{ width:44px; height:44px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:22px; cursor:pointer; }
+  .m-sum{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .m-n{ font-size:26px; font-weight:800; margin-top:2px; } .m-n small{ font-size:14px; color:var(--muted); font-weight:600; }
+  .m-cnt{ text-align:right; font-size:13px; font-weight:700; line-height:1.7; }
+  .m-cal{ margin-top:12px; }
+  .m-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; } .m-nav b{ font-size:17px; }
+  .m-nav button{ width:44px; height:44px; border-radius:12px; border:1px solid var(--line); background:var(--bg,#12151c); color:var(--text); font-size:20px; cursor:pointer; }
+  .m-nav button:disabled{ opacity:.3; cursor:default; }
+  .mc-week, .mc-grid{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
+  .mc-week{ text-align:center; font-size:12px; font-weight:700; color:var(--dim); margin-bottom:4px; } .mc-week .sat{ color:#8fb0ff; } .mc-week .sun{ color:#ff7a66; }
+  .mc-blank{ height:46px; }
+  .mc-day{ position:relative; height:46px; min-width:0; padding:0; border-radius:10px; border:1px solid transparent; background:transparent; color:var(--dim); font:inherit; font-size:15px; font-weight:800; cursor:pointer; }
+  .mc-day.future{ color:#3a4152; } .mc-day.missed{ border:1px dashed #8b94a9; }
+  .mc-day.today:not(.has){ border:2px solid var(--lime); color:var(--text); }
+  .mc-day.sel{ box-shadow:0 0 0 2px var(--surface), 0 0 0 4px #fff; }
+  .mc-pain{ position:absolute; top:4px; right:4px; width:8px; height:8px; border-radius:50%; background:#fff; box-shadow:0 0 0 2px #ff4b33; }
+  .mc-legend{ margin:10px 0 0; font-size:12px; }
+  .m-det{ margin-top:12px; } .md-head{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .md-head span{ font-size:12.5px; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid; }
+  .md-line{ font-size:14px; margin-top:8px; line-height:1.5; }
+  .m-tips{ margin-top:12px; } .m-tip{ display:flex; flex-direction:column; gap:2px; margin-top:12px; font-size:14px; line-height:1.5; } .m-tip span{ color:var(--muted); }
+  .m-tip .link{ align-self:flex-start; padding:4px 0; }
   .day-grid{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; }
   .day-b{ min-height:48px; min-width:0; border-radius:12px; border:1px solid var(--line); background:var(--surface-2,#222836); color:var(--muted); font:inherit; font-size:16px; font-weight:800; cursor:pointer; }
   .day-b.on{ background:var(--lime); border-color:var(--lime); color:#0d1a03; }
@@ -340,6 +364,7 @@
 <section id="screen-result" class="screen hidden"></section>
 <section id="screen-perf" class="screen hidden"></section>
 <section id="screen-care" class="screen hidden"></section>
+<section id="screen-month" class="screen hidden"></section>
 
 <!-- 아래 메뉴: 승인된 학생에게만 보인다 -->
 <nav id="bnav" class="bnav hidden" aria-label="학생 메뉴">
@@ -821,7 +846,7 @@ const auth=fbApp.auth();
 const db=fbApp.firestore();
 const $=id=>document.getElementById(id);
 
-const NAV_OF={'screen-result':'today','screen-form':'today','screen-care':'care','screen-perf':'perf','screen-me':'me'};
+const NAV_OF={'screen-result':'today','screen-form':'today','screen-month':'today','screen-care':'care','screen-perf':'perf','screen-me':'me'};
 let navPopping=false;   // 뒤로 가기(옆으로 밀기)로 화면을 바꾸는 중이면 기록을 또 쌓지 않는다
 function show(id,fromPop){
   document.querySelectorAll('.screen').forEach(el=>el.classList.add('hidden'));
@@ -1411,7 +1436,7 @@ function weekHTML(){
   const dots=w.days.map((d,i)=>`<div class="${has.has(d)?'on':''} ${d===today?'today':''}">${label[i]}<i>${has.has(d)?'✓':''}</i></div>`).join('');
   const lines=[];
   lines.push(`이번 주 <b>${w.n}/3번</b>${w.n>=3?' 달성 ✓':''}${streak>=2?` · 주 2번 이상 <b>${streak}주 연속</b> 🔥`:''}`);
-  return `<div class="sec-t">이번 주 체크인</div><div class="week" role="img" aria-label="이번 주 체크인 ${w.n}번">${dots}</div><div class="week-s">${lines.join('<br>')}</div>`;
+  return `<div class="sec-t">이번 주 체크인</div><div class="week" role="img" aria-label="이번 주 체크인 ${w.n}번">${dots}</div><div class="week-s">${lines.join('<br>')}</div><button type="button" class="btn btn-2 month-open" data-a="month">📅 내 한 달 보기 ›</button>`;
 }
 function weekCompareHTML(){   // 지난주와 비교 (자세히 안에)
   const today=todayStr(), dow=(new Date(today+'T00:00:00').getDay()+6)%7, mon=addDays(today,-dow);
@@ -1422,6 +1447,99 @@ function weekCompareHTML(){   // 지난주와 비교 (자세히 안에)
   }
   return lines.length?`<div class="sec"><div class="sec-t">이번 주 vs 지난주</div><div class="week-s">${lines.join('<br>')}</div></div>`:'';
 }
+
+/* ============ 내 한 달: 체크인을 신호등 색 달력으로 (B-2) ============ */
+let monthYM='', monthSel='', monthCache={};
+const MWK=['월','화','수','목','금','토','일'];
+function wdIdx(d){ return (new Date(d+'T00:00:00').getDay()+6)%7; }   // 월=0 … 일=6
+async function loadMonth(ym){
+  if(monthCache[ym] && monthCache[ym]!=='error') return;
+  monthCache[ym]='loading';
+  try{
+    const snap=await db.collection('students').doc(myStudent.id).collection('checkins')
+      .where(firebase.firestore.FieldPath.documentId(),'>=',ym+'-01').where(firebase.firestore.FieldPath.documentId(),'<=',ym+'-31').get();
+    monthCache[ym]=snap.docs.map(d=>({...d.data(),date:d.id})).filter(c=>c.date.startsWith(ym));
+  }catch(e){ monthCache[ym]='error'; }
+  if(!$('screen-month').classList.contains('hidden')) renderMonth();
+}
+function openMonth(){
+  if(!monthYM){ monthYM=todayStr().slice(0,7); monthSel=todayStr(); }
+  renderMonth(); show('screen-month'); window.scrollTo(0,0);
+}
+function monthDays(ym){
+  const map={}, c=monthCache[ym];
+  if(Array.isArray(c)) c.forEach(x=>map[x.date]=x);
+  myCheckins.forEach(x=>{ if(x.date.startsWith(ym)) map[x.date]=x; });   // 방금 한 체크인도 바로 보이게
+  return map;
+}
+function monthTips(map, ym){
+  const days=Object.values(map), bad=c=>['YELLOW','AMBER','RED'].includes(c.status), tips=[];
+  const low=days.filter(c=>c.sleepMin>0&&c.sleepMin<=360), lowBad=low.filter(bad).length;
+  if(low.length>=3 && lowBad/low.length>=0.6) tips.push({c:'#ff9f1c', h:`잠 6시간 이하인 날 ${low.length}번 중 ${lowBad}번이 주의 이상이었어요`, t:'수업 전날은 12시 전에 자 보기', to:'sleep'});
+  const byW={}; days.forEach(c=>{ const w=wdIdx(c.date); (byW[w]=byW[w]||{n:0,b:0}); byW[w].n++; if(bad(c)) byW[w].b++; });
+  Object.entries(byW).forEach(([w,v])=>{ if(v.b>=2 && v.b/v.n>=0.6) tips.push({c:'#ffd23f', h:`${MWK[w]}요일마다 주의 이상이 ${v.b}번 나왔어요`, t:MWK[w]==='월'?'주말 수면·식사를 평소처럼 지켜 보기':'그 전날 잠과 식사를 한 번 더 챙기기', to:'sleep'}); });
+  const pa={}; days.forEach(c=>{ if(c.pain) (c.painAreas||[]).forEach(a=>pa[a]=(pa[a]||0)+1); });
+  Object.entries(pa).forEach(([a,n])=>{ if(n>=3) tips.push({c:'#ff4b33', h:`${a} 통증을 ${n}번 기록했어요`, t:'참지 말고 선생님께 직접 보여 주기'}); });
+  const sore=days.filter(c=>c.soreness>=7).length;
+  if(sore>=3) tips.push({c:'#ff9f1c', h:`근육통 7 이상인 날이 ${sore}번 있었어요`, t:'수업 끝나고 스트레칭 10분 + 단백질 챙기기', to:'recovery'});
+  if(myDays.length){
+    const today=todayStr(); let miss=0;
+    for(let d=1; d<=31; d++){ const ds=ym+'-'+String(d).padStart(2,'0'); if(!ds.startsWith(ym)||ds>today) continue; const dt=new Date(ds+'T00:00:00'); if(dt.getMonth()+1!==Number(ym.slice(5,7))) continue; if(myDays.includes(MWK[wdIdx(ds)]) && !map[ds]) miss++; }
+    if(miss>=2) tips.push({c:'#aab2c5', h:`수업 날인데 체크인을 ${miss}번 깜빡했어요`, t:'학원 오기 전에 1분만 체크하기'});
+  }
+  if(!tips.length && days.length>=5) tips.push({c:'#c6ff3d', h:'이번 달은 큰 문제 없이 잘 관리하고 있어요 👍', t:'지금처럼 꾸준히 체크해 주세요'});
+  return tips;
+}
+function renderMonth(){
+  const ym=monthYM, [y,m]=ym.split('-').map(Number), today=todayStr();
+  if(!monthCache[ym]) loadMonth(ym);
+  const map=monthDays(ym), last=new Date(y,m,0).getDate(), first=wdIdx(ym+'-01');
+  const cnt={GREEN:0,YELLOW:0,AMBER:0,RED:0,BASE:0}; Object.values(map).forEach(c=>{ cnt[c.status||'BASE']=(cnt[c.status||'BASE']||0)+1; });
+  let classDays=0, cells='';
+  for(let i=0;i<first;i++) cells+='<div class="mc-blank"></div>';
+  for(let d=1; d<=last; d++){
+    const ds=`${ym}-${String(d).padStart(2,'0')}`, c=map[ds], st=c?(c.status||'BASE'):'', ui=c?STATUS_UI[st]:null;
+    const myDay=myDays.includes(MWK[wdIdx(ds)]) && ds<=today; if(myDay) classDays++;
+    const cls=['mc-day', c?'has':'', ds===monthSel?'sel':'', ds===today?'today':'', ds>today?'future':'', !c&&myDay?'missed':''].filter(Boolean).join(' ');
+    cells+=`<button type="button" class="${cls}" style="${c?`background:${ui.color};color:${st==='RED'?'#fff':'#0d1a03'};`:''}" data-m="pick" data-d="${ds}" aria-label="${m}월 ${d}일${c?', '+ui.label+(c.pain?', 통증':''):myDay?', 수업 날 · 체크인 안 함':''}">${d}${c&&c.pain?'<i class="mc-pain"></i>':''}</button>`;
+  }
+  const sc=map[monthSel], [sy,sm,sd]=monthSel.split('-').map(Number);
+  let det;
+  if(sc){ const ui=STATUS_UI[sc.status||'BASE'];
+    det=`<div class="md-head"><b>${sm}월 ${sd}일 (${MWK[wdIdx(monthSel)]})</b><span style="color:${ui.color};border-color:${ui.color}">${ui.label}</span></div>
+      <div class="md-line">잠 ${fmtSleep(sc.sleepMin||0)} · 피로 ${sc.fatigue} · 근육통 ${sc.soreness} · 준비도 ${sc.readiness}</div>
+      ${sc.pain?`<div class="md-line"><b style="color:#ff4b33">통증</b> ${esc((sc.painAreas||[]).join('·'))}${sc.painLevel!=null?' '+sc.painLevel+'/10':''}</div>`:''}`;
+  }else{
+    const myDay=myDays.includes(MWK[wdIdx(monthSel)]);
+    det=`<div class="md-head"><b>${sm}월 ${sd}일 (${MWK[wdIdx(monthSel)]})</b></div><div class="md-line note">${monthSel>today?'아직 오지 않은 날이에요':myDay?'수업 날인데 체크인을 안 했어요':'체크인 안 한 날이에요'}</div>`;
+  }
+  const tips=monthTips(map, ym), n=Object.keys(map).length, loading=monthCache[ym]==='loading', err=monthCache[ym]==='error';
+  $('screen-month').innerHTML=`<div class="m-top"><button type="button" class="m-back" data-m="back" aria-label="뒤로">‹</button><h1>내 한 달</h1></div>
+    <div class="box m-sum"><div><div class="note">${m}월 체크인</div><div class="m-n">${n}번${myDays.length?` <small>/ 수업 날 ${classDays}일</small>`:''}</div></div>
+      <div class="m-cnt"><span style="color:#c6ff3d">좋음 ${cnt.GREEN}</span> · <span style="color:#ffd23f">주의 ${cnt.YELLOW}</span><br><span style="color:#ff9f1c">경고 ${cnt.AMBER}</span> · <span style="color:#ff4b33">위험 ${cnt.RED}</span></div></div>
+    <div class="box m-cal">
+      <div class="m-nav"><button type="button" data-m="prev" aria-label="이전 달">‹</button><b>${y}년 ${m}월</b><button type="button" data-m="next" aria-label="다음 달" ${ym>=today.slice(0,7)?'disabled':''}>›</button></div>
+      <div class="mc-week">${MWK.map((w,i)=>`<span class="${i===5?'sat':i===6?'sun':''}">${w}</span>`).join('')}</div>
+      <div class="mc-grid">${cells}</div>
+      ${loading?'<p class="note" style="margin:8px 0 0">불러오는 중…</p>':err?'<p class="note" style="margin:8px 0 0">이 달 기록을 불러오지 못했어요. <button type="button" class="link" data-m="retry">다시 시도</button></p>':''}
+      <p class="note mc-legend">칸 색 = 그날 내 컨디션${myDays.length?' · 점선 = 수업 날인데 체크인 깜빡':' · 내 정보에서 수업 요일을 정하면 깜빡한 날도 보여요'} · 흰 점 = 통증</p>
+    </div>
+    <div class="box m-det">${det}</div>
+    <div class="box m-tips"><b>이번 달 내 몸이 알려 준 것</b>
+      ${tips.length?tips.map(t=>`<div class="m-tip"><b style="color:${t.c}">${esc(t.h)}</b><span>→ ${esc(t.t)}</span>${t.to?`<button type="button" class="link" data-m="care" data-to="${t.to}">몸관리에서 자세히 ›</button>`:''}</div>`).join(''):`<p class="note" style="margin:6px 0 0">체크인이 5번 넘게 쌓이면 알려 줄게요.</p>`}
+    </div>
+    <p class="note" style="margin-top:12px">나와 선생님만 볼 수 있어요. 다른 친구와 비교하지 않아요.</p>`;
+}
+$('screen-month').addEventListener('click',e=>{
+  const b=e.target.closest('[data-m]'); if(!b) return;
+  const a=b.dataset.m;
+  if(a==='pick'){ monthSel=b.dataset.d; renderMonth(); }
+  else if(a==='prev'||a==='next'){ let [y,m]=monthYM.split('-').map(Number); m+=a==='prev'?-1:1; if(m<1){m=12;y--;} if(m>12){m=1;y++;} monthYM=`${y}-${String(m).padStart(2,'0')}`; monthSel=todayStr().startsWith(monthYM)?todayStr():monthYM+'-01'; renderMonth(); }
+  else if(a==='retry'){ delete monthCache[monthYM]; renderMonth(); }
+  else if(a==='care'){ openCare(b.dataset.to); }
+  else if(a==='back'){ if(myCheckins.some(c=>c.date===todayStr())) showResult(); else openForm(true); }
+});
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-a="month"]'); if(b) openMonth(); });
 
 /* ============ 몸관리 화면 (영양 · 수면 · 회복 탭) ============ */
 let careTab='nutrition';
@@ -1455,6 +1573,7 @@ window.addEventListener('popstate',e=>{
   try{
     if(st.scr==='screen-result'){ if(myCheckins.some(c=>c.date===todayStr())) showResult(); else openForm(true); }
     else if(st.scr==='screen-care') openCare();
+    else if(st.scr==='screen-month') openMonth();
     else if(st.scr==='screen-perf') openPerf();
     else if(st.scr==='screen-me') openMe(true);
     else if(st.scr==='screen-form') openForm(true);
