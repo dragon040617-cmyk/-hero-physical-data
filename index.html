@@ -575,6 +575,15 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .row-del{ white-space:nowrap; flex-shrink:0; }
   .cl-top{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   .log-form-card[hidden]{ display:none; }
+  .log-form-card.editing{ border-color:var(--lime); box-shadow:0 0 0 1px rgba(198,255,61,0.25); }
+  .log-form-actions{ display:flex; gap:10px; }
+  .log-form-actions .log-cancel-btn{ flex:0 0 auto; min-width:88px; min-height:44px; font-size:13.5px; }
+  .log-form-actions .log-submit-btn{ flex:1; width:auto; }
+  .log-form-actions .log-cancel-btn{ margin-top:4px; height:48px; }
+  .log-actions{ display:flex; gap:6px; align-items:center; flex:0 0 auto; }
+  .log-edit-btn{ min-height:36px; padding:0 12px; border-radius:9px; border:1px solid var(--lime); background:var(--lime-soft); color:var(--lime); font-weight:800; font-size:12.5px; cursor:pointer; font-family:inherit; white-space:nowrap; }
+  .log-actions .row-del{ min-height:36px; padding:0 8px; }
+  .cal-add-more{ width:100%; border-style:dashed; }
   .cal-wrap{ display:grid; grid-template-columns:minmax(0,460px) minmax(0,1fr); gap:24px; align-items:start; }
   @media (max-width:900px){ .cal-wrap{ grid-template-columns:minmax(0,1fr); } }
   .cal-card{ padding:16px; display:flex; flex-direction:column; gap:12px; }
@@ -907,7 +916,7 @@ let state = {
   sidebarBranchFilter: '',
   classLogOpen: false,
   classLogs: [],
-  calYM: todayStr().slice(0,7), calSel: todayStr(), calType: '', calSumOpen: false, calLoading: false, logFormOpen: false,
+  calYM: todayStr().slice(0,7), calSel: todayStr(), calType: '', calSumOpen: false, calLoading: false, logFormOpen: false, editLogId: '',
   isStudentMode: false,
   studentSelfId: null,
   teamViewOpen: false,
@@ -1583,7 +1592,7 @@ function buildClassLogCardsHTML(logs){
             <div class="log-instructor"><span class="log-label-accent">메인강사</span> ${esc(instructorText)||'-'}${assistantText?` · <span class="log-label-accent">보조강사</span> ${esc(assistantText)}`:''}</div>
             ${progressText?`<div class="log-instructor">수업진행 ${esc(progressText)}</div>`:''}
           </div>
-          <button class="row-del" onclick="deleteClassLog('${log.id}')">삭제</button>
+          <div class="log-actions"><button type="button" class="log-edit-btn" onclick="editClassLog('${log.id}')">✏️ 수정</button><button class="row-del" onclick="deleteClassLog('${log.id}')">삭제</button></div>
         </div>
         <div class="lane-divider" style="margin:16px 0;"></div>
         <div class="log-section"><b>-수업내용-</b><div class="log-body">${esc(log.content)||'-'}</div></div>
@@ -1642,7 +1651,7 @@ function calDayHTML(){
   const logs=calFiltered((state.classLogs||[]).filter(l=>l.date===ds));
   const future=ds>todayStr();
   return `<div class="cal-day-head"><div class="cal-day-title">${m}월 ${d}일 (${wk})</div><div class="cal-day-count">${logs.length?`수업 ${logs.length}개`:''}</div></div>
-    ${logs.length ? buildClassLogCardsHTML(logs) : `<div class="cal-empty"><div>${future?'아직 오지 않은 날이에요':state.calType?`이 날 ${esc(state.calType)} 일지가 없어요`:'이 날 쓴 수업일지가 없어요'}</div>${future?'':`<button type="button" class="cal-write-btn" onclick="openLogForm('${ds}')">+ 이 날 일지 쓰기</button>`}</div>`}`;
+    ${logs.length ? buildClassLogCardsHTML(logs) + (future?'':`<button type="button" class="cal-write-btn cal-add-more" onclick="openLogForm('${ds}')">+ 이 날 일지 추가</button>`) : `<div class="cal-empty"><div>${future?'아직 오지 않은 날이에요':state.calType?`이 날 ${esc(state.calType)} 일지가 없어요`:'이 날 쓴 수업일지가 없어요'}</div>${future?'':`<button type="button" class="cal-write-btn" onclick="openLogForm('${ds}')">+ 이 날 일지 쓰기</button>`}</div>`}`;
 }
 // 달력·일지 부분만 다시 그린다 (작성 중인 일지 칸은 그대로 둔다)
 function refreshCal(){
@@ -1664,9 +1673,60 @@ function calMove(step){
   calSetMonth(ym, todayStr().startsWith(ym) ? todayStr() : `${ym}-01`);
 }
 function calGoToday(){ calSetMonth(todayStr().slice(0,7), todayStr()); }
+function logFormReset(){
+  const card=document.getElementById('logFormCard'); if(!card) return;
+  const form=card.querySelector('form'); if(form) form.reset();
+  card.querySelectorAll('.ins-temp').forEach(el=>el.remove());
+  const cf=document.getElementById('customClassTypeField'); if(cf) cf.style.display='none';
+  state.editLogId='';
+  card.classList.remove('editing');
+  const t=document.getElementById('logFormTitle'); if(t) t.textContent='새 수업일지 작성';
+  const sb=document.getElementById('logSubmitBtn'); if(sb) sb.textContent='일지 저장';
+}
+function closeLogForm(){
+  logFormReset();
+  const card=document.getElementById('logFormCard'); if(card) card.hidden=true;
+  state.logFormOpen=false;
+  const btn=document.getElementById('logFormToggle'); if(btn) btn.textContent='+ 일지 쓰기';
+  flushRerender();
+}
+// 이미 쓴 일지 고치기: 작성 칸에 그 일지 내용을 채워서 연다 (저장하면 같은 일지를 덮어씀)
+function editClassLog(id){
+  const log=(state.classLogs||[]).find(l=>l.id===id); if(!log) return;
+  const card=document.getElementById('logFormCard'); if(!card) return;
+  logFormReset();
+  const form=card.querySelector('form');
+  state.editLogId=id;
+  card.classList.add('editing');
+  form.querySelector('input[name="date"]').value=log.date||todayStr();
+  const type=logTypeOf(log), sel=form.querySelector('select[name="classType"]');
+  if(type && CLASS_TYPES.includes(type)) sel.value=type;
+  else if(type){ sel.value='__custom__'; form.querySelector('input[name="classTypeCustom"]').value=type; document.getElementById('customClassTypeField').style.display=''; }
+  // 명단에서 빠진 강사가 적힌 옛 일지도 그대로 고칠 수 있게, 없는 이름은 이번 수정에만 버튼을 잠깐 붙인다
+  [['main','instructor'],['assistant','assistant']].forEach(([k,field])=>{
+    const row=document.getElementById('ins-row-'+k); if(!row) return;
+    const names=[].concat(log[field]||[]).filter(Boolean);
+    names.forEach(n=>{ if(![...row.querySelectorAll('input')].some(i=>i.value===n)){
+      row.insertAdjacentHTML('beforeend', `<label class="chk-pill chk-pill-glow ins-temp"><input type="checkbox" name="${field}" value="${esc(n)}"> ${esc(n)}</label>`); } });
+    insSetChecked(row, names);
+  });
+  const prog=new Set([].concat(log.progress||[]).filter(Boolean));
+  const progRow=form.querySelector('input[name="progress"]')?.closest('.chk-pill-row');
+  if(progRow) prog.forEach(v=>{ if(!SESSION_TYPES.includes(v)) progRow.insertAdjacentHTML('beforeend', `<label class="chk-pill ins-temp"><input type="checkbox" name="progress" value="${esc(v)}"> ${esc(v)}</label>`); });
+  form.querySelectorAll('input[name="progress"]').forEach(i=>{ i.checked=prog.has(i.value); });
+  ['content','notes','cleaning'].forEach(n=>{ const el=form.querySelector(`[name="${n}"]`); if(el) el.value=log[n]||''; });
+  const [y,m,d]=(log.date||'').split('-').map(Number);
+  const t=document.getElementById('logFormTitle'); if(t) t.textContent=`수업일지 수정 · ${m}월 ${d}일${type?' '+type:''}`;
+  const sb=document.getElementById('logSubmitBtn'); if(sb) sb.textContent='수정 저장';
+  card.hidden=false; state.logFormOpen=true;
+  const btn=document.getElementById('logFormToggle'); if(btn) btn.textContent='작성 닫기';
+  card.scrollIntoView({behavior:'smooth', block:'start'});
+}
 function openLogForm(ds){
   const card=document.getElementById('logFormCard'); if(!card) return;
+  if(state.editLogId){ logFormReset(); card.hidden=true; }   // 수정 중이었으면 새 일지 쓰기로 바꾼다
   const opening = card.hidden || !!ds;
+  if(!opening){ closeLogForm(); return; }
   card.hidden = !opening; state.logFormOpen = opening;
   const btn=document.getElementById('logFormToggle'); if(btn) btn.textContent = opening ? '작성 닫기' : '+ 일지 쓰기';
   if(opening){
@@ -1676,6 +1736,7 @@ function openLogForm(ds){
   }
 }
 function renderClassLogView(){
+  state.editLogId='';   // 화면을 통째로 다시 그리면 작성 칸이 새 칸이 되므로, 고치던 일지 표시도 풀어 준다
   return `
     <main>
       <div class="topbar">
@@ -1687,13 +1748,12 @@ function renderClassLogView(){
         </div>
         <div class="cl-top">
           <button type="button" id="logFormToggle" class="submit-btn" style="flex:0 0 auto; white-space:nowrap; height:40px;" onclick="openLogForm(state.logFormOpen?'':state.calSel>todayStr()?todayStr():state.calSel)">${state.logFormOpen?'작성 닫기':'+ 일지 쓰기'}</button>
-          <button class="ghost-btn" style="padding:9px 16px; flex:0 0 auto; white-space:nowrap;" onclick="closeClassLogView()">닫기</button>
         </div>
       </div>
       <div class="lane-divider"></div>
 
       <div class="card log-form-card" id="logFormCard" ${state.logFormOpen?'':'hidden'}>
-        <h3 class="log-form-title">새 수업일지 작성</h3>
+        <h3 class="log-form-title" id="logFormTitle">새 수업일지 작성</h3>
         <form onsubmit="submitClassLog(event)">
           <div class="log-form-grid">
             <div class="field"><label>날짜</label><input type="date" name="date" value="${state.calSel>todayStr()?todayStr():state.calSel}" required></div>
@@ -1729,7 +1789,10 @@ function renderClassLogView(){
           </div>
           <div class="field log-textarea-field"><label>청소</label><input type="text" name="cleaning" placeholder="예: 지하 바닥 청소"></div>
 
-          <button class="submit-btn log-submit-btn" type="submit">일지 저장</button>
+          <div class="log-form-actions">
+            <button type="button" class="ghost-btn log-cancel-btn" onclick="closeLogForm()">취소</button>
+            <button class="submit-btn log-submit-btn" type="submit" id="logSubmitBtn">일지 저장</button>
+          </div>
         </form>
       </div>
 
@@ -1892,8 +1955,9 @@ async function submitClassLog(e){
     showToast('수업 종류를 직접 입력해주세요');
     return;
   }
+  const editing = state.editLogId ? (state.classLogs||[]).find(l=>l.id===state.editLogId) : null;
   const logObj = {
-    id: uid(),
+    id: editing ? editing.id : uid(),
     date: f.get('date') || todayStr(),
     classType,
     instructor: f.getAll('instructor'),
@@ -1902,9 +1966,11 @@ async function submitClassLog(e){
     content: f.get('content')||'',
     notes: f.get('notes')||'',
     cleaning: f.get('cleaning')||'',
-    createdAt: Date.now(),
-    createdBy: currentCoachEmail||''
+    createdAt: editing ? (editing.createdAt||Date.now()) : Date.now(),
+    createdBy: editing ? (editing.createdBy||'') : (currentCoachEmail||'')
   };
+  if(editing){ logObj.updatedAt=Date.now(); logObj.updatedBy=currentCoachEmail||''; }
+  if(state.editLogId && !editing){ showToast('고치던 일지를 찾을 수 없어요 (다른 선생님이 지웠을 수 있어요)'); return; }
   if(!PERF.validDate(logObj.date)){ showToast('날짜를 다시 골라 주세요'); return; }
   const btn = e.target.querySelector('button[type="submit"],button:not([type])');
   classLogSaving=true; if(btn){ btn.disabled=true; btn.style.opacity='0.6'; }
@@ -1912,8 +1978,8 @@ async function submitClassLog(e){
   try{ ok = await saveClassLog(logObj); }
   finally{ classLogSaving=false; if(btn){ btn.disabled=false; btn.style.opacity=''; } }
   if(!ok){ showToast('저장에 실패했어요. 다시 시도해주세요.'); return; }
-  showToast('수업일지가 저장되었습니다');
-  e.target.reset();
+  showToast(editing ? '수업일지를 고쳤어요' : '수업일지가 저장되었습니다');
+  logFormReset();
   state.logFormOpen=false;
   { const card=document.getElementById('logFormCard'); if(card) card.hidden=true;
     const tb=document.getElementById('logFormToggle'); if(tb) tb.textContent='+ 일지 쓰기'; }
