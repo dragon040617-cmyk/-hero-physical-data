@@ -575,6 +575,34 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .row-del{ white-space:nowrap; flex-shrink:0; }
   .cl-top{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   .log-form-card[hidden]{ display:none; }
+  .ck-cal-card{ padding:16px; display:grid; grid-template-columns:minmax(0,1fr); gap:16px; align-items:start; }
+  @media (min-width:1100px){ .ck-cal-card{ grid-template-columns:minmax(0,480px) minmax(0,1fr); } }
+  .ckc-left, .ckc-right{ display:flex; flex-direction:column; gap:12px; min-width:0; }
+  .ckc-sum{ font-size:13px; color:var(--text-muted); display:flex; flex-wrap:wrap; gap:4px 10px; }
+  .ckc-sum b{ color:var(--text); } .ckc-sum span{ font-weight:800; }
+  .ckc-grid{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
+  .ckc-blank{ height:46px; }
+  .ckc-day{ position:relative; height:46px; min-width:0; padding:0; border-radius:9px; border:1px solid transparent; background:transparent; color:#8b94a9;
+    font-size:14px; font-weight:800; cursor:pointer; font-family:inherit; }
+  .ckc-day.sun{ color:#ff7a66; } .ckc-day.sat{ color:#8fb0ff; }
+  .ckc-day.future{ color:#3a4152; }
+  .ckc-day.today:not(.has){ border:2px solid var(--lime); color:var(--text); }
+  .ckc-day.sel{ box-shadow:0 0 0 2px var(--surface), 0 0 0 4px #ffffff; }
+  .ckc-pain{ position:absolute; top:3px; right:3px; width:8px; height:8px; border-radius:50%; background:#fff; box-shadow:0 0 0 2px #ff4b33; }
+  .ckc-legend{ display:flex; flex-wrap:wrap; gap:6px 12px; font-size:12px; color:var(--text-muted); }
+  .ckc-legend span{ display:flex; align-items:center; gap:5px; }
+  .ckc-legend i{ width:10px; height:10px; border-radius:3px; display:block; }
+  .ckc-legend i.ckc-pain-l{ width:8px; height:8px; border-radius:50%; background:#fff; box-shadow:0 0 0 2px #ff4b33; }
+  .ckc-pat{ margin:0; font-size:13.5px; line-height:1.6; }
+  .ckc-detail{ background:var(--surface-2); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; }
+  .ckc-dhead{ display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:15px; }
+  .ckc-badge{ font-size:12px; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid; }
+  .ckc-metrics{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; text-align:center; }
+  .ckc-m{ background:var(--surface); border-radius:9px; padding:8px 2px; min-width:0; }
+  .ckc-m div{ font-size:11px; color:var(--text-dim); } .ckc-m b{ font-size:14px; display:block; margin-top:2px; overflow-wrap:anywhere; }
+  .ckc-line{ font-size:13.5px; line-height:1.5; overflow-wrap:anywhere; }
+  .ckc-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .ckc-chips span{ font-size:12px; padding:4px 10px; border-radius:12px; background:var(--surface); color:var(--text-muted); }
   .log-form-card.editing{ border-color:var(--lime); box-shadow:0 0 0 1px rgba(198,255,61,0.25); }
   .log-form-actions{ display:flex; gap:10px; }
   .log-form-actions .log-cancel-btn{ flex:0 0 auto; min-width:88px; min-height:44px; font-size:13.5px; }
@@ -1055,8 +1083,7 @@ function renderSidebar(){
           <button class="logout-link" onclick="logout()">로그아웃</button>
         </div>
       </div>
-      <button class="add-btn" onclick="openAddStudentModal()">+ 학생 등록</button>
-      <button class="add-btn sb-dup" style="background:var(--surface-2); border:1px solid ${pendingJoins().length?'var(--lime)':'var(--line)'}; color:${pendingJoins().length?'var(--lime)':'var(--text-dim)'}; margin-top:-6px;" onclick="openJoinView()">✅ 가입 승인 대기 ${pendingJoins().length}명</button>
+      <button class="add-btn sb-dup" style="background:var(--surface-2); border:1px solid ${pendingJoins().length?'var(--lime)':'var(--line)'}; color:${pendingJoins().length?'var(--lime)':'var(--text-dim)'};" onclick="openJoinView()">✅ 가입 승인 대기 ${pendingJoins().length}명</button>
       <button class="add-btn sb-dup" style="background:var(--surface-2); border:1px solid var(--lime); color:var(--lime); margin-top:-6px; position:relative;" onclick="openTeamView()">📋 오늘 브리핑${dangerCount>0?` <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:var(--accent); color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">위험 ${dangerCount}</span>`:''}</button>
       <button class="add-btn sb-dup" style="background:var(--lime); color:#0d1a03; margin-top:-6px; margin-bottom:12px;" onclick="openClassLogView()">📝 수업일지</button>
       <input class="student-search" id="searchInput" placeholder="학생 이름 검색" value="${esc(q)}" oninput="filterStudentList()" style="margin-bottom:8px;">
@@ -1084,7 +1111,7 @@ function renderMain(){
   if(!s){
     return `<main><div class="empty-state">
       <div class="display">TRACK · TRAIN · TRACK</div>
-      <div>왼쪽에서 학생을 선택하거나 새로 등록해 시작하세요.</div>
+      <div>왼쪽에서 학생을 선택하세요. 새 학생은 '가입 승인'으로 들어와요.</div>
     </div></main>`;
   }
   const tabs = [
@@ -2020,38 +2047,7 @@ function renderOverview(s){
   }
   computeLifestyleSignals(s).forEach(sig=>conditionInsights.push(sig));
 
-  const injuryPatterns = computeInjuryPatterns(s);
-  const injuryInsights = injuryPatterns.map(p=>{
-    const trendTxt = p.trend==='up' ? ' (강도가 점점 심해지는 추세)' : p.trend==='down' ? ' (강도는 완화되는 추세)' : '';
-    const flag = p.latestSev>=6 || p.trend==='up';
-    return {flag, html:`<b>${esc(p.part)}</b> 통증이 최근 14일간 <b>${p.count}회</b> 반복 기록됐습니다${trendTxt}. 일회성 근육통이 아니라 만성화 신호일 수 있으니 전문가(의사·물리치료사) 평가를 고려하세요.`};
-  });
-
   const rec = computeTrainingRecommendation(s);
-
-  const declineFlags = detectPlateauOrDecline(s);
-  const declineInsights = declineFlags.map(f=>{
-    if(f.type==='decline') return {flag:true, html:`<b>${esc(f.ev)}</b> 기록이 최근 3회 평균 기준 <b>${Math.abs(f.changePct).toFixed(1)}%</b> 하락했습니다. 정체·슬럼프 초기 신호일 수 있으니 훈련 방식을 점검해보세요.`};
-    return {flag:false, html:`<b>${esc(f.ev)}</b> 기록이 최근 정체 구간입니다. 자극 변화(훈련 방식·강도 조절)를 고려해보세요.`};
-  });
-
-  const consistencyList = computeConsistency(s);
-  const consistencyInsights = consistencyList.map(c=>{
-    if(c.cv<3) return {flag:false, html:`<b>${esc(c.ev)}</b> 최근 기록 편차가 <b>${c.cv.toFixed(1)}%</b>로 매우 안정적입니다. 실전에서도 기복 없이 낼 가능성이 높습니다.`};
-    if(c.cv<7) return {flag:false, html:`<b>${esc(c.ev)}</b> 최근 기록 편차가 <b>${c.cv.toFixed(1)}%</b>로 보통 수준입니다.`};
-    return {flag:true, html:`<b>${esc(c.ev)}</b> 최근 기록 편차가 <b>${c.cv.toFixed(1)}%</b>로 큰 편입니다. 컨디션에 따라 기복이 있으니 안정화 훈련(반복 측정·루틴화)이 필요해 보입니다.`};
-  });
-
-  const recovery = computeRecoveryPattern(s);
-  const weeklyBalance = computeWeeklyBalance(s);
-  const balanceInsights = [];
-  if(recovery){
-    balanceInsights.push({flag:recovery.avgDays>3, html:`높은 피로(7점 이상) 이후 평소 수준(5점 미만)으로 돌아오기까지 평균 <b>${recovery.avgDays.toFixed(1)}일</b> 걸렸습니다 (최근 ${recovery.count}회 사례 기준).${recovery.avgDays>3?' 회복이 느린 편이니 휴식일을 더 배치해보세요.':''}`});
-  }
-  if(weeklyBalance){
-    const flag = weeklyBalance.high>=3 && weeklyBalance.low===0;
-    balanceInsights.push({flag, html:`최근 ${weeklyBalance.total}회 기록 중 고강도(피로 7+) <b>${weeklyBalance.high}회</b>, 회복(피로 4-) <b>${weeklyBalance.low}회</b>입니다.${flag?' 회복일 없이 고강도가 이어지고 있어 번아웃·부상 위험이 있습니다.':''}`});
-  }
 
   const eventCards = evList(s).map(ev=>{
     const recs = s.records[ev]||[];
@@ -2086,6 +2082,10 @@ function renderOverview(s){
     ${renderCheckinCard(s)}
 
     <div class="lane-divider"></div>
+    <div class="section-title">컨디션 캘린더</div>
+    <div class="card ck-cal-card" id="ckCal">${ckCalHTML(s)}</div>
+
+    <div class="lane-divider"></div>
     <div class="section-title">종목별 최신 현황</div>
     <div class="grid grid-3">${eventCards}</div>
 
@@ -2095,31 +2095,6 @@ function renderOverview(s){
       ${conditionInsights.map(i=>`<div class="insight-box ${i.flag?'flag':''}">${i.html}</div>`).join('') || `<div class="empty-mini">지금은 따로 알려 줄 컨디션 신호가 없어요.</div>`}
     </div>
 
-    <div class="lane-divider"></div>
-    <div class="section-title">부위별 통증 패턴</div>
-    <div class="stat-note" style="margin-bottom:10px;">최근 14일간 같은 부위 통증이 3회 이상 반복되면 표시됩니다. 일회성 근육통과 만성 부상 신호를 구분하기 위한 참고 지표입니다.</div>
-    <div class="insight-list">
-      ${injuryInsights.length ? injuryInsights.map(i=>`<div class="insight-box ${i.flag?'flag':''}">${i.html}</div>`).join('') : `<div class="empty-mini">현재 반복되는 통증 부위 신호가 없습니다.</div>`}
-    </div>
-
-    <div class="lane-divider"></div>
-    <div class="section-title">정체·하락 신호</div>
-    <div class="insight-list">
-      ${declineInsights.length ? declineInsights.map(i=>`<div class="insight-box ${i.flag?'flag':''}">${i.html}</div>`).join('') : (declineFlags.anyEligible ? `<div class="empty-mini">현재까지는 뚜렷한 정체·하락 신호가 없습니다.</div>` : `<div class="empty-mini">종목별 기록이 6회 이상 쌓여야 판단할 수 있습니다. (현재 최대 ${declineFlags.maxCount}회)</div>`)}
-    </div>
-
-    <div class="lane-divider"></div>
-    <div class="section-title">회복 · 훈련 밸런스</div>
-    <div class="insight-list">
-      ${balanceInsights.length ? balanceInsights.map(i=>`<div class="insight-box ${i.flag?'flag':''}">${i.html}</div>`).join('') : `<div class="empty-mini">학생 체크인이 더 쌓이면 회복 패턴과 훈련 밸런스가 표시됩니다.</div>`}
-    </div>
-
-    <div class="lane-divider"></div>
-    <div class="section-title">기록 안정성</div>
-    <div class="stat-note" style="margin-bottom:10px;">목표까지의 거리가 아니라, <b>실전에서 기복 없이 낼 수 있는 기록인지</b>를 봅니다.</div>
-    <div class="insight-list">
-      ${consistencyInsights.length ? consistencyInsights.map(i=>`<div class="insight-box ${i.flag?'flag':''}">${i.html}</div>`).join('') : `<div class="empty-mini">종목별 기록이 5회 이상 쌓이면 안정성이 표시됩니다.</div>`}
-    </div>
   `;
 }
 
@@ -2974,7 +2949,7 @@ function initFirebase(){
         if(unsubscribeJoin){ unsubscribeJoin(); unsubscribeJoin=null; }
         if(unsubscribeInstructors){ unsubscribeInstructors(); unsubscribeInstructors=null; }
         hideAuthWait();
-        state.students=[]; state.studentsLoaded=false; state.todayCk={}; state.hist={}; state.histReq={}; state.perf={}; state.perfFull={}; state.perfAllAt=0; ckStudentKey='';
+        state.students=[]; state.studentsLoaded=false; state.todayCk={}; state.hist={}; state.histReq={}; state.ckMonth={}; state.perf={}; state.perfFull={}; state.perfAllAt=0; ckStudentKey='';
         document.getElementById('loginScreen').style.display='';
         document.getElementById('app').style.display='none';
       }
@@ -3673,14 +3648,14 @@ async function loadHistory(sid, force, quiet){
   applyCheckins(); softRerender();
   return ok;
 }
-function refreshCheckins(){ state.hist={}; state.histReq={}; state.perfFull={}; loadTodayCheckins(true); if(state.selectedId){ loadHistory(state.selectedId,true); loadPerf(state.selectedId,true); } if(state.teamViewOpen) loadAllPerf(true); showToast('체크인·실기 기록을 새로 불러왔어요'); }
+function refreshCheckins(){ state.hist={}; state.histReq={}; state.ckMonth={}; state.perfFull={}; loadTodayCheckins(true); if(state.selectedId){ loadHistory(state.selectedId,true); loadPerf(state.selectedId,true); } if(state.teamViewOpen) loadAllPerf(true); showToast('체크인·실기 기록을 새로 불러왔어요'); }
 /* 코치 화면을 켜 둔 채 다음 날이 되거나, 오래 다른 앱을 보다 돌아오면 '어제 체크인'이 오늘처럼 보인다.
    화면에 다시 나타날 때 날짜가 바뀌었거나 5분이 지났으면 새로 불러온다. */
 function refreshIfStale(){
   if(!db||!currentCoachEmail||document.visibilityState!=='visible') return;
   const dayChanged=state.ckDate&&state.ckDate!==HC.todayStr();
   if(dayChanged||Date.now()-state.ckFetchedAt>10*60*1000){
-    if(dayChanged){ state.todayCk={}; state.hist={}; state.histReq={}; }
+    if(dayChanged){ state.todayCk={}; state.hist={}; state.histReq={}; state.ckMonth={}; }
     loadTodayCheckins(true); if(state.selectedId){ loadHistory(state.selectedId,true); loadPerf(state.selectedId,true); }
     if(state.teamViewOpen) loadAllPerf(false);
   }
@@ -3734,6 +3709,103 @@ function interpretCheckin(s,t){
 function todayCkOf(sid){ const t=state.todayCk[sid]; return t&&t.date===HC.todayStr()?t:null; }   // 어제 불러온 기록은 '오늘'로 세지 않는다
 function statusOf(s){ const t=todayCkOf(s.id); return t?(t.status||'BASE'):null; }
 
+/* ---- 학생 컨디션 캘린더: 그 달 체크인을 신호등 색 칸으로 (수업일지와는 연결하지 않음) ---- */
+state.ckMonth = {};   // 'sid|YYYY-MM' → 체크인 목록 (없으면 아직 안 불러옴, 'loading' = 불러오는 중, 'error')
+state.ckCal = { sid:'', ym:'', sel:'' };
+function ckCalState(s){
+  if(state.ckCal.sid!==s.id){ const t=HC.todayStr(); state.ckCal={ sid:s.id, ym:t.slice(0,7), sel:t }; }
+  return state.ckCal;
+}
+async function loadCkMonth(sid, ym, force){
+  const key=sid+'|'+ym;
+  if(!db || (!force && state.ckMonth[key])) return;
+  state.ckMonth[key]='loading';
+  try{
+    const snap=await db.collection('students').doc(sid).collection('checkins')
+      .where(firebase.firestore.FieldPath.documentId(),'>=',ym+'-01').where(firebase.firestore.FieldPath.documentId(),'<=',ym+'-31').get();
+    state.ckMonth[key]=snap.docs.map(d=>cleanCk(d.data(),d.id)).filter(c=>c.date.startsWith(ym));
+  }catch(e){ state.ckMonth[key]='error'; }
+  refreshCkCal();
+}
+function refreshCkCal(){
+  const el=document.getElementById('ckCal'); const s=getStudent(state.selectedId);
+  if(el && s && state.activeTab==='overview') el.innerHTML=ckCalHTML(s);
+}
+function ckCalMove(step){
+  const c=state.ckCal; let [y,m]=c.ym.split('-').map(Number); m+=step; if(m<1){m=12;y--;} if(m>12){m=1;y++;}
+  c.ym=`${y}-${String(m).padStart(2,'0')}`; const t=HC.todayStr();
+  c.sel = t.startsWith(c.ym) ? t : `${c.ym}-01`;
+  refreshCkCal();
+}
+function ckCalToday(){ const t=HC.todayStr(); state.ckCal.ym=t.slice(0,7); state.ckCal.sel=t; refreshCkCal(); }
+function ckCalPick(ds){ state.ckCal.sel=ds; refreshCkCal(); }
+const CK_LABEL={RED:'위험',AMBER:'경고',YELLOW:'주의',GREEN:'좋음',BASE:'기준 만드는 중'};
+function ckCalHTML(s){
+  const cal=ckCalState(s), ym=cal.ym, key=s.id+'|'+ym;
+  let list=state.ckMonth[key];
+  if(!list){ loadCkMonth(s.id, ym); list='loading'; }
+  // 이번 달은 이미 불러온 최근 기록(hist)과 합쳐 오늘 체크인이 바로 보이게
+  const map={};
+  if(Array.isArray(list)) list.forEach(c=>map[c.date]=c);
+  (state.hist[s.id]||[]).forEach(c=>{ if(c.date.startsWith(ym)) map[c.date]=c; });
+  const tc=todayCkOf(s.id); if(tc && tc.date && tc.date.startsWith(ym)) map[tc.date]=tc;
+  const [y,m]=ym.split('-').map(Number);
+  const first=new Date(y,m-1,1).getDay(), last=new Date(y,m,0).getDate(), today=HC.todayStr();
+  const cnt={GREEN:0,YELLOW:0,AMBER:0,RED:0,BASE:0};
+  let cells='';
+  for(let i=0;i<first;i++) cells+='<div class="ckc-blank"></div>';
+  for(let d=1; d<=last; d++){
+    const ds=`${ym}-${String(d).padStart(2,'0')}`, c=map[ds], st=c?(c.status||'BASE'):'';
+    if(c) cnt[st]++;
+    const wd=(first+d-1)%7;
+    const bg=c?STATUS_COLOR[st]:'transparent', fg=c?(st==='RED'?'#ffffff':'#0d1a03'):'';
+    const cls=['ckc-day', c?'has':'', ds===cal.sel?'sel':'', ds===today?'today':'', ds>today?'future':'', !c&&wd===0?'sun':'', !c&&wd===6?'sat':''].filter(Boolean).join(' ');
+    cells+=`<button type="button" class="${cls}" style="${c?`background:${bg};color:${fg};`:''}" onclick="ckCalPick('${ds}')" aria-label="${m}월 ${d}일${c?', '+CK_LABEL[st]+(c.pain?', 통증':''):', 체크인 없음'}">${d}${c&&c.pain?'<i class="ckc-pain"></i>':''}</button>`;
+  }
+  const days=Object.values(map);
+  // 이 달의 반복 패턴: 같은 요일에 주의 이상이 몰리는지 · 같은 부위 통증이 반복되는지
+  const pat=[];
+  const wkName=['일','월','화','수','목','금','토'];
+  const byWd={}; days.forEach(c=>{ const w=new Date(c.date+'T00:00:00').getDay(); (byWd[w]=byWd[w]||{n:0,bad:0}); byWd[w].n++; if(['YELLOW','AMBER','RED'].includes(c.status)) byWd[w].bad++; });
+  Object.entries(byWd).forEach(([w,v])=>{ if(v.bad>=2 && v.bad/v.n>=0.6) pat.push(`<b>${wkName[w]}요일</b>마다 주의 이상 ${v.bad}번 (${v.n}번 중)`); });
+  const pa={}; days.forEach(c=>{ if(c.pain) (c.painAreas||[]).forEach(a=>pa[a]=(pa[a]||0)+1); });
+  Object.entries(pa).sort((a,b)=>b[1]-a[1]).forEach(([a,n])=>{ if(n>=3) pat.push(`<b>${esc(a)}</b> 통증 ${n}번`); });
+  const lowSleep=days.filter(c=>c.sleepMin>0&&c.sleepMin<=360), lowBad=lowSleep.filter(c=>['YELLOW','AMBER','RED'].includes(c.status)).length;
+  if(lowSleep.length>=3 && lowBad/lowSleep.length>=0.6) pat.push(`<b>잠 6시간 이하</b>인 날 ${lowSleep.length}번 중 ${lowBad}번이 주의 이상`);
+  // 고른 날 자세히
+  const sc=map[cal.sel], [sy,sm,sd]=cal.sel.split('-').map(Number);
+  const sw=wkName[new Date(sy,sm-1,sd).getDay()];
+  let detail;
+  if(sc){
+    const st=sc.status||'BASE', col=STATUS_COLOR[st];
+    const sl=sc.sleepMin?`${Math.floor(sc.sleepMin/60)}시간${sc.sleepMin%60?' '+sc.sleepMin%60+'분':''}`:'-';
+    const box=(k,v)=>`<div class="ckc-m"><div>${k}</div><b>${v}</b></div>`;
+    detail=`<div class="ckc-dhead"><b>${sm}월 ${sd}일 (${sw})</b><span class="ckc-badge" style="color:${col};border-color:${col}66;background:${col}22;">${CK_LABEL[st]}</span></div>
+      <div class="ckc-metrics">${box('수면',sl)}${box('피로',sc.fatigue)}${box('근육통',sc.soreness)}${box('스트레스',sc.stress)}${box('준비도',sc.readiness)}</div>
+      ${sc.soreness>0&&(sc.sorenessAreas||[]).length?`<div class="ckc-line">근육통 부위: ${esc(sc.sorenessAreas.join('·'))}</div>`:''}
+      ${sc.pain?`<div class="ckc-line"><b style="color:#ff4b33;">통증</b> ${esc((sc.painAreas||[]).join('·'))}${sc.painLevel!=null?' · '+esc(sc.painLevel)+'/10':''}${sc.painNote?' · "'+esc(sc.painNote)+'"':''}</div>`:''}
+      ${(sc.reasons||[]).length?`<div class="ckc-chips">${sc.reasons.map(r=>`<span>${esc(r)}</span>`).join('')}</div>`:''}`;
+  }else{
+    detail=`<div class="ckc-dhead"><b>${sm}월 ${sd}일 (${sw})</b></div><div class="ckc-line" style="color:var(--text-muted);">${cal.sel>today?'아직 오지 않은 날이에요':'체크인 안 한 날이에요'}</div>`;
+  }
+  const n=days.length;
+  return `<div class="ckc-left">
+    <div class="cal-nav">
+      <button type="button" class="cal-arrow" onclick="ckCalMove(-1)" aria-label="이전 달">‹</button>
+      <div class="cal-month">${y}년 ${m}월</div>
+      <button type="button" class="cal-arrow" onclick="ckCalMove(1)" aria-label="다음 달">›</button>
+      <button type="button" class="cal-today-btn" onclick="ckCalToday()">오늘</button>
+    </div>
+    <div class="ckc-sum">체크인 <b>${n}일</b>${['GREEN','YELLOW','AMBER','RED'].map(k=>cnt[k]?` <span style="color:${STATUS_COLOR[k]};">${CK_LABEL[k]} ${cnt[k]}</span>`:'').join('')}${cnt.BASE?` <span style="color:${STATUS_COLOR.BASE};">기준 만드는 중 ${cnt.BASE}</span>`:''}</div>
+    <div class="cal-week"><span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span></div>
+    <div class="ckc-grid">${cells}</div>
+    ${list==='loading'?'<div class="cal-loading">불러오는 중…</div>':list==='error'?'<div class="cal-loading">이 달 기록을 불러오지 못했어요. 새로고침해 주세요.</div>':''}
+    <div class="ckc-legend">${['GREEN','YELLOW','AMBER','RED'].map(k=>`<span><i style="background:${STATUS_COLOR[k]}"></i>${CK_LABEL[k]}</span>`).join('')}<span><i class="ckc-pain-l"></i>통증</span></div>
+    </div><div class="ckc-right">
+    <div class="ckc-detail">${detail}</div>
+    ${pat.length?`<div class="insight-box flag ckc-pat"><b>이 달 반복 패턴</b><br>${pat.join('<br>')}</div>`:''}
+    </div>`;
+}
 function renderCheckinCard(s){
   const t=todayCkOf(s.id);
   if(!t){
