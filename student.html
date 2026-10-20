@@ -58,6 +58,8 @@
   .consent{ display:flex; gap:10px; align-items:flex-start; margin-top:22px; font-size:14px; color:var(--muted); line-height:1.5; }
   .consent input{ width:22px; height:22px; margin:0; flex-shrink:0; accent-color:var(--lime); }
   .box{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .lbl{ display:block; font-size:13px; color:var(--muted); margin-bottom:6px; font-weight:600; }
+  #me-edit .box input.txt, #me-edit .box select.txt{ background:var(--bg,#12151c); }
   .day-grid{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; }
   .day-b{ min-height:48px; min-width:0; border-radius:12px; border:1px solid var(--line); background:var(--surface-2,#222836); color:var(--muted); font:inherit; font-size:16px; font-weight:800; cursor:pointer; }
   .day-b.on{ background:var(--lime); border-color:var(--lime); color:#0d1a03; }
@@ -327,7 +329,8 @@
 <section id="screen-me" class="screen hidden">
   <h1>내 정보</h1>
   <div class="box" id="me-summary"></div>
-  <p class="note" style="margin-top:12px">정보를 바꾸려면 선생님께 말씀해 주세요.</p>
+  <div id="me-edit"></div>
+  <p class="note" style="margin-top:12px">이름·학년·지점·목표 학교는 직접 고칠 수 있어요. 부상 이력은 선생님께 말씀해 주세요.</p>
   <div class="box" id="me-days" style="margin-top:20px"></div>
   <div class="box install" id="me-install" style="margin-top:20px"></div>
   <button class="btn btn-2" style="margin-top:20px" onclick="if(confirm('로그아웃할까요? 다시 들어올 때 구글 로그인이 필요해요.')) logout()">로그아웃</button>
@@ -1042,9 +1045,59 @@ document.addEventListener('click',e=>{
   daysDraft = cur.includes(d) ? cur.filter(x=>x!==d) : WEEK.filter(w=>cur.includes(w)||w===d);
   refreshDaysUI();
 });
+/* ---- 내 정보 고치기: 학생 문서의 이름·학년·지점·목표만 (규칙에서도 이 칸만 허용) ---- */
+let myInfo=null, myReq=null, infoEditing=false, infoSaving=false, infoDraft=null;
+function meSummaryHTML(){
+  const i=myInfo||{ name:myStudent.name, grade:myReq&&myReq.grade||'', branch:myReq&&myReq.branch||'', target:myReq&&myReq.targetSchool||'' };
+  const inj=myReq ? (myReq.injury===true?('있음'+(myReq.injuryNote?' · '+myReq.injuryNote:'')):myReq.injury===false?'없음':'-') : '-';
+  return [['이름',i.name],['학년',i.grade||'-'],['지점',i.branch||'-'],['목표 학교',i.target||'-'],['부상 이력',inj]].map(([k,v])=>`<div class="kv"><b>${k}</b><span>${esc(v)}</span></div>`).join('');
+}
+function meEditHTML(){
+  if(!myInfo) return '';
+  if(!infoEditing) return `<button type="button" class="btn btn-2" data-a="info-edit">✏️ 내 정보 고치기</button>`;
+  const d=infoDraft;
+  const brs=branches.length?branches:(d.branch?[d.branch]:[]);
+  return `<div class="box" style="margin-top:12px">
+    <label class="lbl" for="mi-name">이름</label><input id="mi-name" class="txt" maxlength="20" value="${esc(d.name)}" autocomplete="name">
+    <div class="lbl" style="margin-top:12px">학년</div><div class="chips" id="mi-grade">${GRADES.map(g=>`<button type="button" class="chip ${d.grade===g?'on':''}" aria-pressed="${d.grade===g}" data-a="mi-g" data-g="${g}">${g}</button>`).join('')}</div>
+    <label class="lbl" for="mi-branch" style="margin-top:12px">지점</label><select id="mi-branch" class="txt">${brs.map(b=>`<option ${d.branch===b?'selected':''}>${esc(b)}</option>`).join('')}</select>
+    <label class="lbl" for="mi-target" style="margin-top:12px">목표 학교 (선택)</label><input id="mi-target" class="txt" maxlength="40" value="${esc(d.target)}" placeholder="예: 부산대 체육교육과">
+    <p class="note" id="mi-msg" role="alert" style="color:#ff7a66;min-height:18px;margin:8px 0 0"></p>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button type="button" class="btn btn-2" style="flex:0 0 96px;margin-top:0" data-a="info-cancel">취소</button>
+      <button type="button" class="btn" style="flex:1" data-a="info-save" ${infoSaving?'disabled':''}>${infoSaving?'저장 중…':'저장'}</button>
+    </div></div>`;
+}
+function refreshMe(){ const a=$('me-summary'); if(a) a.innerHTML=meSummaryHTML(); const b=$('me-edit'); if(b) b.innerHTML=meEditHTML(); }
+function readInfoDraft(){ if(!infoDraft) return; const n=$('mi-name'), b=$('mi-branch'), t=$('mi-target'); if(n) infoDraft.name=n.value; if(b) infoDraft.branch=b.value; if(t) infoDraft.target=t.value; }
+async function saveInfo(){
+  readInfoDraft();
+  const d={ name:infoDraft.name.replace(/\s+/g,' ').trim(), grade:infoDraft.grade, branch:infoDraft.branch, target:infoDraft.target.replace(/\s+/g,' ').trim() };
+  const msg=t=>{ const m=$('mi-msg'); if(m) m.textContent=t; };
+  if(d.name.length<2 || d.name.length>20){ msg('이름은 2~20자로 적어 주세요'); return; }
+  if(!GRADES.includes(d.grade)){ msg('학년을 골라 주세요'); return; }
+  if(!d.branch){ msg('지점을 골라 주세요'); return; }
+  if(navigator.onLine===false){ msg('인터넷이 끊겨 있어요. 연결된 뒤 다시 눌러 주세요'); return; }
+  const upd={ infoAt:Date.now() }; ['name','grade','branch','target'].forEach(k=>{ if(d[k]!==myInfo[k]) upd[k]=d[k]; });
+  if(Object.keys(upd).length===1){ infoEditing=false; refreshMe(); return; }
+  infoSaving=true; refreshMe();
+  let err='';
+  try{ await db.collection('students').doc(myStudent.id).update(upd); myInfo=Object.assign({}, myInfo, d); myStudent.name=d.name; infoEditing=false; }
+  catch(e){ err = e&&e.code==='permission-denied' ? '아직 저장할 수 없어요. 선생님께 "내 정보 고치기 설정"을 부탁해 주세요.' : '저장하지 못했어요. 인터넷을 확인하고 다시 눌러 주세요.'; }
+  finally{ infoSaving=false; refreshMe(); if(err){ const m=$('mi-msg'); if(m) m.textContent=err; } }
+  if(!err){ const b=$('me-edit'); if(b) b.insertAdjacentHTML('afterbegin','<p class="note" role="status" style="color:var(--lime);margin:0 0 8px">저장했어요</p>'); }
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a="info-edit"],[data-a="info-cancel"],[data-a="info-save"],[data-a="mi-g"]'); if(!b) return;
+  if(b.dataset.a==='info-edit'){ infoEditing=true; infoDraft=Object.assign({}, myInfo); if(!branches.length) loadBranches().then(refreshMe); refreshMe(); setTimeout(()=>$('mi-name')&&$('mi-name').focus(),30); }
+  else if(b.dataset.a==='info-cancel'){ infoEditing=false; infoDraft=null; refreshMe(); }
+  else if(b.dataset.a==='info-save'){ saveInfo(); }
+  else { readInfoDraft(); infoDraft.grade=b.dataset.g; refreshMe(); }
+});
 async function openMe(fromPop){
-  const d=await db.collection('joinRequests').doc(auth.currentUser.uid).get();
-  $('me-summary').innerHTML=d.exists?summaryHTML(d.data()):`<div class="kv"><b>이름</b><span>${esc(myStudent.name)}</span></div>`;
+  infoEditing=false; infoDraft=null;
+  try{ const d=await db.collection('joinRequests').doc(auth.currentUser.uid).get(); myReq=d.exists?d.data():null; }catch(e){ myReq=null; }
+  refreshMe();
   $('me-install').innerHTML=installHTML();
   daysDraft=null; refreshDaysUI();
   show('screen-me',fromPop);
@@ -1483,6 +1536,7 @@ async function loadPerfData(){
     const x=d.value.exists?d.value.data():{};
     // 학생 기록 저장소에 안전하게 들어갈 수 있는 이름의 종목만 보여 준다 (예: '/' 가 들어간 이름은 제외)
     myDays=Array.isArray(x.days)?WEEK.filter(w=>x.days.includes(w)):[]; myDaysLoaded=true; refreshDaysUI();
+    myInfo={ name:String(x.name||myStudent.name||''), grade:String(x.grade||''), branch:String(x.branch||''), target:String(x.target||'') };
     perf.coach={events:Array.isArray(x.events)?x.events.filter(e=>PERF.safeEvent(e)):[],
       targets:(x.targets&&typeof x.targets==='object')?x.targets:{}, records:(x.records&&typeof x.records==='object')?x.records:{}};
     perf.denied.doc=false;

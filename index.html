@@ -3899,7 +3899,7 @@ function listDynHTML(){
   const list=state.students.filter(s=>(!state.listBr||s.branch===state.listBr) && (!q||String(s.name).includes(q))).sort((a,b)=>(a.branch||'힣').localeCompare(b.branch||'힣')||String(a.name).localeCompare(String(b.name)));
   if(!state.studentsLoaded) return '<div class="empty-mini">학생 명단 불러오는 중…</div>';
   if(!list.length) return `<div class="empty-mini">${q||state.listBr?'조건에 맞는 학생이 없어요':'학생이 없어요. 새 학생은 가입 승인으로 들어와요.'}</div>`;
-  return `<div class="stat-note" style="margin-bottom:10px;">${list.length}명 · 이름을 누르면 학생 상세, ✏️ 수정으로 학생 정보 고치기</div>
+  return `<div class="stat-note" style="margin-bottom:10px;">${list.length}명 · 누르면 학생 상세(종합 리포트·캘린더)로 이동</div>
     <div class="mgmt-list">${list.map(s=>{ const st=statusOf(s), c=st?STATUS_COLOR[st]:'#8b94a9', d=daysOf(s), p=payOf(s,ym);
       return `<div class="mgmt-rowx"><button type="button" class="mgmt-row" onclick="selectStudent('${s.id}')">
         <span class="mr-av">${esc(String(s.name).slice(0,1))}</span>
@@ -3907,7 +3907,7 @@ function listDynHTML(){
           <span class="mr-sub">${esc(s.branch||'지점 없음')} · ${esc(s.grade||'')}</span>
           <span class="mr-days">${d.length?d.join('·')+' · 주 '+d.length+'회':'수업 요일 학생 미입력'}</span></span>
         <span class="mr-pay ${p?'on':''}">${p?'✓ '+payLabel(ym):Number(ym.slice(5,7))+'월 미결제'}</span>
-      </button><button type="button" class="mr-edit" onclick="openEditStudentModal('${s.id}')" aria-label="${esc(s.name)} 정보 수정">✏️<span>수정</span></button></div>`; }).join('')}</div>`;
+      </button></div>`; }).join('')}</div>`;
 }
 function listRefresh(){ const el=document.getElementById('listDyn'); if(el) el.innerHTML=listDynHTML(); }
 // --- 학원비 탭 ---
