@@ -582,6 +582,17 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .mgmt-search .student-search{ margin:0; flex:1 1 180px; min-width:0; min-height:44px; font-size:16px; }
   .mgmt-search select.student-search{ flex:0 1 160px; }
   .mgmt-list{ display:flex; flex-direction:column; gap:8px; }
+  .search-wrap{ position:relative; flex:1 1 180px; min-width:0; display:flex; }
+  .search-wrap .student-search{ flex:1; padding-right:44px; margin:0; }
+  .search-wrap input[type=search]::-webkit-search-cancel-button{ -webkit-appearance:none; display:none; }
+  .search-x{ position:absolute; right:4px; top:50%; transform:translateY(-50%); width:36px; height:36px; border:none; border-radius:50%; background:transparent; color:var(--text-muted); font-size:22px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .search-x:hover{ color:var(--text); background:var(--surface); }
+  .search-x[hidden]{ display:none; }
+  .mgmt-rowx{ display:flex; gap:8px; align-items:stretch; }
+  .mgmt-rowx .mgmt-row{ flex:1; min-width:0; }
+  .mr-edit{ flex:0 0 auto; width:64px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border-radius:14px; border:1px solid var(--line); background:var(--surface); color:var(--text); cursor:pointer; font-family:inherit; font-size:16px; }
+  .mr-edit span{ font-size:11.5px; font-weight:800; color:var(--text-muted); }
+  .mr-edit:hover{ border-color:var(--lime); }
   .mgmt-row{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px; color:var(--text); cursor:pointer; font-family:inherit; }
   .mr-av{ width:40px; height:40px; flex:0 0 auto; border-radius:10px; background:var(--surface-2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-weight:800; }
   .mr-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
@@ -1155,6 +1166,10 @@ function getFilteredStudents(){
     return a.name.localeCompare(b.name, 'ko');
   });
 }
+function clearSearch(id){
+  const el=document.getElementById(id); if(!el) return;
+  el.value=''; el.dispatchEvent(new Event('input', {bubbles:true})); el.focus();
+}
 function filterStudentList(){
   const listEl = document.querySelector('.student-list');
   if(!listEl) return;
@@ -1186,7 +1201,7 @@ function renderSidebar(){
       <button class="add-btn sb-dup" style="background:var(--surface-2); border:1px solid var(--lime); color:var(--lime); margin-top:-6px; position:relative;" onclick="openTeamView()">📋 오늘 브리핑${dangerCount>0?` <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:var(--accent); color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">위험 ${dangerCount}</span>`:''}</button>
       <button class="add-btn sb-dup" style="background:var(--lime); color:#0d1a03; margin-top:-6px;" onclick="openClassLogView()">📝 수업일지</button>
       <button class="add-btn" style="background:var(--surface-2); border:1px solid var(--line); color:var(--text); margin-top:-6px; margin-bottom:12px;" onclick="openMgmt('pay')">👥 학생관리 · ${payLabel(HC.todayStr().slice(0,7))} ${payDoneCount()}/${state.students.length}</button>
-      <input class="student-search" id="searchInput" placeholder="학생 이름 검색" value="${esc(q)}" oninput="filterStudentList()" style="margin-bottom:8px;">
+      <div class="search-wrap" style="margin-bottom:8px; flex:0 0 auto;"><input class="student-search" id="searchInput" placeholder="학생 이름 검색" aria-label="학생 이름 검색" value="${esc(q)}" oninput="filterStudentList(); this.nextElementSibling.hidden=!this.value;" style="margin-bottom:0;"><button type="button" class="search-x" aria-label="검색어 지우기" onclick="clearSearch('searchInput')" ${q?'':'hidden'}>×</button></div>
       <select id="branchFilter" class="student-search" onchange="state.sidebarBranchFilter=this.value; filterStudentList();" style="margin-bottom:12px;">
         <option value="" ${!branchFilter?'selected':''}>전체 지점</option>
         ${BRANCHES.map(b=>`<option value="${b}" ${branchFilter===b?'selected':''}>${b}</option>`).join('')}
@@ -2447,7 +2462,7 @@ function userIsTyping(){
   const app=document.getElementById('app'); if(!app) return false;
   const a=document.activeElement;
   if(a && app.contains(a) && !a.closest('.sidebar') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && !/^(checkbox|radio)$/.test(a.type)) return true;
-  return [...app.querySelectorAll('main textarea, main input')].some(el=>!/^(checkbox|radio)$/.test(el.type) ? el.value!==el.defaultValue : el.checked!==el.defaultChecked);
+  return [...app.querySelectorAll('main textarea, main input')].filter(el=>!el.classList.contains('student-search') && !el.closest('.pi-date')).some(el=>!/^(checkbox|radio)$/.test(el.type) ? el.value!==el.defaultValue : el.checked!==el.defaultChecked);
 }
 // 코치가 방금 직접 저장·삭제한 결과는 바로 보여 줘야 하므로(기록 추가 등), 직접 쓴 뒤 3초 동안은 미루지 않는다
 function markUserWrite(){ state.lastUserWrite=Date.now(); }
@@ -3872,7 +3887,7 @@ function renderMgmtView(){
 // --- 학생 목록 탭 ---
 function renderListTab(){
   return `<div class="mgmt-search">
-      <input type="search" id="listQ" class="student-search" placeholder="학생 이름 검색" aria-label="학생 이름 검색" value="${esc(state.listQ)}" oninput="state.listQ=this.value; listRefresh();">
+      <div class="search-wrap"><input type="search" id="listQ" class="student-search" placeholder="학생 이름 검색" aria-label="학생 이름 검색" value="${esc(state.listQ)}" oninput="state.listQ=this.value; listRefresh(); this.nextElementSibling.hidden=!this.value;"><button type="button" class="search-x" aria-label="검색어 지우기" onclick="clearSearch('listQ')" ${state.listQ?'':'hidden'}>×</button></div>
       <select class="student-search" aria-label="지점" onchange="state.listBr=this.value; listRefresh();">
         <option value="">전체 지점</option>${BRANCHES.map(b=>`<option ${state.listBr===b?'selected':''}>${b}</option>`).join('')}
       </select>
@@ -3884,15 +3899,15 @@ function listDynHTML(){
   const list=state.students.filter(s=>(!state.listBr||s.branch===state.listBr) && (!q||String(s.name).includes(q))).sort((a,b)=>(a.branch||'힣').localeCompare(b.branch||'힣')||String(a.name).localeCompare(String(b.name)));
   if(!state.studentsLoaded) return '<div class="empty-mini">학생 명단 불러오는 중…</div>';
   if(!list.length) return `<div class="empty-mini">${q||state.listBr?'조건에 맞는 학생이 없어요':'학생이 없어요. 새 학생은 가입 승인으로 들어와요.'}</div>`;
-  return `<div class="stat-note" style="margin-bottom:10px;">${list.length}명 · 누르면 학생 상세(종합 리포트·캘린더)로 이동</div>
+  return `<div class="stat-note" style="margin-bottom:10px;">${list.length}명 · 이름을 누르면 학생 상세, ✏️ 수정으로 학생 정보 고치기</div>
     <div class="mgmt-list">${list.map(s=>{ const st=statusOf(s), c=st?STATUS_COLOR[st]:'#8b94a9', d=daysOf(s), p=payOf(s,ym);
-      return `<button type="button" class="mgmt-row" onclick="selectStudent('${s.id}')">
+      return `<div class="mgmt-rowx"><button type="button" class="mgmt-row" onclick="selectStudent('${s.id}')">
         <span class="mr-av">${esc(String(s.name).slice(0,1))}</span>
         <span class="mr-main"><span class="mr-top"><b>${esc(s.name)}</b><em style="color:${c}; border-color:${c}66; background:${c}1a;">${st?(CK_LABEL[st]||st):'미입력'}</em></span>
           <span class="mr-sub">${esc(s.branch||'지점 없음')} · ${esc(s.grade||'')}</span>
           <span class="mr-days">${d.length?d.join('·')+' · 주 '+d.length+'회':'수업 요일 학생 미입력'}</span></span>
         <span class="mr-pay ${p?'on':''}">${p?'✓ '+payLabel(ym):Number(ym.slice(5,7))+'월 미결제'}</span>
-      </button>`; }).join('')}</div>`;
+      </button><button type="button" class="mr-edit" onclick="openEditStudentModal('${s.id}')" aria-label="${esc(s.name)} 정보 수정">✏️<span>수정</span></button></div>`; }).join('')}</div>`;
 }
 function listRefresh(){ const el=document.getElementById('listDyn'); if(el) el.innerHTML=listDynHTML(); }
 // --- 학원비 탭 ---
@@ -3906,7 +3921,7 @@ function renderPayTab(){
     </div>
     <div id="paySum">${paySumHTML()}</div>
     <div class="mgmt-search">
-      <input type="search" id="payQ" class="student-search" placeholder="학생 이름 검색" aria-label="학생 이름 검색" value="${esc(f.q)}" oninput="state.payF.q=this.value; payRefresh();">
+      <div class="search-wrap"><input type="search" id="payQ" class="student-search" placeholder="학생 이름 검색" aria-label="학생 이름 검색" value="${esc(f.q)}" oninput="state.payF.q=this.value; payRefresh(); this.nextElementSibling.hidden=!this.value;"><button type="button" class="search-x" aria-label="검색어 지우기" onclick="clearSearch('payQ')" ${f.q?'':'hidden'}>×</button></div>
       <button type="button" id="payFBtn" class="pay-fbtn ${fc||state.payFOpen?'on':''}" aria-expanded="${state.payFOpen}" onclick="state.payFOpen=!state.payFOpen; payRefresh();">필터${fc?' · '+fc:''}</button>
     </div>
     <div id="payFilters">${payFiltersHTML()}</div>
