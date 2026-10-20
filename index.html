@@ -636,6 +636,14 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .day-btn input:checked + span{ background:var(--lime); border-color:var(--lime); color:#0d1a03; }
   .day-btn input:focus-visible + span{ outline:2px solid #fff; outline-offset:2px; }
   .modal-actions .confirm.danger{ background:#ff4b33; color:#fff; }
+  .pk-who{ background:var(--surface-2); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:6px; }
+  .pk-name{ font-size:20px; font-weight:800; }
+  .pk-kv{ display:flex; justify-content:space-between; gap:10px; font-size:13.5px; } .pk-kv span{ color:var(--text-dim); } .pk-kv b{ text-align:right; overflow-wrap:anywhere; }
+  .pk-save{ display:flex; gap:8px; align-items:flex-start; font-size:13px; color:var(--text-muted); text-transform:none; letter-spacing:0; line-height:1.5; cursor:pointer; }
+  .pk-save input{ width:18px; height:18px; margin-top:2px; accent-color:var(--lime); flex:0 0 auto; }
+  .pay-confirm input#pkDate{ font-size:16px; }
+  .pay-confirm .modal-actions .confirm{ background:var(--lime); color:#0d1a03; }
+  .days-ro{ font-size:14px; padding:10px 12px; background:var(--surface-2); border-radius:10px; }
   .pay-chip:disabled{ opacity:.5; }
   .ck-cal-card{ padding:16px; display:grid; grid-template-columns:minmax(0,1fr); gap:16px; align-items:start; }
   @media (min-width:1100px){ .ck-cal-card{ grid-template-columns:minmax(0,480px) minmax(0,1fr); } }
@@ -2724,12 +2732,12 @@ function openEditStudentModal(sid){
           </select>
         </div>
         <div class="field"><label>목표</label><input name="target" value="${esc(s.target||'')}"></div>
-        <div class="field"><label>수업 요일 <b id="dayCnt" style="color:var(--lime); margin-left:6px;">${daysOf(s).length?'주 '+daysOf(s).length+'회':'미설정'}</b></label>
-          <div class="day-pick">${WEEK.map(w=>`<label class="day-btn"><input type="checkbox" name="days" value="${w}" ${daysOf(s).includes(w)?'checked':''} onchange="const n=this.form.querySelectorAll('input[name=days]:checked').length; document.getElementById('dayCnt').textContent=n?'주 '+n+'회':'미설정';"><span>${w}</span></label>`).join('')}</div>
-          <div class="stat-note" style="margin-top:4px;">고른 요일 수로 주당 횟수가 자동 계산돼요</div></div>
+        <div class="field"><label>수업 요일</label>
+          <div class="days-ro">${daysOf(s).length?`<b>${daysOf(s).join('·')}</b> · 주 ${daysOf(s).length}회`:'<span style="color:var(--text-dim);">아직 안 정함</span>'}${s.daysAt?` <span class="stat-note">(학생이 ${md(localYmd(new Date(s.daysAt)))}에 고침)</span>`:''}</div>
+          <div class="stat-note" style="margin-top:4px;">요일은 학생이 학생 앱 '내 정보'에서 직접 고르고 고쳐요</div></div>
         <div class="field"><label for="feeIn">월 수강료</label>
           <div style="display:flex; align-items:center; gap:8px;"><input id="feeIn" name="fee" inputmode="numeric" autocomplete="off" placeholder="미설정" value="${feeOf(s)!=null?feeOf(s).toLocaleString('ko-KR'):''}" oninput="const d=this.value.replace(/[^0-9]/g,'').replace(/^0+/,'').slice(0,8); this.value=d?Number(d).toLocaleString('ko-KR'):'';" style="text-align:right;"><span>원</span></div>
-          <div class="stat-note" style="margin-top:4px;">숫자만 입력 · 비우면 미설정 · 바꿔도 지난 결제 금액은 그대로예요</div></div>
+          <div class="stat-note" style="margin-top:4px;">숫자만 입력 · 비우면 미설정 · 결제 체크할 때 자동으로 채워져요 · 바꿔도 지난 결제 금액은 그대로예요</div></div>
         <div class="field">
           <label>재활이 필요했던 부상 이력</label>
           <select name="rehabHistory">
@@ -2757,11 +2765,10 @@ async function submitEditStudent(e, sid){
   s.branch = cleanField(f.get('branch'),20);
   s.target = cleanField(f.get('target'),60);
   s.rehabHistory = f.get('rehabHistory')==='true';
-  const days = WEEK.filter(w=>f.getAll('days').includes(w));
   const feeDigits = String(f.get('fee')||'').replace(/[^0-9]/g,'');
   const fee = feeDigits ? Number(feeDigits) : null;
   if(fee!=null && (fee<1000 || fee>10000000)){ showToast('수강료를 다시 확인해 주세요 (1,000원 ~ 10,000,000원)'); return; }
-  s.days = days; s.fee = fee;
+  s.fee = fee;
   closeModal();
   const ok = await saveStudent(s);
   if(ok) showToast('학생 정보가 수정되었습니다');
@@ -3883,7 +3890,7 @@ function listDynHTML(){
         <span class="mr-av">${esc(String(s.name).slice(0,1))}</span>
         <span class="mr-main"><span class="mr-top"><b>${esc(s.name)}</b><em style="color:${c}; border-color:${c}66; background:${c}1a;">${st?(CK_LABEL[st]||st):'미입력'}</em></span>
           <span class="mr-sub">${esc(s.branch||'지점 없음')} · ${esc(s.grade||'')}</span>
-          <span class="mr-days">${d.length?d.join('·')+' · 주 '+d.length+'회':'수업 요일 미설정'}</span></span>
+          <span class="mr-days">${d.length?d.join('·')+' · 주 '+d.length+'회':'수업 요일 학생 미입력'}</span></span>
         <span class="mr-pay ${p?'on':''}">${p?'✓ '+payLabel(ym):Number(ym.slice(5,7))+'월 미결제'}</span>
       </button>`; }).join('')}</div>`;
 }
@@ -3937,7 +3944,7 @@ function payDynHTML(){
     const cancel = r && r.canceled ? `<div class="pi-cancel">취소됨 ${r.canceledAt?md(localYmd(new Date(r.canceledAt))):''} · 사유: ${esc(r.cancelReason||'-')}</div>` : '';
     return `<div class="pay-item ${p?'paid':'unpaid'}">
       <div class="pi-who"><b>${esc(s.name)}</b><span>${esc(s.branch||'지점 없음')} · ${esc(s.grade||'')}</span></div>
-      <div class="pi-meta"><span><em>요일</em> ${d.length?d.join('·'):'미설정'}</span><span><em>주</em> ${d.length?d.length+'회':'-'}</span><span><em>수강료</em> ${won(feeOf(s))}</span></div>
+      <div class="pi-meta"><span><em>요일</em> ${d.length?d.join('·'):'학생 미입력'}</span><span><em>주</em> ${d.length?d.length+'회':'-'}</span><span><em>수강료</em> ${won(feeOf(s))}</span></div>
       <div class="pi-pay">${p?`<label class="pi-date"><span>결제일</span><input type="date" value="${p.date}" max="${today}" aria-label="${esc(s.name)} 결제일" ${busy?'disabled':''} onchange="payDate('${s.id}','${ym}',this)"></label><span class="pi-amt">${p.amount!=null?won(p.amount):'금액 미기록'}</span>`:cancel}</div>
       <button type="button" class="pay-btn ${p?'on':''}" ${busy||future?'disabled':''} onclick="payCheck('${s.id}','${ym}')" aria-label="${esc(s.name)} ${Number(ym.slice(5,7))}월 ${p?'결제 완료, 누르면 취소':'결제 체크'}">${busy?'저장 중…':p?'✓ 결제 완료':'결제 체크'}</button>
     </div>`; }).join('');
@@ -3985,15 +3992,16 @@ function payCSV(){
   showToast(`지금 보이는 ${rows.length}명을 CSV로 저장했어요`);
 }
 // --- 저장: 결제 칸 하나만 고친다 (다른 학생 정보를 덮어쓰지 않게) ---
-async function payWrite(s, ym, rec, okMsg){
+async function payWrite(s, ym, rec, okMsg, extra){
   if(!db){ showToast('Firebase 설정이 필요합니다'); return false; }
   if(navigator.onLine===false){ showToast('인터넷이 끊겨 있어요. 연결된 뒤 다시 해 주세요'); return false; }
   if(state.payBusy[s.id]) return false;
   state.payBusy[s.id]=1; payRefreshAll();
   markUserWrite();
   try{
-    await db.collection('students').doc(s.id).update({ ['pay.'+ym]: rec });
+    await db.collection('students').doc(s.id).update(Object.assign({ ['pay.'+ym]: rec }, extra||{}));
     s.pay=Object.assign({}, (s.pay&&typeof s.pay==='object')?s.pay:{}, { [ym]:rec });
+    if(extra && 'fee' in extra) s.fee=extra.fee;
     showToast(okMsg); return true;
   }catch(e){
     showToast('저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'저장 권한이 없어요':e&&e.code==='unavailable'?'인터넷 연결을 확인해 주세요':(e&&e.message||'다시 시도해 주세요')));
@@ -4001,17 +4009,54 @@ async function payWrite(s, ym, rec, okMsg){
   }finally{ delete state.payBusy[s.id]; payRefreshAll(); }
 }
 function histEntry(r){ return { date:r.date||null, amount:r.amount??null, by:r.by||'', at:r.at||null, canceledAt:r.canceledAt||null, canceledBy:r.canceledBy||'', reason:r.cancelReason||'' }; }
-async function payCheck(sid, ym){
+function payCheck(sid, ym){
   const s=getStudent(sid); if(!s || state.payBusy[sid]) return;
   if(payOf(s,ym)){ openPayCancel(sid, ym); return; }
-  const today=HC.todayStr();
-  if(ym>today.slice(0,7)){ showToast('아직 오지 않은 달이에요'); return; }
+  if(ym>HC.todayStr().slice(0,7)){ showToast('아직 오지 않은 달이에요'); return; }
+  openPayConfirm(sid, ym);
+}
+// 결제 체크: 학생 정보를 한 번 더 확인하고, 이번 달 결제 금액을 적는다
+function openPayConfirm(sid, ym){
+  const s=getStudent(sid); if(!s) return;
+  const d=daysOf(s), fee=feeOf(s), today=HC.todayStr();
+  const defDate = ym===today.slice(0,7) ? today : (ym+'-'+String(new Date(Number(ym.slice(0,4)), Number(ym.slice(5,7)), 0).getDate()).padStart(2,'0'));
+  openModal(`<div class="modal pay-confirm" role="dialog" aria-labelledby="pkTitle">
+    <h3 id="pkTitle">${Number(ym.slice(5,7))}월결제 확인</h3>
+    <div class="pk-who">
+      <div class="pk-name">${esc(s.name)}</div>
+      <div class="pk-kv"><span>지점 · 학년</span><b>${esc(s.branch||'지점 없음')} · ${esc(s.grade||'-')}</b></div>
+      <div class="pk-kv"><span>수업 요일</span><b>${d.length?d.join('·')+' · 주 '+d.length+'회':'학생 미입력'}</b></div>
+      <div class="pk-kv"><span>지금 월 수강료</span><b>${won(fee)}</b></div>
+    </div>
+    <div class="stat-note" style="margin:10px 0;">이 학생이 맞는지 이름과 지점을 확인해 주세요.</div>
+    <div class="field"><label for="pkAmt">이번 달 결제 금액 (필수)</label>
+      <div style="display:flex; align-items:center; gap:8px;"><input id="pkAmt" inputmode="numeric" autocomplete="off" placeholder="예: 300,000" value="${fee!=null?fee.toLocaleString('ko-KR'):''}" oninput="const v=this.value.replace(/[^0-9]/g,'').replace(/^0+/,'').slice(0,8); this.value=v?Number(v).toLocaleString('ko-KR'):''; const c=document.getElementById('pkSave'); if(c && ${fee==null?'true':'false'}===false) c.checked = Number(v)!==${fee==null?0:fee};" style="text-align:right; font-size:18px; font-weight:800;"><span>원</span></div></div>
+    <label class="pk-save"><input type="checkbox" id="pkSave" ${fee==null?'checked':''}><span>이 금액을 이 학생의 <b>월 수강료</b>로 저장 (다음 달부터 자동으로 채워져요)</span></label>
+    <div class="field" style="margin-top:10px;"><label for="pkDate">결제일</label><input type="date" id="pkDate" value="${defDate}" max="${today}"></div>
+    <div id="pkErr" class="stat-note" style="color:#ff7a66; min-height:18px;" role="alert"></div>
+    <div class="modal-actions">
+      <button type="button" class="cancel" onclick="closeModal()">닫기</button>
+      <button type="button" class="confirm" id="pkOk" onclick="submitPayConfirm('${sid}','${ym}')">결제 확인</button>
+    </div></div>`);
+  setTimeout(()=>{ const a=document.getElementById('pkAmt'); if(a && !a.value) a.focus(); }, 50);
+}
+async function submitPayConfirm(sid, ym){
+  const s=getStudent(sid), err=document.getElementById('pkErr'), btn=document.getElementById('pkOk');
+  if(!s){ closeModal(); return; }
+  if(payOf(s,ym)){ closeModal(); showToast('이미 다른 곳에서 결제 확인됐어요'); return; }
+  const amt=Number(String(document.getElementById('pkAmt').value||'').replace(/[^0-9]/g,''));
+  const date=document.getElementById('pkDate').value, today=HC.todayStr();
+  if(!amt || amt<1000 || amt>10000000){ err.textContent='결제 금액을 적어 주세요 (1,000원 ~ 10,000,000원)'; document.getElementById('pkAmt').focus(); return; }
+  if(!PERF.validDate(date) || date>today || date<'2025-01-01'){ err.textContent='결제일을 오늘이나 그 전으로 골라 주세요'; return; }
   const prev=payRec(s,ym);
-  const rec={ date:today, by:currentCoachEmail||'', at:Date.now() };
-  const fee=feeOf(s); if(fee!=null) rec.amount=fee;   // 체크하는 순간의 수강료를 같이 남김 (나중에 수강료가 바뀌어도 그대로)
+  const rec={ date, by:currentCoachEmail||'', at:Date.now(), amount:amt };
   const hist=[...((prev&&Array.isArray(prev.history))?prev.history:[]), ...(prev&&prev.canceled?[histEntry(prev)]:[])].slice(-20);
   if(hist.length) rec.history=hist;
-  await payWrite(s, ym, rec, `${s.name} ${payLabel(ym)} 확인 · ${md(today)}`);
+  const saveFee=document.getElementById('pkSave')?.checked;
+  btn.disabled=true; btn.textContent='저장 중…';
+  const ok=await payWrite(s, ym, rec, `${s.name} ${payLabel(ym)} 확인 · ${won(amt)} · ${md(date)}`, saveFee?{ fee:amt }:null);
+  if(ok) closeModal();
+  else{ err.textContent='저장하지 못해서 결제 확인이 안 됐어요. 인터넷을 확인하고 다시 눌러 주세요.'; btn.disabled=false; btn.textContent='결제 확인'; }
 }
 async function payDate(sid, ym, el){
   const s=getStudent(sid), p=s&&payOf(s,ym); if(!p) return;

@@ -58,6 +58,10 @@
   .consent{ display:flex; gap:10px; align-items:flex-start; margin-top:22px; font-size:14px; color:var(--muted); line-height:1.5; }
   .consent input{ width:22px; height:22px; margin:0; flex-shrink:0; accent-color:var(--lime); }
   .box{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .day-grid{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; }
+  .day-b{ min-height:48px; min-width:0; border-radius:12px; border:1px solid var(--line); background:var(--surface-2,#222836); color:var(--muted); font:inherit; font-size:16px; font-weight:800; cursor:pointer; }
+  .day-b.on{ background:var(--lime); border-color:var(--lime); color:#0d1a03; }
+  .days-hint{ display:block; width:100%; text-align:left; margin-top:14px; color:var(--text); font:inherit; cursor:pointer; border-color:var(--lime); }
   .kv{ display:grid; grid-template-columns:76px minmax(0,1fr); gap:8px; padding:6px 0; font-size:15px; }
   .kv b{ color:var(--dim); font-weight:500; }
   .reject{ border:1px solid var(--coral); background:var(--coral-soft); border-radius:12px; padding:12px 14px; margin-bottom:8px; font-size:14px; }
@@ -324,6 +328,7 @@
   <h1>내 정보</h1>
   <div class="box" id="me-summary"></div>
   <p class="note" style="margin-top:12px">정보를 바꾸려면 선생님께 말씀해 주세요.</p>
+  <div class="box" id="me-days" style="margin-top:20px"></div>
   <div class="box install" id="me-install" style="margin-top:20px"></div>
   <button class="btn btn-2" style="margin-top:20px" onclick="if(confirm('로그아웃할까요? 다시 들어올 때 구글 로그인이 필요해요.')) logout()">로그아웃</button>
 </section>
@@ -996,10 +1001,52 @@ function installHTML(){
     :['Chrome 오른쪽 위 <b>⋮ 메뉴</b>를 눌러요','<b>홈 화면에 추가</b>를 눌러요','<b>추가</b>를 누르면 끝'];
   return `<b>홈 화면에 HERO 아이콘 만들기</b><p class="note" style="margin:4px 0 0">매일 체크인할 때 주소를 찾지 않아도 돼요.</p><ol>${steps.map(x=>`<li>${x}</li>`).join('')}</ol>`;
 }
+/* ---- 내 수업 요일: 학생이 직접 고르고 고친다 (students/{id}.days · daysAt 만 쓸 수 있음) ---- */
+const WEEK=['월','화','수','목','금','토','일'];
+let myDays=[], myDaysLoaded=false, daysDraft=null, daysSaving=false;
+function daysHintHTML(){
+  if(!myDaysLoaded || myDays.length) return '';
+  return `<button class="box days-hint" type="button" data-a="go-days">📅 <b>수업 요일을 정해 주세요</b><br><span class="note">어느 요일에 학원 오는지 고르면 선생님도 볼 수 있어요 ›</span></button>`;
+}
+function daysBoxHTML(){
+  const cur=daysDraft||myDays, n=cur.length, changed=daysDraft && daysDraft.join()!==myDays.join();
+  if(!myDaysLoaded) return `<b>내 수업 요일</b><p class="note" style="margin:6px 0 0">불러오는 중…</p>`;
+  return `<div style="display:flex;justify-content:space-between;align-items:baseline"><b>내 수업 요일</b><b style="color:var(--lime)">${n?'주 '+n+'회':'아직 안 정함'}</b></div>
+    <p class="note" style="margin:4px 0 10px">학원 오는 요일을 눌러서 고르세요. 바뀌면 언제든 다시 고칠 수 있어요. 선생님도 같이 봐요.</p>
+    <div class="day-grid">${WEEK.map(w=>`<button type="button" class="day-b ${cur.includes(w)?'on':''}" aria-pressed="${cur.includes(w)}" data-a="day" data-d="${w}">${w}</button>`).join('')}</div>
+    <button type="button" class="btn" style="margin-top:12px" data-a="save-days" ${changed&&!daysSaving?'':'disabled'}>${daysSaving?'저장 중…':changed?'요일 저장':(myDays.length?'저장됨':'요일을 골라 주세요')}</button>
+    <p class="note" id="days-msg" role="status" style="margin:8px 0 0"></p>`;
+}
+function refreshDaysUI(){
+  const b=$('me-days'); if(b) b.innerHTML=daysBoxHTML();
+  const h=$('days-hint'); if(h) h.innerHTML=daysHintHTML();
+}
+async function saveDays(){
+  if(!daysDraft || daysSaving) return;
+  const days=WEEK.filter(w=>daysDraft.includes(w));
+  if(navigator.onLine===false){ $('days-msg').textContent='인터넷이 끊겨 있어요. 연결된 뒤 다시 눌러 주세요'; return; }
+  daysSaving=true; refreshDaysUI();
+  let msg='';
+  try{
+    await db.collection('students').doc(myStudent.id).update({ days, daysAt: Date.now() });
+    myDays=days; daysDraft=null; msg=days.length?`저장했어요 · 주 ${days.length}회 (${days.join('·')})`:'요일을 모두 지웠어요';
+  }catch(e){
+    msg = e&&e.code==='permission-denied' ? '아직 저장할 수 없어요. 선생님께 "요일 저장 설정"을 부탁해 주세요.' : '저장하지 못했어요. 인터넷을 확인하고 다시 눌러 주세요.';
+  }finally{ daysSaving=false; refreshDaysUI(); const m=$('days-msg'); if(m) m.textContent=msg; }
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a="day"],[data-a="save-days"],[data-a="go-days"]'); if(!b) return;
+  if(b.dataset.a==='go-days'){ openMe(); return; }
+  if(b.dataset.a==='save-days'){ saveDays(); return; }
+  const d=b.dataset.d, cur=(daysDraft||myDays).slice();
+  daysDraft = cur.includes(d) ? cur.filter(x=>x!==d) : WEEK.filter(w=>cur.includes(w)||w===d);
+  refreshDaysUI();
+});
 async function openMe(fromPop){
   const d=await db.collection('joinRequests').doc(auth.currentUser.uid).get();
   $('me-summary').innerHTML=d.exists?summaryHTML(d.data()):`<div class="kv"><b>이름</b><span>${esc(myStudent.name)}</span></div>`;
   $('me-install').innerHTML=installHTML();
+  daysDraft=null; refreshDaysUI();
   show('screen-me',fromPop);
 }
 
@@ -1242,6 +1289,7 @@ function showResult(){
     ${today.pain?'<p class="pain-note">관절이나 뼈 통증은 참지 말고 선생님께 직접 보여 주세요. 이 앱은 진단하지 않아요.</p>':''}
 
     ${todoHTML(j,today)}
+    <div id="days-hint">${daysHintHTML()}</div>
 
     <div class="sec"><div class="sec-t">오늘 훈련 참고</div><p>${esc(j.train)}</p></div>
     ${j.coachTalk?`<div class="sec"><h2 class="sec-t">선생님께 드릴 말</h2><div class="talk" id="talk">${esc(j.coachTalk)}</div>
@@ -1434,10 +1482,11 @@ async function loadPerfData(){
   if(d.status==='fulfilled'){
     const x=d.value.exists?d.value.data():{};
     // 학생 기록 저장소에 안전하게 들어갈 수 있는 이름의 종목만 보여 준다 (예: '/' 가 들어간 이름은 제외)
+    myDays=Array.isArray(x.days)?WEEK.filter(w=>x.days.includes(w)):[]; myDaysLoaded=true; refreshDaysUI();
     perf.coach={events:Array.isArray(x.events)?x.events.filter(e=>PERF.safeEvent(e)):[],
       targets:(x.targets&&typeof x.targets==='object')?x.targets:{}, records:(x.records&&typeof x.records==='object')?x.records:{}};
     perf.denied.doc=false;
-  }else{ perf.denied.doc=true; perf.coach={events:[],targets:{},records:{}}; }
+  }else{ perf.denied.doc=true; perf.coach={events:[],targets:{},records:{}}; myDaysLoaded=true; refreshDaysUI(); }
   if(l.status==='fulfilled'){
     perf.mine=l.value.docs.map(x=>({...x.data(),rid:x.id})).filter(r=>PERF.safeEvent(r.event)&&PERF.validDate(r.date)&&PERF.numOf(r.value)!==null).map(r=>({...r,value:PERF.numOf(r.value)}));
     perf.denied.list=false;
