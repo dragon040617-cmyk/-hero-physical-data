@@ -582,14 +582,16 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .mgmt-search .student-search{ margin:0; flex:1 1 180px; min-width:0; min-height:44px; font-size:16px; }
   .mgmt-search select.student-search{ flex:0 1 160px; }
   .mgmt-list{ display:flex; flex-direction:column; gap:8px; }
-  .me-bar{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:10px 12px; margin-bottom:14px; }
-  .me-h{ font-size:12.5px; color:var(--text-dim); font-weight:800; margin-right:2px; }
-  .me-chip{ min-height:38px; padding:0 14px; border-radius:19px; border:1px solid var(--line); background:var(--surface-2); color:var(--text-muted); font-weight:800; font-size:13.5px; cursor:pointer; font-family:inherit; }
-  .me-chip.on{ background:var(--lime); border-color:var(--lime); color:#0d1a03; }
-  .me-chips{ display:flex; flex-wrap:wrap; gap:6px; flex:1 1 300px; min-width:0; }
-  @media (max-width:640px){ .me-chips{ flex-wrap:nowrap; overflow-x:auto; flex-basis:100%; padding-bottom:2px; -webkit-overflow-scrolling:touch; } .me-chip{ flex:0 0 auto; } }
-  .me-info{ flex:1 1 100%; font-size:12.5px; color:var(--text-muted); }
-  @media (min-width:1000px){ .me-info{ flex:1 1 auto; text-align:right; } }
+  .me-bar{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:8px 10px; margin-bottom:14px; }
+  .me-pick{ min-height:44px; padding:0 16px; border-radius:22px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); font-weight:800; font-size:15px; cursor:pointer; font-family:inherit; display:inline-flex; align-items:center; gap:6px; max-width:100%; }
+  .me-pick.on{ background:var(--lime); border-color:var(--lime); color:#0d1a03; }
+  .me-info{ flex:1 1 160px; min-width:0; font-size:13px; color:var(--text-muted); }
+  .me-all{ min-height:40px; padding:0 14px; border-radius:20px; border:1px solid var(--line); background:transparent; color:var(--text-muted); font-weight:700; font-size:13px; cursor:pointer; font-family:inherit; }
+  .me-picker{ width:520px; max-width:94vw; }
+  .mp-h{ font-size:12.5px; color:var(--text-dim); font-weight:800; margin:6px 0; }
+  .mp-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(96px, 1fr)); gap:8px; margin-bottom:8px; }
+  .mp-btn{ min-height:52px; border-radius:12px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); font-weight:800; font-size:15px; cursor:pointer; font-family:inherit; padding:0 6px; overflow-wrap:anywhere; }
+  .mp-btn.on{ background:var(--lime); border-color:var(--lime); color:#0d1a03; }
   .srows{ display:flex; flex-direction:column; gap:10px; }
   .srow{ display:flex; gap:14px; align-items:flex-start; padding:12px; border-radius:14px; border:1px solid var(--line); }
   .srow.today{ border-color:var(--lime); background:rgba(198,255,61,.04); }
@@ -2563,10 +2565,42 @@ function softRerender(){
 }
 function flushRerender(){ if(state.rerenderPending && !userIsTyping()) rerender(); }
 document.addEventListener('focusout',()=>setTimeout(flushRerender,400));
+/* ---- 뒤로 가기: 아이폰 옆으로 밀기·안드로이드 뒤로 버튼이 사이트를 나가지 않고 이전 화면으로 ---- */
+let navPopping=false;
+function viewKey(){
+  if(state.schedOpen) return 'sched';
+  if(state.mgmtOpen) return 'mgmt:'+(state.mgmtTab||'list');
+  if(state.joinOpen) return 'join';
+  if(state.teamViewOpen) return 'team';
+  if(state.classLogOpen) return 'log';
+  return 'student:'+(state.selectedId||'');
+}
+function syncHistory(){
+  if(navPopping || !currentCoachEmail || !window.history || !history.pushState) return;
+  const k=viewKey(), cur=history.state&&history.state.heroView;
+  if(cur===k) return;
+  try{ if(!cur) history.replaceState({heroView:k},''); else history.pushState({heroView:k},''); }catch(e){}
+}
+window.addEventListener('popstate',e=>{
+  const k=e.state&&e.state.heroView; if(!k || !currentCoachEmail) return;
+  if(document.getElementById('activeModal')){ closeModal(); }   // 창이 열려 있으면 먼저 닫기
+  navPopping=true;
+  try{
+    if(state.schedOpen && k!=='sched'){ state.schedOpen=false; stopSchedules(); }
+    state.mgmtOpen=false; state.joinOpen=false; state.teamViewOpen=false; state.classLogOpen=false; state.mobileSidebarOpen=false;
+    if(k==='sched') openSchedule();
+    else if(k.startsWith('mgmt:')) openMgmt(k.slice(5));
+    else if(k==='join') openJoinView();
+    else if(k==='team') openTeamView();
+    else if(k==='log') openClassLogView();
+    else { const sid=k.slice(8); if(sid && getStudent(sid)) selectStudent(sid); else rerender(); }
+  }finally{ navPopping=false; }
+});
 function rerender(){
   state.rerenderPending=false;
   try{
     rerenderInner();
+    syncHistory();
   }catch(err){
     console.error('렌더링 오류:', err);
     const appEl = document.getElementById('app');
@@ -2767,6 +2801,7 @@ async function deleteStudent(sid){
 
 /* ---- Modals ---- */
 function openModal(html){
+  document.querySelectorAll('#activeModal').forEach(m=>m.remove());   // 창이 두 겹으로 쌓여 닫기가 안 먹는 문제 방지
   const wrap = document.createElement('div');
   wrap.className='modal-overlay';
   wrap.id='activeModal';
@@ -3984,20 +4019,34 @@ function subscribeCoachStudents(){
 function myStudentSet(){ if(!state.me) return null; const a=state.coachStudents[state.me]; return a&&a.length ? new Set(a) : null; }
 function meFilterStudents(list){ const set=myStudentSet(); return set ? list.filter(s=>set.has(s.id)) : list; }
 function setMe(n){
-  state.me = state.me===n ? '' : n;
+  state.me = n || '';
   try{ if(state.me) localStorage.setItem('heroMe', state.me); else localStorage.removeItem('heroMe'); }catch(e){}
+  const mp=document.querySelector('.me-picker'); if(mp) mp.closest('.modal-overlay')?.remove();
   rerender();
 }
+// 한 줄짜리: [👤 정식쌤 ▾]  담당 학생 12명만 보는 중  [전체 보기]
 function meBarHTML(where){
-  const names=allCoachNames(), set=myStudentSet();
-  const info = !state.me ? '이름을 누르면 내 수업 · 내 담당 학생만 보여요'
-    : (set ? `${esc(state.me)} 담당 학생 ${set.size}명만 보는 중` : `${esc(state.me)}의 담당 학생을 아직 안 정했어요 · 코치 명단에서 정하기`);
-  return `<div class="me-bar" role="group" aria-label="내 이름">
-    <span class="me-h">내 이름</span><div class="me-chips">
-    <button type="button" class="me-chip ${!state.me?'on':''}" aria-pressed="${!state.me}" onclick="setMe('')">전체</button>
-    ${names.map(n=>`<button type="button" class="me-chip ${state.me===n?'on':''}" aria-pressed="${state.me===n}" onclick="setMe(${JSON.stringify(n).replace(/"/g,'&quot;')})">${esc(n)}</button>`).join('')}</div>
+  const set=myStudentSet();
+  const info = !state.me ? '내 이름을 고르면 내 수업 · 내 담당 학생만 보여요'
+    : (set ? `담당 학생 ${set.size}명만 보는 중` : '담당 학생을 아직 안 정했어요 (일정 › 코치 명단)');
+  return `<div class="me-bar">
+    <button type="button" class="me-pick ${state.me?'on':''}" onclick="openMePicker()" aria-haspopup="dialog">👤 ${state.me?esc(state.me):'내 이름 고르기'} <span aria-hidden="true">▾</span></button>
     <span class="me-info">${info}</span>
+    ${state.me?`<button type="button" class="me-all" onclick="setMe('')">전체 보기</button>`:''}
   </div>`;
+}
+function openMePicker(){
+  const btn=n=>`<button type="button" class="mp-btn ${state.me===n?'on':''}" aria-pressed="${state.me===n}" onclick="setMe(${JSON.stringify(n).replace(/"/g,'&quot;')})">${esc(n)}</button>`;
+  const main=INSTRUCTORS.main||[], asst=(INSTRUCTORS.assistant||[]).filter(n=>!main.includes(n));
+  openModal(`<div class="modal me-picker" role="dialog" aria-labelledby="mpT">
+    <h3 id="mpT">내 이름 고르기</h3>
+    <div class="stat-note" style="margin:-6px 0 12px;">고르면 내 수업 · 내 담당 학생만 보여요. 이 기기에 기억돼요.</div>
+    ${main.length?`<div class="mp-h">메인</div><div class="mp-grid">${main.map(btn).join('')}</div>`:''}
+    ${asst.length?`<div class="mp-h">보조</div><div class="mp-grid">${asst.map(btn).join('')}</div>`:''}
+    <div class="modal-actions" style="margin-top:14px;">
+      <button type="button" class="cancel" onclick="closeModal()">닫기</button>
+      <button type="button" class="confirm ok" onclick="setMe('')">전체 보기</button>
+    </div></div>`);
 }
 
 /* ---- 읽기 ---- */
@@ -4698,7 +4747,7 @@ function briefNotesHTML(){
   all.filter(l=>l.date>=since && l.date<=to).forEach(l=>{
     const b=logBranch(l)||'공통·기타 반';
     if(branchSel && b!==branchSel) return;
-    String(l.notes||'').split(/\n+|(?<=[.!?])\s+/).map(x=>x.replace(/^[-•·*\d.)\s]+/,'').trim()).filter(x=>x && !NOTE_EMPTY.test(x)).forEach(text=>{
+    String(l.notes||'').split(/\n+/).flatMap(line=>line.replace(/([.!?])\s+/g,'$1\u0000').split('\u0000')).map(x=>x.replace(/^[-•·*\d.)\s]+/,'').trim()).filter(x=>x && !NOTE_EMPTY.test(x)).forEach(text=>{
       const dk=b+'|'+text; if(seen.has(dk)) return; seen.add(dk);
       const tag=NOTE_TAGS.find(t=>t.re.test(text))||{k:'기타',c:'#8b94a9'};
       (groups[b]=groups[b]||[]).push({ text, tag, date:l.date, type:logTypeOf(l) });
