@@ -582,11 +582,54 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .mgmt-search .student-search{ margin:0; flex:1 1 180px; min-width:0; min-height:44px; font-size:16px; }
   .mgmt-search select.student-search{ flex:0 1 160px; }
   .mgmt-list{ display:flex; flex-direction:column; gap:8px; }
+  .me-bar{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:10px 12px; margin-bottom:14px; }
+  .me-h{ font-size:12.5px; color:var(--text-dim); font-weight:800; margin-right:2px; }
+  .me-chip{ min-height:38px; padding:0 14px; border-radius:19px; border:1px solid var(--line); background:var(--surface-2); color:var(--text-muted); font-weight:800; font-size:13.5px; cursor:pointer; font-family:inherit; }
+  .me-chip.on{ background:var(--lime); border-color:var(--lime); color:#0d1a03; }
+  .me-chips{ display:flex; flex-wrap:wrap; gap:6px; flex:1 1 300px; min-width:0; }
+  @media (max-width:640px){ .me-chips{ flex-wrap:nowrap; overflow-x:auto; flex-basis:100%; padding-bottom:2px; -webkit-overflow-scrolling:touch; } .me-chip{ flex:0 0 auto; } }
+  .me-info{ flex:1 1 100%; font-size:12.5px; color:var(--text-muted); }
+  @media (min-width:1000px){ .me-info{ flex:1 1 auto; text-align:right; } }
+  .srows{ display:flex; flex-direction:column; gap:10px; }
+  .srow{ display:flex; gap:14px; align-items:flex-start; padding:12px; border-radius:14px; border:1px solid var(--line); }
+  .srow.today{ border-color:var(--lime); background:rgba(198,255,61,.04); }
+  .srow-h{ flex:0 0 84px; display:flex; flex-direction:column; align-items:flex-start; gap:2px; background:none; border:none; color:var(--text); cursor:pointer; font-family:inherit; padding:4px 0; text-align:left; min-height:40px; }
+  .srow-h b{ font-size:15px; } .srow-h span{ font-size:12px; color:var(--lime); font-weight:800; }
+  .srow.today .srow-h b{ color:var(--lime); }
+  .srow-items{ flex:1; min-width:0; display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:10px; }
+  .srow-empty{ font-size:13px; color:var(--text-dim); padding:10px 0; }
+  .srow-add{ min-height:96px; width:100%; border-style:dashed; }
+  @media (max-width:640px){ .srow{ flex-direction:column; gap:8px; } .srow-h{ flex:none; flex-direction:row; gap:8px; align-items:baseline; } .srow-items{ width:100%; grid-template-columns:minmax(0,1fr); } }
+  .sc-wrap{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .sc{ display:flex; flex-direction:column; gap:7px; text-align:left; width:100%; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 14px; color:var(--text); cursor:pointer; font-family:inherit; min-width:0; }
+  .sc.completed{ border-color:rgba(198,255,61,.35); } .sc.cancelled{ opacity:.5; } .sc.cancelled .sc-ty{ text-decoration:line-through; }
+  .sc-top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; } .sc-top b{ font-size:16px; } .sc-top span{ font-size:12px; color:var(--text-muted); }
+  .sc-ty{ font-size:15px; font-weight:800; border-left:3px solid; padding-left:8px; overflow-wrap:anywhere; }
+  .sc-forms{ display:flex; gap:5px; flex-wrap:wrap; } .sc-forms em{ font-style:normal; font-size:11.5px; font-weight:800; padding:3px 8px; border-radius:10px; background:var(--surface-2); color:#d6dbe6; }
+  .sc-m{ font-size:12.5px; color:var(--text-dim); overflow-wrap:anywhere; } .sc-nocoach{ color:#ff9f1c; }
+  .sc-done{ display:flex; align-items:center; gap:10px; min-height:44px; padding:0 12px; border-radius:10px; border:1px dashed var(--line); background:var(--surface); color:var(--text-muted); font-size:13.5px; font-weight:800; cursor:pointer; font-family:inherit; text-align:left; }
+  .sc-done i{ width:20px; height:20px; flex:0 0 auto; border-radius:6px; border:2px solid currentColor; display:flex; align-items:center; justify-content:center; font-style:normal; font-size:14px; }
+  .sc-done.on{ border:1px solid var(--lime); background:var(--lime-soft); color:var(--lime); } .sc-done.on i{ background:var(--lime); border-color:var(--lime); color:#0d1a03; }
+  .sc-done.late{ border-color:#ff9f1c; color:#ff9f1c; }
+  .sc-done.cancel{ cursor:default; color:var(--text-dim); font-weight:700; font-size:12.5px; }
+  .sc-done:disabled{ opacity:.6; }
+  .smc-day i.late{ color:#ff9f1c; }
+  .se-coaches{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:4px 0; } .se-role{ font-size:12px; color:var(--text-dim); font-weight:800; width:32px; }
+  .roster-modal{ width:520px; max-width:94vw; }
+  .ro-list{ display:flex; flex-direction:column; gap:6px; max-height:300px; overflow-y:auto; }
+  .ro-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; min-height:52px; padding:6px 12px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); cursor:pointer; font-family:inherit; text-align:left; }
+  .ro-row.on{ border-color:var(--lime); background:rgba(198,255,61,.08); }
+  .ro-row span{ display:flex; flex-direction:column; gap:2px; } .ro-row small{ font-size:12px; color:var(--text-dim); }
+  .ro-row em{ font-style:normal; font-size:13px; font-weight:800; color:var(--text-dim); } .ro-row em.has{ color:var(--lime); }
+  .ro-panel{ margin-top:12px; border:1px solid var(--lime); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:10px; }
+  .ro-ph{ display:flex; justify-content:space-between; } .ro-ph span{ color:var(--lime); font-weight:800; }
+  .ro-st{ min-height:40px; padding:0 12px; border-radius:20px; border:1px solid var(--line); background:var(--surface-2); color:#d6dbe6; font-weight:700; font-size:13.5px; cursor:pointer; font-family:inherit; }
+  .ro-st.on{ background:var(--lime); border-color:var(--lime); color:#0d1a03; }
   .sched-sum{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:12px; }
   @media (max-width:560px){ .sched-sum{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
   .sched-bar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:10px; }
   .sched-views{ margin:0; flex:0 0 auto; width:180px; } .sched-nav{ flex:1 1 300px; max-width:520px; }
-  .sched-filters{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:12px; }
+  .sched-filters{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-bottom:12px; }
   .sched-filters .student-search{ margin:0; min-height:42px; font-size:16px; }
   @media (max-width:560px){ .sched-filters{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
   .swk{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px; }
@@ -1192,7 +1235,7 @@ function buildStudentCardsHTML(filtered){
 function getFilteredStudents(){
   const q = (document.getElementById('searchInput')?.value || '').trim();
   const branch = state.sidebarBranchFilter;
-  const filtered = state.students.filter(s=>{
+  const filtered = meFilterStudents(state.students).filter(s=>{
     if(!s.name.includes(q)) return false;
     if(!branch) return true;
     if(branch==='__unassigned__') return !s.branch;
@@ -1520,7 +1563,7 @@ function computeWeeklyBalance(s){
 function renderTeamOverview(){
   // 오늘 브리핑: 훈련 전에 '손봐야 할 학생'을 먼저 보여 준다
   const branch=state.briefBranch||'';
-  const list=state.students.filter(s=>!branch||s.branch===branch);
+  const list=meFilterStudents(state.students).filter(s=>!branch||s.branch===branch);
   const by={RED:[],AMBER:[],YELLOW:[],GREEN:[],BASE:[],NONE:[]};
   list.forEach(s=>{ const st=statusOf(s); by[st||'NONE'].push(s); });
   const done=list.length-by.NONE.length;
@@ -1586,6 +1629,7 @@ function renderTeamOverview(){
         </div>
       </div>
       ${branch?`<div style="margin-bottom:12px;"><button class="ghost-btn" style="padding:7px 12px;" onclick="state.briefBranch=''; rerender();">← 전체 지점 보기</button> <b style="margin-left:6px;">${esc(branch)}</b></div>`:''}
+      ${meBarHTML('brief')}
       <div class="brief-grid">${tile('RED','빨강 · 즉시 확인')}${tile('AMBER','주황 · 볼륨 조정')}${tile('YELLOW','노랑 · 주의')}${tile('GREEN','초록 · 정상')}</div>
       <div class="stat-note" style="margin-top:8px;">색 칸을 누르면 그 학생만 보여요.${by.BASE.length?` 기준 수립 중(최근 28일 체크인 6회 미만) ${by.BASE.length}명은 초록에 포함했어요.`:''}</div>
 
@@ -3100,7 +3144,7 @@ function initFirebase(){
         subscribeClassLogs();
         subscribeJoinRequests();
         subscribeInstructors();
-        subscribeCoaches();
+        subscribeCoachStudents();
         syncPublicBranches();
       }else{
         currentCoachEmail='';
@@ -3108,7 +3152,7 @@ function initFirebase(){
         if(unsubscribeClassLogs){ unsubscribeClassLogs(); unsubscribeClassLogs=null; }
         if(unsubscribeJoin){ unsubscribeJoin(); unsubscribeJoin=null; }
         if(unsubscribeInstructors){ unsubscribeInstructors(); unsubscribeInstructors=null; }
-        if(unsubscribeCoaches){ unsubscribeCoaches(); unsubscribeCoaches=null; } stopSchedules();
+        if(unsubscribeCoachStudents){ unsubscribeCoachStudents(); unsubscribeCoachStudents=null; } stopSchedules();
         hideAuthWait();
         state.students=[]; state.studentsLoaded=false; state.todayCk={}; state.hist={}; state.histReq={}; state.ckMonth={}; state.perf={}; state.perfFull={}; state.perfAllAt=0; ckStudentKey='';
         document.getElementById('loginScreen').style.display='';
@@ -3889,22 +3933,25 @@ const FORM_SHORT={'기술':'기','웨이트':'웨','스피드(야외)':'스','�
 function formShort(f){ return FORM_SHORT[f] || String(f||'').slice(0,1); }
 
 /* ==== 수업 일정 (통합 시간표) ====
-   classSchedules/{id} : { branch, studentIds[], coachId(코치 이메일), coachName, date 'YYYY-MM-DD', startTime 'HH:mm', endTime 'HH:mm',
-                           type, location, memo, status 'scheduled'|'completed'|'cancelled', seriesId|null,
+   classSchedules/{id} : { branch, studentIds[], coaches[](강사 이름), forms[](수업 형태), date 'YYYY-MM-DD', startTime 'HH:mm', endTime 'HH:mm',
+                           type, memo, status 'scheduled'|'completed'|'cancelled', seriesId|null,
                            createdBy, createdAt, updatedAt, updatedBy, cancellationReason?, history[] }
-   coaches/{이메일}     : { name, branches[], active }   ← 담당 코치 목록 (관리자만 고침)
-   날짜·시간은 문자열 그대로 비교한다 (학원 현지 시간 기준, Date 로 바꾸며 하루 밀리는 문제 방지) */
+   settings/coachStudents : { map: { '정식쌤': [학생ID…], … } }   ← 코치별 담당 학생 (이메일 없이 강사 명단 이름으로)
+   '내 이름'은 이 기기에만 기억하는 보기 필터다 (같은 코치 계정을 함께 쓰므로 보안 기능이 아님)
+   날짜·시간은 문자열 그대로 비교한다 (학원 현지 시간 기준) */
 const SCHED_STATUS={ scheduled:{label:'예정', c:'#c6ff3d'}, completed:{label:'완료', c:'#7c9dff'}, cancelled:{label:'취소', c:'#8b94a9'} };
-const SCHED_MAX_SERIES=120;   // 반복 일정 한 번에 만드는 최대 개수 (쓰기 제한·실수 방지)
+const SCHED_FORMS=['기술','웨이트','스피드(야외)','실내 체력','재활'];
+const SCHED_MAX_SERIES=120;
+const WD_KO=['일','월','화','수','목','금','토'];
 state.schedOpen=false; state.schedView='week'; state.schedDate=HC.todayStr();
-state.schedF={ br:'', coach:'', type:'', st:'' };
-state.schedules=[]; state.schedLoading=false; state.coaches={}; state.coachesLoaded=false;
-let unsubscribeSched=null, unsubscribeCoaches=null, schedSaving=false;
+state.schedF={ br:'', type:'', st:'' };
+state.schedules=[]; state.schedLoading=false; state.coachStudents={};
+state.me=(()=>{ try{ return localStorage.getItem('heroMe')||''; }catch(e){ return ''; } })();
+let unsubscribeSched=null, unsubscribeCoachStudents=null, schedSaving=false, seForce=false;
 
 function ymdAdd(d,n){ return HC.addDays(d,n); }
-function wdOf(d){ const [y,m,dd]=d.split('-').map(Number); return new Date(y,m-1,dd).getDay(); }   // 0=일
-const WD_KO=['일','월','화','수','목','금','토'];
-function weekStartOf(d){ return ymdAdd(d, -((wdOf(d)+6)%7)); }   // 월요일 시작
+function wdOf(d){ const [y,m,dd]=d.split('-').map(Number); return new Date(y,m-1,dd).getDay(); }
+function weekStartOf(d){ return ymdAdd(d, -((wdOf(d)+6)%7)); }
 function schedRange(){
   const d=state.schedDate;
   if(state.schedView==='day') return [d,d];
@@ -3914,21 +3961,46 @@ function schedRange(){
 }
 function timeOk(t){ return typeof t==='string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(t); }
 function overlaps(a,b){ return a.date===b.date && a.startTime<b.endTime && b.startTime<a.endTime; }
-function coachName(id){ const c=state.coaches[id]; return c&&c.name ? c.name : (id||'미정'); }
 function studentName(id){ const s=getStudent(id); return s ? s.name : '(삭제된 학생)'; }
-function myCoachInfo(){ return state.coaches[currentCoachEmail]||null; }
-// 화면용 권한 (실제 권한은 Firestore 규칙이 막는다): 관리자 또는 내 담당 지점
-function canManageBranch(b){ if(isAdmin()) return true; const me=myCoachInfo(); return !!(me && Array.isArray(me.branches) && me.branches.includes(b)); }
+function schedCoaches(x){ return Array.isArray(x.coaches) ? x.coaches.filter(Boolean) : (x.coachName ? [x.coachName] : []); }
+function schedForms(x){ return Array.isArray(x.forms) ? x.forms.filter(Boolean) : []; }
+function allCoachNames(){ return [...new Set([...(INSTRUCTORS.main||[]), ...(INSTRUCTORS.assistant||[])])]; }
+function coachRole(n){ return (INSTRUCTORS.main||[]).includes(n) ? '메인' : '보조'; }
+function nowHM(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function schedEnded(x){ const t=HC.todayStr(); return x.date<t || (x.date===t && String(x.endTime)<=nowHM()); }
+function canManageBranch(){ return true; }   // 코치 계정을 함께 쓰므로 지점별 권한은 두지 않는다
 
-function subscribeCoaches(){
+/* ---- 코치별 담당 학생 · 내 이름 ---- */
+function subscribeCoachStudents(){
   if(!db) return;
-  if(unsubscribeCoaches) unsubscribeCoaches();
-  unsubscribeCoaches=db.collection('coaches').onSnapshot(snap=>{
-    const m={}; snap.forEach(d=>{ const x=d.data()||{}; m[d.id]={ name:String(x.name||d.id), branches:Array.isArray(x.branches)?x.branches:[], active:x.active!==false }; });
-    state.coaches=m; state.coachesLoaded=true;
-    if(state.schedOpen) schedRefresh();
-  }, err=>{ state.coachesLoaded=true; if(err.code!=='permission-denied') showToast('코치 명단 불러오기 오류: '+err.message); });
+  if(unsubscribeCoachStudents) unsubscribeCoachStudents();
+  unsubscribeCoachStudents=db.collection('settings').doc('coachStudents').onSnapshot(d=>{
+    const m=(d.exists && d.data().map && typeof d.data().map==='object') ? d.data().map : {};
+    const clean={}; Object.entries(m).forEach(([k,v])=>{ if(Array.isArray(v)) clean[k]=v.filter(x=>typeof x==='string'); });
+    state.coachStudents=clean;
+    if(state.schedOpen) schedRefresh(); else softRerender();
+  }, err=>{ if(err.code!=='permission-denied') showToast('담당 학생 불러오기 오류: '+err.message); });
 }
+function myStudentSet(){ if(!state.me) return null; const a=state.coachStudents[state.me]; return a&&a.length ? new Set(a) : null; }
+function meFilterStudents(list){ const set=myStudentSet(); return set ? list.filter(s=>set.has(s.id)) : list; }
+function setMe(n){
+  state.me = state.me===n ? '' : n;
+  try{ if(state.me) localStorage.setItem('heroMe', state.me); else localStorage.removeItem('heroMe'); }catch(e){}
+  rerender();
+}
+function meBarHTML(where){
+  const names=allCoachNames(), set=myStudentSet();
+  const info = !state.me ? '이름을 누르면 내 수업 · 내 담당 학생만 보여요'
+    : (set ? `${esc(state.me)} 담당 학생 ${set.size}명만 보는 중` : `${esc(state.me)}의 담당 학생을 아직 안 정했어요 · 코치 명단에서 정하기`);
+  return `<div class="me-bar" role="group" aria-label="내 이름">
+    <span class="me-h">내 이름</span><div class="me-chips">
+    <button type="button" class="me-chip ${!state.me?'on':''}" aria-pressed="${!state.me}" onclick="setMe('')">전체</button>
+    ${names.map(n=>`<button type="button" class="me-chip ${state.me===n?'on':''}" aria-pressed="${state.me===n}" onclick="setMe(${JSON.stringify(n).replace(/"/g,'&quot;')})">${esc(n)}</button>`).join('')}</div>
+    <span class="me-info">${info}</span>
+  </div>`;
+}
+
+/* ---- 읽기 ---- */
 function subscribeSchedules(){
   if(!db) return;
   if(unsubscribeSched){ unsubscribeSched(); unsubscribeSched=null; }
@@ -3936,7 +4008,7 @@ function subscribeSchedules(){
   state.schedLoading=true; state.schedKey=key;
   unsubscribeSched=db.collection('classSchedules').where('date','>=',from).where('date','<=',to).onSnapshot(snap=>{
     if(state.schedKey!==key) return;
-    state.schedules=snap.docs.map(d=>({ id:d.id, ...d.data() })); state.schedLoading=false;
+    state.schedules=snap.docs.map(d=>({ id:d.id, ...d.data() })); state.schedLoading=false; state.schedErr='';
     schedRefresh();
   }, err=>{ state.schedLoading=false; state.schedErr = err.code==='permission-denied' ? '일정을 읽을 권한이 없어요 (Firebase 규칙에 classSchedules 추가 필요)' : '일정을 불러오지 못했어요: '+err.message; schedRefresh(); });
 }
@@ -3957,56 +4029,64 @@ function schedToday(){ state.schedDate=HC.todayStr(); subscribeSchedules(); sche
 function schedPickDay(d){ state.schedDate=d; state.schedView='day'; subscribeSchedules(); schedRefresh(); }
 function schedSetF(k,v){ state.schedF[k]=v; schedRefresh(); }
 // 순수 함수: 필터·정렬
-function schedFilter(list, f){
-  return list.filter(x=>(!f.br||x.branch===f.br) && (!f.coach||x.coachId===f.coach) && (!f.type||x.type===f.type) && (!f.st||(x.status||'scheduled')===f.st))
+function schedFilter(list, f, me){
+  return list.filter(x=>(!f.br||x.branch===f.br) && (!f.type||x.type===f.type) && (!f.st||(x.status||'scheduled')===f.st) && (!me||schedCoaches(x).includes(me)))
     .sort((a,b)=>a.date.localeCompare(b.date) || String(a.startTime).localeCompare(String(b.startTime)) || String(a.branch).localeCompare(String(b.branch)));
 }
-// 같은 날짜 목록에서 충돌 찾기 (취소된 일정은 빼고)
 function findConflicts(cand, pool){
-  const out=[];
+  const out=[], cc=schedCoaches(cand);
   pool.forEach(o=>{
     if(o.id===cand.id || (o.status||'scheduled')==='cancelled' || !overlaps(cand,o)) return;
     const reasons=[];
-    if(o.coachId && o.coachId===cand.coachId) reasons.push('같은 코치 '+coachName(o.coachId));
+    const sameCoach=cc.filter(c=>schedCoaches(o).includes(c));
+    if(sameCoach.length) reasons.push('같은 코치 '+sameCoach.join(', '));
     const shared=(cand.studentIds||[]).filter(s=>(o.studentIds||[]).includes(s));
     if(shared.length) reasons.push('같은 학생 '+shared.slice(0,3).map(studentName).join(', ')+(shared.length>3?` 외 ${shared.length-3}명`:''));
     if(o.branch===cand.branch && o.startTime===cand.startTime && o.endTime===cand.endTime && o.type===cand.type) reasons.push('똑같은 일정');
-    if(reasons.length) out.push({ o, reasons, hard: reasons.some(r=>r.startsWith('같은 코치')||r==='똑같은 일정'), time: `${o.startTime>cand.startTime?o.startTime:cand.startTime}~${o.endTime<cand.endTime?o.endTime:cand.endTime}` });
+    if(reasons.length) out.push({ o, reasons, hard: !!sameCoach.length || reasons.includes('똑같은 일정'), time: `${o.startTime>cand.startTime?o.startTime:cand.startTime}~${o.endTime<cand.endTime?o.endTime:cand.endTime}` });
   });
   return out;
 }
 function schedConflictCount(list){ let n=0; const act=list.filter(x=>(x.status||'scheduled')!=='cancelled'); act.forEach((a,i)=>{ if(findConflicts(a, act.slice(i+1)).length) n++; }); return n; }
 
-function schedBlockHTML(x, compact){
-  const st=SCHED_STATUS[x.status||'scheduled']||SCHED_STATUS.scheduled, n=(x.studentIds||[]).length;
-  const names=(x.studentIds||[]).slice(0,3).map(studentName).join(', ')+(n>3?` 외 ${n-3}명`:'');
-  return `<button type="button" class="sb ${x.status||'scheduled'}" onclick="openSchedEdit('${x.id}')" aria-label="${esc(x.startTime)}~${esc(x.endTime)} ${esc(x.type||'')} ${esc(x.branch||'')} ${st.label}">
-    <span class="sb-t">${esc(x.startTime)}~${esc(x.endTime)} <em style="color:${st.c}; border-color:${st.c}66;">${st.label}</em></span>
-    <b class="sb-ty" style="border-left-color:${classTypeColor(x.type)};">${esc(x.type||'수업')}</b>
-    <span class="sb-m">${esc(x.branch||'')}${x.location?' · '+esc(x.location):''} · ${esc(coachName(x.coachId))}</span>
-    ${compact?`<span class="sb-m">학생 ${n}명</span>`:`<span class="sb-m">학생 ${n}명${n?' · '+esc(names):''}</span>`}
-  </button>`;
+/* ---- 화면 ---- */
+function schedCardHTML(x){
+  const st=x.status||'scheduled', S=SCHED_STATUS[st]||SCHED_STATUS.scheduled, n=(x.studentIds||[]).length, cs=schedCoaches(x), fm=schedForms(x);
+  const ended=schedEnded(x), busy=state.schedBusy===x.id;
+  const check = st==='cancelled'
+    ? `<div class="sc-done cancel">취소됨${x.cancellationReason?' · '+esc(x.cancellationReason):''}</div>`
+    : `<button type="button" class="sc-done ${st==='completed'?'on':ended?'late':''}" ${busy?'disabled':''} aria-pressed="${st==='completed'}" onclick="schedToggleDone('${x.id}')"><i>${st==='completed'?'✓':''}</i><span>${busy?'저장 중…':st==='completed'?'수업 완료':ended?'수업 완료 체크하기':'수업 완료 (수업 후 체크)'}</span></button>`;
+  return `<div class="sc-wrap">
+    <button type="button" class="sc ${st}" onclick="openSchedEdit('${x.id}')" aria-label="${esc(x.startTime)}~${esc(x.endTime)} ${esc(x.type||'')} ${esc(x.branch||'')} ${S.label}">
+      <span class="sc-top"><b>${esc(x.startTime)}~${esc(x.endTime)}</b><span>${esc(x.branch||'')}</span></span>
+      <span class="sc-ty" style="border-left-color:${classTypeColor(x.type)};">${esc(x.type||'수업')}</span>
+      ${fm.length?`<span class="sc-forms">${fm.map(f=>`<em>${esc(f)}</em>`).join('')}</span>`:''}
+      <span class="sc-m">${cs.length?esc(cs.join(', ')):'<b class="sc-nocoach">코치 미정</b>'} · 학생 ${n}명</span>
+    </button>
+    ${check}
+  </div>`;
 }
 function renderScheduleView(){
   return `<main class="sched">
-    <div class="topbar"><div class="heading"><div><h2>수업 일정</h2><div class="tagline">전체 지점 · 코치 통합 시간표</div></div></div>
-      <div class="cl-top"><button type="button" class="submit-btn" style="height:40px;" onclick="openSchedEdit('')">+ 일정 만들기</button>${isAdmin()?`<button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openCoachAdmin()">코치 명단</button>`:''}</div></div>
+    <div class="topbar"><div class="heading"><div><h2>수업 일정</h2><div class="tagline">${state.me?esc(state.me)+'의 수업만 보는 중':'전체 지점 · 코치 통합 시간표'}</div></div></div>
+      <div class="cl-top"><button type="button" class="submit-btn" style="height:40px;" onclick="openSchedEdit('')">+ 일정 만들기</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openCoachRoster()">코치 명단</button></div></div>
     <div class="lane-divider"></div>
+    ${meBarHTML('sched')}
     <div id="schedBody">${schedBodyHTML()}</div>
   </main>`;
 }
 function schedRefresh(){ const el=document.getElementById('schedBody'); if(el) el.innerHTML=schedBodyHTML(); else if(state.schedOpen) softRerender(); }
 function schedBodyHTML(){
   const today=HC.todayStr(), [from,to]=schedRange(), f=state.schedF;
-  const inRange=state.schedules.filter(x=>x.date>=from && x.date<=to);
-  const list=schedFilter(inRange, f);
-  const todays=state.schedules.filter(x=>x.date===today);
-  const sumToday=todays.filter(x=>(x.status||'scheduled')!=='cancelled').length, sumDone=todays.filter(x=>x.status==='completed').length;
+  const list=schedFilter(state.schedules.filter(x=>x.date>=from && x.date<=to), f, state.me);
+  const act=list.filter(x=>(x.status||'scheduled')!=='cancelled');
+  const nDone=act.filter(x=>x.status==='completed').length, nLate=act.filter(x=>x.status!=='completed' && schedEnded(x)).length, nNoCoach=act.filter(x=>!schedCoaches(x).length).length;
   const conflicts=schedConflictCount(list);
   const d=state.schedDate, [y,m,dd]=d.split('-').map(Number);
   const title = state.schedView==='day' ? `${m}월 ${dd}일 (${WD_KO[wdOf(d)]})` : state.schedView==='week' ? (()=>{ const s=weekStartOf(d), e=ymdAdd(s,6); return `${Number(s.slice(5,7))}/${Number(s.slice(8))} ~ ${Number(e.slice(5,7))}/${Number(e.slice(8))}`; })() : `${y}년 ${m}월`;
   const types=[...new Set(state.schedules.map(x=>x.type).filter(Boolean))];
   const opt=(k,arr)=>arr.map(([v,l])=>`<option value="${esc(v)}" ${f[k]===v?'selected':''}>${esc(l)}</option>`).join('');
+  const per = state.schedView==='day'?'오늘 화면':state.schedView==='week'?'이번 주':'이번 달';
   let body='';
   if(state.schedErr) body=`<div class="insight-box flag">${esc(state.schedErr)}</div>`;
   else if(state.schedLoading && !state.schedules.length) body='<div class="empty-mini">일정 불러오는 중…</div>';
@@ -4014,22 +4094,24 @@ function schedBodyHTML(){
     const first=wdOf(from), last=Number(to.slice(8)); let cells='';
     for(let i=0;i<(first+6)%7;i++) cells+='<div class="smc-blank"></div>';
     for(let k=1;k<=last;k++){
-      const ds=from.slice(0,8)+String(k).padStart(2,'0'), dl=list.filter(x=>x.date===ds), act=dl.filter(x=>(x.status||'scheduled')!=='cancelled');
-      cells+=`<button type="button" class="smc-day ${ds===today?'today':''} ${act.length?'has':''}" onclick="schedPickDay('${ds}')" aria-label="${m}월 ${k}일 수업 ${act.length}개"><span>${k}</span>${act.length?`<b>${act.length}</b>`:''}${dl.length>act.length?`<i>취소 ${dl.length-act.length}</i>`:''}</button>`;
+      const ds=from.slice(0,8)+String(k).padStart(2,'0'), dl=list.filter(x=>x.date===ds), a=dl.filter(x=>(x.status||'scheduled')!=='cancelled');
+      cells+=`<button type="button" class="smc-day ${ds===today?'today':''} ${a.length?'has':''}" onclick="schedPickDay('${ds}')" aria-label="${m}월 ${k}일 수업 ${a.length}개"><span>${k}</span>${a.length?`<b>${a.length}</b>`:''}${a.some(x=>x.status!=='completed'&&schedEnded(x))?'<i class="late">체크 필요</i>':dl.length>a.length?`<i>취소 ${dl.length-a.length}</i>`:''}</button>`;
     }
-    body=`<div class="smc-week">${['월','화','수','목','금','토','일'].map(w=>`<span>${w}</span>`).join('')}</div><div class="smc-grid">${cells}</div><div class="stat-note" style="margin-top:8px;">날짜를 누르면 그날 일정이 나와요 · 숫자 = 예정 수업 수</div>`;
+    body=`<div class="smc-week">${['월','화','수','목','금','토','일'].map(w=>`<span>${w}</span>`).join('')}</div><div class="smc-grid">${cells}</div><div class="stat-note" style="margin-top:8px;">날짜를 누르면 그날 일정이 나와요 · 숫자 = 수업 수</div>`;
   }else{
     const days = state.schedView==='day' ? [d] : Array.from({length:7},(_,i)=>ymdAdd(weekStartOf(d),i));
-    body=`<div class="${state.schedView==='week'?'swk':'sday'}">${days.map(ds=>{ const dl=list.filter(x=>x.date===ds);
-      return `<div class="swk-col ${ds===today?'today':''}"><button type="button" class="swk-h" onclick="schedPickDay('${ds}')">${WD_KO[wdOf(ds)]} ${Number(ds.slice(5,7))}/${Number(ds.slice(8))}${ds===today?' · 오늘':''}</button>
-        ${dl.map(x=>schedBlockHTML(x, state.schedView==='week')).join('') || '<div class="swk-empty">수업 없음</div>'}
-        ${state.schedView==='day'?`<button type="button" class="cal-write-btn" style="width:100%; border-style:dashed;" onclick="openSchedEdit('', '${ds}')">+ 이 날 일정 추가</button>`:''}</div>`; }).join('')}</div>`;
+    body=`<div class="srows">${days.map(ds=>{ const dl=list.filter(x=>x.date===ds);
+      return `<div class="srow ${ds===today?'today':''}">
+        <button type="button" class="srow-h" onclick="schedPickDay('${ds}')"><b>${WD_KO[wdOf(ds)]} ${Number(ds.slice(5,7))}/${Number(ds.slice(8))}</b>${ds===today?'<span>오늘</span>':''}</button>
+        <div class="srow-items">${dl.map(schedCardHTML).join('') || '<div class="srow-empty">수업 없음</div>'}
+          ${state.schedView==='day'?`<button type="button" class="cal-write-btn srow-add" onclick="openSchedEdit('', '${ds}')">+ 이 날 일정 추가</button>`:''}</div>
+      </div>`; }).join('')}</div>`;
   }
   return `<div class="sched-sum">
-      <div class="pay-cardx"><div class="pc-h">오늘 예정</div><div class="pc-n">${sumToday}<small>개</small></div></div>
-      <div class="pay-cardx"><div class="pc-h">오늘 완료</div><div class="pc-n" style="color:#7c9dff;">${sumDone}<small>개</small></div></div>
-      <div class="pay-cardx"><div class="pc-h">출결 미기록</div><div class="pc-n" style="color:var(--text-dim);">-</div><div class="pc-f" style="color:var(--text-dim);">출결 단계에서 추가</div></div>
-      <div class="pay-cardx ${conflicts?'unpaid on':''}"><div class="pc-h">충돌 경고</div><div class="pc-n" style="color:${conflicts?'#ff9f1c':'var(--text)'};">${conflicts}<small>개</small></div></div>
+      <div class="pay-cardx"><div class="pc-h">${per} 수업</div><div class="pc-n">${act.length}<small>개</small></div></div>
+      <div class="pay-cardx"><div class="pc-h">완료</div><div class="pc-n" style="color:var(--lime);">${nDone}<small>개</small></div></div>
+      <div class="pay-cardx ${nLate?'unpaid on':''}"><div class="pc-h">완료 체크 안 함</div><div class="pc-n" style="color:${nLate?'#ff9f1c':'var(--text)'};">${nLate}<small>개</small></div><div class="pc-f" style="color:var(--text-dim);">끝난 수업 기준</div></div>
+      <div class="pay-cardx ${nNoCoach?'unpaid on':''}"><div class="pc-h">코치 미정</div><div class="pc-n" style="color:${nNoCoach?'#ff9f1c':'var(--text)'};">${nNoCoach}<small>개</small></div></div>
     </div>
     <div class="sched-bar">
       <div class="mgmt-tabs sched-views" role="tablist">${[['day','일'],['week','주'],['month','월']].map(([k,l])=>`<button type="button" role="tab" aria-selected="${state.schedView===k}" class="${state.schedView===k?'on':''}" onclick="schedSetView('${k}')">${l}</button>`).join('')}</div>
@@ -4037,68 +4119,84 @@ function schedBodyHTML(){
     </div>
     <div class="sched-filters">
       <select class="student-search" aria-label="지점" onchange="schedSetF('br',this.value)"><option value="">전체 지점</option>${opt('br',BRANCHES.map(b=>[b,b]))}</select>
-      <select class="student-search" aria-label="코치" onchange="schedSetF('coach',this.value)"><option value="">전체 코치</option>${opt('coach',Object.entries(state.coaches).map(([k,v])=>[k,v.name]))}</select>
       <select class="student-search" aria-label="수업 종류" onchange="schedSetF('type',this.value)"><option value="">전체 종류</option>${opt('type',types.map(t=>[t,t]))}</select>
       <select class="student-search" aria-label="상태" onchange="schedSetF('st',this.value)"><option value="">전체 상태</option>${opt('st',Object.entries(SCHED_STATUS).map(([k,v])=>[k,v.label]))}</select>
     </div>
     ${conflicts?`<div class="insight-box flag" style="margin:0 0 12px;">겹치는 일정이 ${conflicts}개 있어요. 일정을 눌러 확인해 주세요.</div>`:''}
     ${body}`;
 }
+async function schedToggleDone(id){
+  const x=state.schedules.find(s=>s.id===id); if(!x || state.schedBusy) return;
+  const to = x.status==='completed' ? 'scheduled' : 'completed';
+  state.schedBusy=id; schedRefresh();
+  const ok=await schedPatch(x, { status:to }, to==='completed'?'완료 체크':'완료 풀기');
+  state.schedBusy=''; schedRefresh();
+  if(ok) showToast(to==='completed'?'수업 완료로 체크했어요':'완료 체크를 풀었어요');
+}
 
 /* ---- 일정 만들기·고치기 ---- */
-let seForce=false;
-function schedSuggest(branch, date){
-  // 지점 + 그 요일을 '수업 요일'로 고른 학생을 자동 추천
+function schedSuggest(branch, date, coaches){
+  // 지점 + 그 요일을 '수업 요일'로 고른 학생. 고른 코치에게 담당 학생이 있으면 그중에서만
   const wd=WD_KO[wdOf(date)];
-  return state.students.filter(s=>s.branch===branch && daysOf(s).includes(wd)).map(s=>s.id);
+  const base=state.students.filter(s=>s.branch===branch && daysOf(s).includes(wd)).map(s=>s.id);
+  const mine=new Set((coaches||[]).flatMap(c=>state.coachStudents[c]||[]));
+  if(!mine.size) return base;
+  const f=base.filter(id=>mine.has(id));
+  return f.length ? f : base;
 }
 function openSchedEdit(id, date){
   seForce=false;
   const x = id ? state.schedules.find(s=>s.id===id) : null;
   if(id && !x){ showToast('일정을 찾을 수 없어요 (지워졌을 수 있어요)'); return; }
   const d = x ? x.date : (date || (state.schedView==='day'?state.schedDate:HC.todayStr()));
-  const br = x ? x.branch : (state.schedF.br || (myCoachInfo()&&myCoachInfo().branches[0]) || BRANCHES[0]);
+  const br = x ? x.branch : (state.schedF.br || BRANCHES[0]);
   const st = x ? (x.status||'scheduled') : 'scheduled';
-  const canEdit = !x || canManageBranch(x.branch);
-  const sel = new Set(x ? (x.studentIds||[]) : schedSuggest(br, d));
-  const coachOpts=Object.entries(state.coaches).filter(([k,v])=>v.active||(x&&x.coachId===k));
-  const defCoach = x ? x.coachId : (state.coaches[currentCoachEmail] ? currentCoachEmail : (coachOpts[0]||[''])[0]);
+  const cs = new Set(x ? schedCoaches(x) : (state.me?[state.me]:[]));
+  const fm = new Set(x ? schedForms(x) : []);
+  const sel = new Set(x ? (x.studentIds||[]) : schedSuggest(br, d, [...cs]));
+  const editable = st!=='cancelled';
   const typeOpts=[...new Set([...CLASS_TYPES, ...(x&&x.type?[x.type]:[])])];
+  const coachPills=(arr,role)=>arr.map(n=>`<label class="chk-pill"><input type="checkbox" name="coaches" value="${esc(n)}" ${cs.has(n)?'checked':''} onchange="seRefill(this.form)"> ${esc(n)}</label>`).join('');
+  const extraCoaches=[...cs].filter(n=>!allCoachNames().includes(n));   // 명단에서 빠진 코치도 기존 일정에서는 유지
   openModal(`<div class="modal sched-modal" role="dialog" aria-labelledby="seTitle">
-    <h3 id="seTitle">${x?'일정 '+(canEdit?'고치기':'보기'):'일정 만들기'}${x&&x.seriesId?' <span class="stat-note">· 반복 일정</span>':''}</h3>
+    <h3 id="seTitle">${x?(editable?'일정 고치기':'일정 보기'):'일정 만들기'}${x&&x.seriesId?' <span class="stat-note">· 반복 일정</span>':''}</h3>
     ${x?`<div class="stat-note" style="margin:-8px 0 10px;">상태: <b style="color:${SCHED_STATUS[st].c}">${SCHED_STATUS[st].label}</b>${x.cancellationReason?' · 취소 사유: '+esc(x.cancellationReason):''}</div>`:''}
     <form id="seForm" onsubmit="event.preventDefault(); submitSched('${x?x.id:''}')">
-    <fieldset ${canEdit&&st!=='cancelled'?'':'disabled'} style="border:0; padding:0; margin:0;">
+    <fieldset ${editable?'':'disabled'} style="border:0; padding:0; margin:0; min-width:0;">
     <div class="se-grid">
-      <div class="field"><label>지점</label><select name="branch" onchange="seRefill(this.form)">${BRANCHES.map(b=>`<option ${b===br?'selected':''} ${canManageBranch(b)?'':'disabled'}>${b}</option>`).join('')}</select></div>
+      <div class="field"><label>지점</label><select name="branch" onchange="seRefill(this.form)">${BRANCHES.map(b=>`<option ${b===br?'selected':''}>${b}</option>`).join('')}</select></div>
       <div class="field"><label>날짜</label><input type="date" name="date" value="${d}" required onchange="seRefill(this.form)"></div>
       <div class="field"><label>시작</label><input type="time" name="startTime" value="${x?esc(x.startTime):'18:00'}" required></div>
       <div class="field"><label>끝</label><input type="time" name="endTime" value="${x?esc(x.endTime):'20:00'}" required></div>
-      <div class="field"><label>수업 종류</label><select name="type">${typeOpts.map(t=>`<option ${x&&x.type===t?'selected':''}>${esc(t)}</option>`).join('')}</select></div>
-      <div class="field"><label>담당 코치</label><select name="coachId" required>${coachOpts.length?coachOpts.map(([k,v])=>`<option value="${esc(k)}" ${k===defCoach?'selected':''}>${esc(v.name)}</option>`).join(''):'<option value="">코치 명단이 비어 있어요</option>'}</select></div>
     </div>
-    <div class="field"><label>장소 (선택)</label><input name="location" maxlength="40" value="${x?esc(x.location||''):''}" placeholder="예: 지하 1층 체육관"></div>
-    <div class="field"><label>참여 학생 <b id="seCnt" style="color:var(--lime);">${sel.size}명</b> <span class="stat-note">· 지점 + 수업 요일로 자동 체크돼요</span></label>
+    <div class="field"><label>수업 종류</label><select name="type">${typeOpts.map(t=>`<option ${x&&x.type===t?'selected':''}>${esc(t)}</option>`).join('')}</select></div>
+    <div class="field"><label>수업 형태 <span class="stat-note">· 여러 개 고를 수 있어요</span></label>
+      <div class="chk-pill-row">${SCHED_FORMS.map(f=>`<label class="chk-pill chk-pill-glow"><input type="checkbox" name="forms" value="${esc(f)}" ${fm.has(f)?'checked':''}> ${esc(f)}</label>`).join('')}</div></div>
+    <div class="field"><label>코치 <span class="stat-note">· 여러 명 고를 수 있어요${x&&x.seriesId?' · 이 수업에만 적용돼요':''}</span></label>
+      <div class="se-coaches"><span class="se-role">메인</span>${coachPills(INSTRUCTORS.main||[])}</div>
+      <div class="se-coaches"><span class="se-role">보조</span>${coachPills(INSTRUCTORS.assistant||[])}${coachPills(extraCoaches)}</div></div>
+    <div class="field"><label>참여 학생 <b id="seCnt" style="color:var(--lime);">${sel.size}명</b> <span class="stat-note">· 지점 + 수업 요일 (+ 고른 코치의 담당 학생)으로 자동 체크</span></label>
       <div class="se-students" id="seStudents">${seStudentsHTML(br, sel)}</div></div>
     ${x?'':`<div class="field"><label>반복</label>
       <select name="repeat" onchange="document.getElementById('seRep').hidden=this.value!=='weekly'"><option value="none">반복 없음</option><option value="weekly">매주 같은 요일</option></select>
       <div id="seRep" hidden style="margin-top:8px;">
         <div class="day-pick">${['월','화','수','목','금','토','일'].map(w=>`<label class="day-btn"><input type="checkbox" name="repDays" value="${w}" ${WD_KO[wdOf(d)]===w?'checked':''}><span>${w}</span></label>`).join('')}</div>
         <div class="field" style="margin-top:8px;"><label>반복 끝나는 날</label><input type="date" name="repEnd" value="${ymdAdd(d,27)}"></div>
+        <label class="pk-save"><input type="checkbox" name="repCoachFirst" checked><span><b>코치는 첫 수업에만 넣기</b> · 다음 주부터는 '코치 미정'으로 두고 주마다 정해요 (끄면 매주 같은 코치)</span></label>
         <div class="stat-note">한 번에 최대 ${SCHED_MAX_SERIES}개까지 만들어요. 학생은 날마다 그 요일 기준으로 다시 추천돼요.</div>
       </div></div>`}
     <div class="field"><label>메모 (선택)</label><input name="memo" maxlength="100" value="${x?esc(x.memo||''):''}"></div>
     </fieldset>
-    ${x&&x.seriesId&&canEdit&&st!=='cancelled'?`<div class="field"><label>반복 일정 고치기 범위</label><select name="scope"><option value="one">이 일정만</option><option value="future">이 일정과 이후 일정</option><option value="all">전체 반복 일정 (지난 수업 제외)</option></select></div>`:''}
+    ${x&&x.seriesId&&editable?`<div class="field"><label>반복 일정 고치기 범위</label><select name="scope"><option value="one">이 일정만</option><option value="future">이 일정과 이후 일정</option><option value="all">전체 반복 일정 (지난 수업 제외)</option></select>
+      <div class="stat-note">이후·전체로 고쳐도 <b>코치와 학생</b>은 각 수업에 따로 정한 그대로 둬요 (이 수업만 바뀜)</div></div>`:''}
     <div id="seErr" role="alert"></div>
     <div class="modal-actions se-actions">
       <button type="button" class="cancel" onclick="closeModal()">닫기</button>
-      ${x&&canEdit&&st==='scheduled'?`<button type="button" class="cancel" onclick="openSchedCancel('${x.id}')">수업 취소</button><button type="button" class="cancel" onclick="setSchedStatus('${x.id}','completed')">완료 표시</button>`:''}
-      ${x&&canEdit&&st==='completed'?`<button type="button" class="cancel" onclick="setSchedStatus('${x.id}','scheduled')">완료 풀기</button>`:''}
-      ${x&&canEdit&&st!=='cancelled'?`<button type="button" class="cancel" onclick="closeModal(); openClassLogFromSched('${x.id}')">수업일지 쓰기</button>`:''}
-      ${canEdit&&st!=='cancelled'?`<button type="submit" class="confirm ok" id="seOk" form="seForm">${x?'저장':'만들기'}</button>`:''}
+      ${x&&st==='scheduled'?`<button type="button" class="cancel" onclick="openSchedCancel('${x.id}')">수업 취소</button>`:''}
+      ${x&&editable?`<button type="button" class="cancel" onclick="closeModal(); openClassLogFromSched('${x.id}')">수업일지 쓰기</button>`:''}
+      ${editable?`<button type="submit" class="confirm ok" id="seOk" form="seForm">${x?'저장':'만들기'}</button>`:''}
     </div>
-    ${x&&Array.isArray(x.history)&&x.history.length?`<details class="se-hist"><summary>변경 기록 ${x.history.length}개</summary>${x.history.slice().reverse().map(h=>`<div>${esc(localYmd(new Date(h.at)))} · ${esc(h.by||'')} · ${esc(h.what||'')}</div>`).join('')}</details>`:''}
+    ${x&&Array.isArray(x.history)&&x.history.length?`<details class="se-hist"><summary>변경 기록 ${x.history.length}개</summary>${x.history.slice().reverse().map(h=>`<div>${esc(localYmd(new Date(h.at)))} · ${esc(h.what||'')}</div>`).join('')}</details>`:''}
   </div>`);
 }
 function seStudentsHTML(br, sel){
@@ -4109,21 +4207,24 @@ function seStudentsHTML(br, sel){
   return all.map(s=>`<label class="chk-pill"><input type="checkbox" name="studentIds" value="${s.id}" ${sel.has(s.id)?'checked':''} onchange="document.getElementById('seCnt').textContent=this.form.querySelectorAll('input[name=studentIds]:checked').length+'명'"> ${esc(s.name)}${daysOf(s).length?` <small>${daysOf(s).join('')}</small>`:''}</label>`).join('');
 }
 function seRefill(form){
-  // 지점이나 날짜를 바꾸면 학생 추천을 다시 (이미 손으로 고친 체크는 지점이 같으면 유지)
   const br=form.branch.value, d=form.date.value; if(!PERF.validDate(d)) return;
-  const sel=new Set(schedSuggest(br,d));
+  const cs=[...form.querySelectorAll('input[name=coaches]:checked')].map(i=>i.value);
+  const sel=new Set(schedSuggest(br,d,cs));
   document.getElementById('seStudents').innerHTML=seStudentsHTML(br, sel);
   document.getElementById('seCnt').textContent=sel.size+'명';
   const rd=form.querySelectorAll('input[name=repDays]'); if(rd.length && ![...rd].some(i=>i.checked)) rd.forEach(i=>{ i.checked = i.value===WD_KO[wdOf(d)]; });
 }
 function seErr(html){ const e=document.getElementById('seErr'); if(e) e.innerHTML=html; }
 async function fetchSchedsOn(dates){
-  // 충돌 검사용: 해당 날짜 범위의 일정을 서버에서 다시 읽는다 (화면 캐시만 믿지 않음)
   if(!dates.length) return [];
   const s=dates.slice().sort(), from=s[0], to=s[s.length-1];
   const snap=await db.collection('classSchedules').where('date','>=',from).where('date','<=',to).get();
   const set=new Set(dates);
   return snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>set.has(x.date));
+}
+async function fetchSeries(seriesId){
+  const snap=await db.collection('classSchedules').where('seriesId','==',seriesId).get();
+  return snap.docs.map(d=>({id:d.id,...d.data()}));
 }
 async function submitSched(id){
   if(schedSaving) return;
@@ -4131,31 +4232,30 @@ async function submitSched(id){
   const f=new FormData(form), x=id?state.schedules.find(s=>s.id===id):null;
   const base={
     branch:String(f.get('branch')||''), date:String(f.get('date')||''), startTime:String(f.get('startTime')||''), endTime:String(f.get('endTime')||''),
-    type:String(f.get('type')||'').slice(0,30), coachId:String(f.get('coachId')||''), location:String(f.get('location')||'').trim().slice(0,40),
-    memo:String(f.get('memo')||'').trim().slice(0,100), studentIds:f.getAll('studentIds').map(String).slice(0,80)
+    type:String(f.get('type')||'').slice(0,30), memo:String(f.get('memo')||'').trim().slice(0,100),
+    forms:SCHED_FORMS.filter(v=>f.getAll('forms').includes(v)), coaches:f.getAll('coaches').map(String).slice(0,10),
+    studentIds:f.getAll('studentIds').map(String).slice(0,80)
   };
-  base.coachName=coachName(base.coachId);
   if(!BRANCHES.includes(base.branch)) return seErr('<div class="se-e">지점을 골라 주세요</div>');
-  if(!canManageBranch(base.branch)) return seErr('<div class="se-e">이 지점 일정을 만들 권한이 없어요</div>');
   if(!PERF.validDate(base.date) || base.date<'2025-01-01' || base.date>'2030-12-31') return seErr('<div class="se-e">날짜를 다시 골라 주세요</div>');
   if(!timeOk(base.startTime)||!timeOk(base.endTime)) return seErr('<div class="se-e">시간을 다시 골라 주세요</div>');
   if(base.endTime<=base.startTime) return seErr('<div class="se-e">끝나는 시간이 시작 시간보다 늦어야 해요</div>');
-  if(!base.coachId) return seErr('<div class="se-e">담당 코치를 골라 주세요 (코치 명단이 비어 있으면 관리자가 먼저 추가해야 해요)</div>');
   if(!base.type) return seErr('<div class="se-e">수업 종류를 골라 주세요</div>');
   if(navigator.onLine===false) return seErr('<div class="se-e">인터넷이 끊겨 있어요</div>');
-  // 만들 일정 목록 (반복이면 날짜별로)
   let items=[];
   const now=Date.now(), me=currentCoachEmail||'';
   if(!x){
     if(f.get('repeat')==='weekly'){
-      const days=f.getAll('repDays'), end=String(f.get('repEnd')||'');
+      const days=f.getAll('repDays'), end=String(f.get('repEnd')||''), firstOnly=!!f.get('repCoachFirst');
       if(!days.length) return seErr('<div class="se-e">반복할 요일을 골라 주세요</div>');
       if(!PERF.validDate(end) || end<base.date) return seErr('<div class="se-e">반복 끝나는 날을 시작 날짜 뒤로 골라 주세요</div>');
       const seriesId='sr'+uid();
       for(let d=base.date; d<=end; d=ymdAdd(d,1)){
         if(!days.includes(WD_KO[wdOf(d)])) continue;
-        const sids = d===base.date ? base.studentIds : schedSuggest(base.branch, d);   // 첫날은 고른 학생, 나머지는 그 요일 기준 추천
-        items.push({ ...base, date:d, studentIds:sids, seriesId, _id:seriesId+'_'+d });
+        const first=!items.length;
+        const coaches = first || !firstOnly ? base.coaches : [];
+        const sids = first ? base.studentIds : schedSuggest(base.branch, d, coaches);
+        items.push({ ...base, date:d, coaches, studentIds:sids, seriesId, _id:seriesId+'_'+d });
         if(items.length>SCHED_MAX_SERIES) return seErr(`<div class="se-e">한 번에 ${SCHED_MAX_SERIES}개까지만 만들 수 있어요. 끝나는 날을 앞당겨 주세요</div>`);
       }
       if(!items.length) return seErr('<div class="se-e">고른 요일이 기간 안에 없어요</div>');
@@ -4166,11 +4266,12 @@ async function submitSched(id){
     else{
       const today=HC.todayStr();
       const pool=(await fetchSeries(x.seriesId)).filter(o=>(o.status||'scheduled')==='scheduled' && o.date>=today && (scope==='all' || o.date>=x.date));
-      items=pool.map(o=>({ ...o, ...base, date:o.date, studentIds: o.id===x.id ? base.studentIds : o.studentIds, seriesId:x.seriesId, _id:o.id, _prev:o }));   // 날짜는 그대로, 나머지만 바꿈
-      if(!items.length) items=[{ ...base, seriesId:x.seriesId, _id:x.id, _prev:x }];
+      // 이후·전체: 날짜·코치·학생은 각 수업 그대로, 시간·종류·형태·지점·메모만 바꿈 (이 수업은 전부 반영)
+      items=pool.map(o=>o.id===x.id ? { ...base, seriesId:x.seriesId, _id:o.id, _prev:o }
+        : { ...base, date:o.date, coaches:schedCoaches(o), studentIds:o.studentIds||[], seriesId:x.seriesId, _id:o.id, _prev:o });
+      if(!items.some(i=>i._id===x.id)) items.push({ ...base, seriesId:x.seriesId, _id:x.id, _prev:x });
     }
   }
-  // 충돌 검사
   schedSaving=true; const ok=document.getElementById('seOk'); if(ok){ ok.disabled=true; ok.textContent='확인 중…'; }
   try{
     const pool=await fetchSchedsOn([...new Set(items.map(i=>i.date))]);
@@ -4178,44 +4279,41 @@ async function submitSched(id){
     const hard=cf.filter(c=>c.hard);
     if(cf.length && !(seForce && !hard.length)){
       seErr(`<div class="se-cf"><b>${hard.length?'저장할 수 없어요 · ':''}겹치는 일정 ${cf.length}개</b>${cf.slice(0,6).map(c=>`<div>${Number(c.it.date.slice(5,7))}/${Number(c.it.date.slice(8))} ${esc(c.time)} · ${esc(c.o.type||'')} ${esc(c.o.branch||'')} — ${esc(c.reasons.join(', '))} <button type="button" class="link-btn" onclick="closeModal(); openSchedEdit('${c.o.id}')">열기</button></div>`).join('')}
-        ${hard.length?'<div class="stat-note">같은 코치·똑같은 일정은 시간을 바꿔야 저장돼요.</div>':'<div class="stat-note">학생만 겹치면 확인 후 저장할 수 있어요.</div><button type="button" class="ghost-btn" style="margin-top:6px;" onclick="seForce=true; submitSched(\''+(id||'')+'\')">그래도 저장</button>'}</div>`);
+        ${hard.length?'<div class="stat-note">같은 코치·똑같은 일정은 시간이나 코치를 바꿔야 저장돼요.</div>':'<div class="stat-note">학생만 겹치면 확인 후 저장할 수 있어요.</div><button type="button" class="ghost-btn" style="margin-top:6px;" onclick="seForce=true; submitSched(\''+(id||'')+'\')">그래도 저장</button>'}</div>`);
       return;
     }
-    // 저장
-    const batch=db.batch();
+    const batch=db.batch(); let n=0;
     items.forEach(it=>{
-      const ref=db.collection('classSchedules').doc(it._id), prev=it._prev;
-      const doc={ branch:it.branch, studentIds:it.studentIds, coachId:it.coachId, coachName:it.coachName, date:it.date, startTime:it.startTime, endTime:it.endTime,
-        type:it.type, location:it.location, memo:it.memo, status:prev?(prev.status||'scheduled'):'scheduled', seriesId:it.seriesId||null,
+      const prev=it._prev;
+      const doc={ branch:it.branch, studentIds:it.studentIds, coaches:it.coaches, forms:it.forms, date:it.date, startTime:it.startTime, endTime:it.endTime,
+        type:it.type, memo:it.memo, status:prev?(prev.status||'scheduled'):'scheduled', seriesId:it.seriesId||null,
         createdBy:prev?(prev.createdBy||''):me, createdAt:prev?(prev.createdAt||now):now, updatedAt:now, updatedBy:me };
       if(prev && prev.cancellationReason) doc.cancellationReason=prev.cancellationReason;
       const what = prev ? schedDiff(prev, doc) : '일정 만듦';
+      if(prev && !what) return;
       doc.history=[...((prev&&Array.isArray(prev.history))?prev.history:[]), { at:now, by:me, what }].slice(-20);
-      if(prev && what==='') return;   // 바뀐 게 없으면 안 씀
-      batch.set(ref, doc);
+      batch.set(db.collection('classSchedules').doc(it._id), doc); n++;
     });
+    if(!n){ closeModal(); showToast('바뀐 내용이 없어요'); return; }
     markUserWrite();
     await batch.commit();
     seForce=false;
     closeModal();
-    showToast(x ? `일정을 고쳤어요${items.length>1?' ('+items.length+'개)':''}` : `일정 ${items.length}개를 만들었어요`);
+    showToast(x ? `일정을 고쳤어요${n>1?' ('+n+'개)':''}` : `일정 ${n}개를 만들었어요`);
     if(!x){ state.schedDate=items[0].date; if(state.schedView==='month') state.schedView='week'; subscribeSchedules(); }
   }catch(e){
-    seErr(`<div class="se-e">저장하지 못했어요 — ${e&&e.code==='permission-denied'?'이 지점 일정을 저장할 권한이 없어요':esc(e&&e.message||'다시 시도해 주세요')}</div>`);
+    seErr(`<div class="se-e">저장하지 못했어요 — ${e&&e.code==='permission-denied'?'저장 권한이 없어요 (Firebase 규칙 확인)':esc(e&&e.message||'다시 시도해 주세요')}</div>`);
   }finally{ schedSaving=false; const b=document.getElementById('seOk'); if(b){ b.disabled=false; b.textContent=x?'저장':'만들기'; } }
-}
-async function fetchSeries(seriesId){
-  const snap=await db.collection('classSchedules').where('seriesId','==',seriesId).get();
-  return snap.docs.map(d=>({id:d.id,...d.data()}));
 }
 function schedDiff(a,b){
   const parts=[];
   if(a.date!==b.date) parts.push(`날짜 ${a.date}→${b.date}`);
   if(a.startTime!==b.startTime||a.endTime!==b.endTime) parts.push(`시간 ${a.startTime}~${a.endTime}→${b.startTime}~${b.endTime}`);
-  if((a.location||'')!==(b.location||'')) parts.push(`장소 ${a.location||'-'}→${b.location||'-'}`);
   if(a.branch!==b.branch) parts.push(`지점 ${a.branch}→${b.branch}`);
-  if(a.coachId!==b.coachId) parts.push(`코치 ${coachName(a.coachId)}→${coachName(b.coachId)}`);
+  const ca=schedCoaches(a).join(', '), cb=schedCoaches(b).join(', ');
+  if(ca!==cb) parts.push(`코치 ${ca||'미정'}→${cb||'미정'}`);
   if(a.type!==b.type) parts.push(`종류 ${a.type}→${b.type}`);
+  if(schedForms(a).join()!==schedForms(b).join()) parts.push(`형태 ${schedForms(b).join('·')||'없음'}`);
   const sa=(a.studentIds||[]).slice().sort().join(), sb=(b.studentIds||[]).slice().sort().join();
   if(sa!==sb) parts.push(`학생 ${(a.studentIds||[]).length}→${(b.studentIds||[]).length}명`);
   if((a.memo||'')!==(b.memo||'')) parts.push('메모');
@@ -4238,12 +4336,9 @@ async function submitSchedCancel(id){
   const ok=await schedPatch(x, { status:'cancelled', cancellationReason:r }, '수업 취소: '+r);
   if(ok){ closeModal(); showToast('수업을 취소했어요 (기록은 남아요)'); } else { btn.disabled=false; btn.textContent='수업 취소하기'; document.getElementById('scErr').textContent='저장하지 못했어요. 다시 눌러 주세요'; }
 }
-async function setSchedStatus(id, st){
-  const x=state.schedules.find(s=>s.id===id); if(!x) return;
-  if(await schedPatch(x, { status:st }, st==='completed'?'완료 표시':'완료 풀기')){ closeModal(); showToast(st==='completed'?'완료로 표시했어요':'예정으로 되돌렸어요'); }
-}
 async function schedPatch(x, patch, what){
   if(!db || schedSaving) return false;
+  if(navigator.onLine===false){ showToast('인터넷이 끊겨 있어요'); return false; }
   schedSaving=true; markUserWrite();
   try{
     const now=Date.now(), me=currentCoachEmail||'';
@@ -4257,35 +4352,59 @@ function openClassLogFromSched(id){
   state.calSel=x.date; state.calType='';
   if(state.calYM!==x.date.slice(0,7)){ state.calYM=x.date.slice(0,7); subscribeClassLogs(); }
   state.schedOpen=false; stopSchedules(); openClassLogView();
-  setTimeout(()=>{ openLogForm(x.date); const sel=document.getElementById('classTypeSelect'); if(sel){ if(CLASS_TYPES.includes(x.type)) sel.value=x.type; else if(x.type){ sel.value='__custom__'; toggleCustomClassType(sel); const c=document.querySelector('input[name=classTypeCustom]'); if(c) c.value=x.type; } } state.logFromSched=x.id; }, 80);
+  setTimeout(()=>{
+    openLogForm(x.date);
+    const form=document.querySelector('#logFormCard form'); if(!form) return;
+    const sel=document.getElementById('classTypeSelect');
+    if(sel){ if(CLASS_TYPES.includes(x.type)) sel.value=x.type; else if(x.type){ sel.value='__custom__'; toggleCustomClassType(sel); const c=form.querySelector('input[name=classTypeCustom]'); if(c) c.value=x.type; } }
+    const cs=schedCoaches(x);   // 일정의 코치·수업 형태를 일지에도 미리 체크
+    form.querySelectorAll('input[name=instructor],input[name=assistant]').forEach(i=>{ if(cs.includes(i.value)) i.checked=true; });
+    form.querySelectorAll('input[name=progress]').forEach(i=>{ if(schedForms(x).includes(i.value)) i.checked=true; });
+    state.logFromSched=x.id;
+  }, 80);
 }
 
-/* ---- 코치 명단 (관리자) ---- */
-function openCoachAdmin(){
-  const rows=Object.entries(state.coaches).map(([k,v])=>`<div class="ca-row"><div><b>${esc(v.name)}</b> <span class="stat-note">${esc(k)}</span><div class="stat-note">${v.branches.length?esc(v.branches.join(', ')):'담당 지점 없음'}${v.active?'':' · 쉬는 중'}</div></div><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:8px 12px;" onclick="coachForm('${esc(k)}')">고치기</button></div>`).join('') || '<div class="stat-note">아직 코치가 없어요</div>';
-  openModal(`<div class="modal" role="dialog" aria-labelledby="caT"><h3 id="caT">코치 명단</h3>
-    <div class="stat-note" style="margin-bottom:10px;">일정의 '담당 코치'와 지점별 권한에 쓰여요. 로그인 계정 이메일과 같아야 해요.</div>
-    <div class="ca-list">${rows}</div>
-    <div id="caForm"></div>
-    <div class="modal-actions"><button type="button" class="cancel" onclick="closeModal()">닫기</button><button type="button" class="confirm ok" onclick="coachForm('')">+ 코치 추가</button></div></div>`);
+/* ---- 코치 명단: 강사 명단 이름 + 담당 학생 ---- */
+state.rosterSel=''; state.rosterBr='';
+function openCoachRoster(sel){
+  if(sel!==undefined) state.rosterSel=sel;
+  const names=allCoachNames();
+  if(state.rosterSel && !names.includes(state.rosterSel)) state.rosterSel='';
+  const draft = state.rosterDraft && state.rosterDraft.name===state.rosterSel ? state.rosterDraft.ids : new Set(state.coachStudents[state.rosterSel]||[]);
+  state.rosterDraft = state.rosterSel ? { name:state.rosterSel, ids:draft } : null;
+  const br = state.rosterBr || BRANCHES[0];
+  const rows=names.map(n=>{ const c=(state.coachStudents[n]||[]).filter(id=>getStudent(id)).length, on=state.rosterSel===n;
+    return `<button type="button" class="ro-row ${on?'on':''}" aria-pressed="${on}" onclick="state.rosterDraft=null; openCoachRoster(${on?"''":JSON.stringify(n).replace(/"/g,'&quot;')})"><span><b>${esc(n)}</b><small>${coachRole(n)} · ${c?'담당 학생 있음':'아직 안 정함'}</small></span><em class="${c?'has':''}">${c}명</em></button>`; }).join('');
+  const studs=state.students.filter(s=>s.branch===br).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+  const panel = state.rosterSel ? `<div class="ro-panel">
+      <div class="ro-ph"><b>${esc(state.rosterSel)} 담당 학생</b><span>${draft.size}명</span></div>
+      <div class="pf-row">${BRANCHES.map(b=>`<button type="button" class="cal-chip${b===br?' on':''}" onclick="state.rosterBr='${b}'; openCoachRoster()">${b} ${state.students.filter(s=>s.branch===b && draft.has(s.id)).length}</button>`).join('')}</div>
+      <div class="pf-row">${studs.map(s=>`<button type="button" class="ro-st ${draft.has(s.id)?'on':''}" aria-pressed="${draft.has(s.id)}" onclick="rosterToggle('${s.id}')">${draft.has(s.id)?'✓':'+'} ${esc(s.name)}</button>`).join('') || '<span class="stat-note">이 지점 학생이 없어요</span>'}</div>
+      <div class="stat-note">한 학생을 여러 코치가 같이 맡을 수 있어요 (메인·보조 모두)</div>
+      <div id="roErr" class="stat-note" style="color:#ff7a66;"></div>
+      <button type="button" class="submit-btn" style="width:100%; height:46px;" onclick="rosterSave()">저장</button></div>` : '';
+  const html=`<div class="modal roster-modal" role="dialog" aria-labelledby="roT"><h3 id="roT">코치 명단</h3>
+    <div class="stat-note" style="margin-bottom:10px;">수업일지 강사 명단과 같은 이름이에요. 이름을 누르고 담당 학생을 체크하세요. 이름을 더하거나 고치려면 수업일지의 ＋ 추가 / ✏️ 수정을 쓰세요.</div>
+    <div class="ro-list">${rows||'<div class="stat-note">강사 명단이 비어 있어요</div>'}</div>
+    ${panel}
+    <div class="modal-actions"><button type="button" class="cancel" onclick="state.rosterDraft=null; closeModal()">닫기</button></div></div>`;
+  const m=document.getElementById('activeModal');
+  if(m && m.querySelector('.roster-modal')){ const y=m.querySelector('.modal').scrollTop; m.innerHTML=html; m.querySelector('.modal').scrollTop=y; }
+  else openModal(html);
 }
-function coachForm(email){
-  const v=email?state.coaches[email]:null;
-  document.getElementById('caForm').innerHTML=`<div class="card" style="padding:12px; margin-top:10px;">
-    <div class="field"><label>이메일 (로그인 계정)</label><input id="caE" type="email" autocomplete="off" value="${esc(email||'')}" ${email?'readonly':''} placeholder="coach@example.com" style="font-size:16px;"></div>
-    <div class="field"><label>이름</label><input id="caN" maxlength="20" value="${esc(v?v.name:'')}" placeholder="예: 정식쌤" style="font-size:16px;"></div>
-    <div class="field"><label>담당 지점</label><div class="pf-row">${BRANCHES.map(b=>`<label class="chk-pill"><input type="checkbox" class="caB" value="${b}" ${v&&v.branches.includes(b)?'checked':''}> ${b}</label>`).join('')}</div></div>
-    <label class="pk-save"><input type="checkbox" id="caA" ${!v||v.active?'checked':''}><span>지금 활동 중 (끄면 새 일정의 담당 코치 목록에서 빠져요)</span></label>
-    <div id="caErr" class="stat-note" style="color:#ff7a66; min-height:18px;"></div>
-    <button type="button" class="submit-btn" style="width:100%;" onclick="saveCoach()">저장</button></div>`;
-}
-async function saveCoach(){
-  const e=(document.getElementById('caE').value||'').trim().toLowerCase(), n=(document.getElementById('caN').value||'').trim().slice(0,20);
-  const brs=[...document.querySelectorAll('.caB:checked')].map(i=>i.value), act=document.getElementById('caA').checked, err=document.getElementById('caErr');
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)){ err.textContent='이메일을 확인해 주세요'; return; }
-  if(n.length<1){ err.textContent='이름을 적어 주세요'; return; }
-  try{ markUserWrite(); await db.collection('coaches').doc(e).set({ name:n, branches:brs, active:act, updatedAt:Date.now(), updatedBy:currentCoachEmail||'' }); showToast('코치 명단을 저장했어요'); closeModal(); }
-  catch(x){ err.textContent = x&&x.code==='permission-denied' ? '관리자만 코치 명단을 고칠 수 있어요' : '저장하지 못했어요: '+(x&&x.message||''); }
+function rosterToggle(id){ const d=state.rosterDraft; if(!d) return; if(d.ids.has(id)) d.ids.delete(id); else d.ids.add(id); openCoachRoster(); }
+async function rosterSave(){
+  const d=state.rosterDraft; if(!d||!db) return;
+  const ids=[...d.ids].filter(id=>getStudent(id)).slice(0,300), name=d.name;
+  try{
+    markUserWrite();
+    const ref=db.collection('settings').doc('coachStudents');
+    if(/[.~*\/\[\]`]/.test(name)) await ref.set({ map:Object.assign({}, state.coachStudents, { [name]: ids }), updatedAt:Date.now() });
+    else try{ await ref.update({ ['map.'+name]: ids, updatedAt:Date.now() }); }
+    catch(e){ if(e && e.code==='not-found') await ref.set({ map:{ [name]: ids }, updatedAt:Date.now() }); else throw e; }
+    state.coachStudents=Object.assign({}, state.coachStudents, { [name]: ids });
+    state.rosterDraft=null; showToast(`${name} 담당 학생 ${ids.length}명 저장`); openCoachRoster();
+  }catch(e){ const el=document.getElementById('roErr'); if(el) el.textContent='저장하지 못했어요: '+(e&&e.message||''); }
 }
 
 /* ==== 학생관리 페이지 (학생 목록 · 학원비) ====
@@ -4337,7 +4456,7 @@ function renderMgmtView(){
 }
 // --- 학생 목록 탭 ---
 function renderListTab(){
-  return `<div class="mgmt-search">
+  return `${meBarHTML('list')}<div class="mgmt-search">
       <div class="search-wrap"><input type="search" id="listQ" class="student-search" placeholder="학생 이름 검색" aria-label="학생 이름 검색" value="${esc(state.listQ)}" oninput="state.listQ=this.value; listRefresh(); this.nextElementSibling.hidden=!this.value;"><button type="button" class="search-x" aria-label="검색어 지우기" onclick="clearSearch('listQ')" ${state.listQ?'':'hidden'}>×</button></div>
       <select class="student-search" aria-label="지점" onchange="state.listBr=this.value; listRefresh();">
         <option value="">전체 지점</option>${BRANCHES.map(b=>`<option ${state.listBr===b?'selected':''}>${b}</option>`).join('')}
@@ -4347,7 +4466,7 @@ function renderListTab(){
 }
 function listDynHTML(){
   const ym=HC.todayStr().slice(0,7), q=state.listQ.trim();
-  const list=state.students.filter(s=>(!state.listBr||s.branch===state.listBr) && (!q||String(s.name).includes(q))).sort((a,b)=>(a.branch||'힣').localeCompare(b.branch||'힣')||String(a.name).localeCompare(String(b.name)));
+  const list=meFilterStudents(state.students).filter(s=>(!state.listBr||s.branch===state.listBr) && (!q||String(s.name).includes(q))).sort((a,b)=>(a.branch||'힣').localeCompare(b.branch||'힣')||String(a.name).localeCompare(String(b.name)));
   if(!state.studentsLoaded) return '<div class="empty-mini">학생 명단 불러오는 중…</div>';
   if(!list.length) return `<div class="empty-mini">${q||state.listBr?'조건에 맞는 학생이 없어요':'학생이 없어요. 새 학생은 가입 승인으로 들어와요.'}</div>`;
   return `<div class="stat-note" style="margin-bottom:10px;">${list.length}명 · 누르면 학생 상세(종합 리포트·캘린더)로 이동</div>
