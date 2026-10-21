@@ -662,6 +662,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .se-e{ color:#ff7a66; font-size:13px; margin:6px 0; }
   .se-cf{ border:1px solid #ff9f1c; border-radius:10px; padding:10px; margin:8px 0; font-size:13px; display:flex; flex-direction:column; gap:4px; }
   .se-actions{ flex-wrap:wrap; } .se-actions button{ flex:1 1 auto; }
+  .se-actions .se-del{ color:#ff7a66; border-color:#ff7a6655; }
   .se-hist{ margin-top:10px; font-size:12px; color:var(--text-muted); } .se-hist div{ padding:3px 0; border-top:1px solid var(--line); }
   .ca-list{ display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; }
   .ca-row{ display:flex; justify-content:space-between; gap:10px; align-items:center; border:1px solid var(--line); border-radius:10px; padding:10px; }
@@ -4118,7 +4119,7 @@ function schedCardHTML(x){
 function renderScheduleView(){
   return `<main class="sched">
     <div class="topbar"><div class="heading"><div><h2>수업 일정</h2><div class="tagline">${state.me?esc(state.me)+'의 수업만 보는 중':'전체 지점 · 코치 통합 시간표'}</div></div></div>
-      <div class="cl-top"><button type="button" class="submit-btn" style="height:40px;" onclick="openSchedEdit('')">+ 일정 만들기</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openCoachRoster()">코치 명단</button></div></div>
+      <div class="cl-top"><button type="button" class="submit-btn" style="height:40px;" onclick="openSchedEdit('')">+ 일정 만들기</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openCoachRoster()">코치 명단</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openSchedBulkDelete()">일정 지우기</button></div></div>
     <div class="lane-divider"></div>
     ${meBarHTML('sched')}
     <div id="schedBody">${schedBodyHTML()}</div>
@@ -4242,6 +4243,8 @@ function openSchedEdit(id, date){
     <div class="modal-actions se-actions">
       <button type="button" class="cancel" onclick="closeModal()">닫기</button>
       ${x&&st==='scheduled'?`<button type="button" class="cancel" onclick="openSchedCancel('${x.id}')">수업 취소</button>`:''}
+      ${x&&x.seriesId?`<button type="button" class="cancel" onclick="openSeriesRepeat('${x.id}')">반복 바꾸기</button>`:''}
+      ${x?`<button type="button" class="cancel se-del" onclick="openSchedDelete('${x.id}')">삭제</button>`:''}
       ${x&&editable?`<button type="button" class="cancel" onclick="closeModal(); openClassLogFromSched('${x.id}')">수업일지 쓰기</button>`:''}
       ${editable?`<button type="submit" class="confirm ok" id="seOk" form="seForm">${x?'저장':'만들기'}</button>`:''}
     </div>
@@ -4376,6 +4379,98 @@ function openSchedCancel(id){
     <div class="field"><label for="scR">취소 사유 (필수)</label><textarea id="scR" rows="2" maxlength="100" placeholder="예: 시설 점검으로 휴강" style="font-size:16px; width:100%; box-sizing:border-box;"></textarea></div>
     <div id="scErr" class="stat-note" style="color:#ff7a66; min-height:18px;" role="alert"></div>
     <div class="modal-actions"><button type="button" class="cancel" onclick="closeModal()">닫기</button><button type="button" class="confirm danger" id="scOk" onclick="submitSchedCancel('${id}')">수업 취소하기</button></div></div>`);
+}
+/* ---- 삭제: 잘못 만든 일정 정리용 (수업이 실제로 없어진 경우는 '수업 취소'로 기록을 남긴다) ---- */
+async function schedBatchDelete(ids){
+  const list=[...new Set(ids)];
+  for(let i=0;i<list.length;i+=400){ const b=db.batch(); list.slice(i,i+400).forEach(id=>b.delete(db.collection('classSchedules').doc(id))); markUserWrite(); await b.commit(); }
+  return list.length;
+}
+function openSchedDelete(id){
+  const x=state.schedules.find(s=>s.id===id); if(!x) return;
+  openModal(`<div class="modal" role="dialog" aria-labelledby="sdT"><h3 id="sdT">일정을 삭제할까요?</h3>
+    <div class="stat-note" style="margin-bottom:10px;">${Number(x.date.slice(5,7))}/${Number(x.date.slice(8))} ${esc(x.startTime)}~${esc(x.endTime)} · ${esc(x.type||'')} · ${esc(x.branch)}</div>
+    <div class="insight-box flag" style="margin:0 0 10px;">삭제하면 되살릴 수 없어요. 잘못 만든 일정만 지우고, 수업이 없어진 날은 <b>수업 취소</b>를 써 주세요(기록이 남아요).</div>
+    ${x.seriesId?`<div class="field"><label>삭제 범위</label><select id="sdScope" style="font-size:16px;"><option value="one">이 일정만</option><option value="future">이 일정과 이후 반복 일정</option><option value="all">반복 일정 전체 (지난 수업 포함)</option></select></div>`:''}
+    <div id="sdErr" class="stat-note" style="color:#ff7a66; min-height:18px;" role="alert"></div>
+    <div class="modal-actions"><button type="button" class="cancel" onclick="closeModal()">닫기</button><button type="button" class="confirm danger" id="sdOk" onclick="submitSchedDelete('${id}')">삭제하기</button></div></div>`);
+}
+async function submitSchedDelete(id){
+  const x=state.schedules.find(s=>s.id===id), btn=document.getElementById('sdOk'), err=document.getElementById('sdErr');
+  if(!x){ closeModal(); return; }
+  if(navigator.onLine===false){ err.textContent='인터넷이 끊겨 있어요'; return; }
+  const scope=(document.getElementById('sdScope')||{}).value||'one';
+  btn.disabled=true; btn.textContent='삭제 중…';
+  try{
+    let ids=[x.id];
+    if(x.seriesId && scope!=='one'){ const all=await fetchSeries(x.seriesId); ids=all.filter(o=>scope==='all' || o.date>=x.date).map(o=>o.id); }
+    const n=await schedBatchDelete(ids);
+    closeModal(); showToast(`일정 ${n}개를 삭제했어요`);
+  }catch(e){ err.textContent='삭제하지 못했어요 — '+(e&&e.code==='permission-denied'?'삭제 권한이 없어요 (Firebase 규칙 확인)':(e&&e.message||'')); btn.disabled=false; btn.textContent='삭제하기'; }
+}
+function openSchedBulkDelete(){
+  const [from,to]=schedRange();
+  openModal(`<div class="modal" role="dialog" aria-labelledby="sbT"><h3 id="sbT">일정 지우기</h3>
+    <div class="stat-note" style="margin-bottom:10px;">잘못 만들었거나 연습으로 만든 일정을 한 번에 지워요. 되살릴 수 없어요.</div>
+    <div class="se-grid"><div class="field"><label>시작 날짜</label><input type="date" id="sbFrom" value="${from}" style="font-size:16px;"></div><div class="field"><label>끝 날짜</label><input type="date" id="sbTo" value="${to}" style="font-size:16px;"></div></div>
+    <div class="field"><label>지점</label><select id="sbBr" style="font-size:16px;"><option value="">전체 지점</option>${BRANCHES.map(b=>`<option>${b}</option>`).join('')}</select></div>
+    <label class="pk-save"><input type="checkbox" id="sbAll"><span><b>날짜 상관없이 모든 일정 지우기</b> (처음부터 다시 만들 때)</span></label>
+    <div class="field" style="margin-top:10px;"><label for="sbConfirm">확인을 위해 <b>삭제</b> 라고 적어 주세요</label><input id="sbConfirm" autocomplete="off" style="font-size:16px;"></div>
+    <div id="sbErr" class="stat-note" style="color:#ff7a66; min-height:18px;" role="alert"></div>
+    <div class="modal-actions"><button type="button" class="cancel" onclick="closeModal()">닫기</button><button type="button" class="confirm danger" id="sbOk" onclick="submitSchedBulkDelete()">지우기</button></div></div>`);
+}
+async function submitSchedBulkDelete(){
+  const err=document.getElementById('sbErr'), btn=document.getElementById('sbOk');
+  const all=document.getElementById('sbAll').checked, from=document.getElementById('sbFrom').value, to=document.getElementById('sbTo').value, br=document.getElementById('sbBr').value;
+  if((document.getElementById('sbConfirm').value||'').trim()!=='삭제'){ err.textContent="'삭제' 라고 적어야 지울 수 있어요"; return; }
+  if(!all && (!PERF.validDate(from) || !PERF.validDate(to) || from>to)){ err.textContent='날짜를 다시 골라 주세요'; return; }
+  if(navigator.onLine===false){ err.textContent='인터넷이 끊겨 있어요'; return; }
+  btn.disabled=true; btn.textContent='찾는 중…';
+  try{
+    const q = all ? db.collection('classSchedules') : db.collection('classSchedules').where('date','>=',from).where('date','<=',to);
+    const snap=await q.get();
+    const ids=snap.docs.filter(d=>!br || (d.data()||{}).branch===br).map(d=>d.id);
+    if(!ids.length){ err.textContent='지울 일정이 없어요'; btn.disabled=false; btn.textContent='지우기'; return; }
+    btn.textContent=`${ids.length}개 지우는 중…`;
+    const n=await schedBatchDelete(ids);
+    closeModal(); showToast(`일정 ${n}개를 지웠어요`);
+  }catch(e){ err.textContent='지우지 못했어요 — '+(e&&e.code==='permission-denied'?'삭제 권한이 없어요 (Firebase 규칙 확인)':(e&&e.message||'')); btn.disabled=false; btn.textContent='지우기'; }
+}
+/* ---- 반복 바꾸기: 이 날부터 요일·끝나는 날을 다시 정한다 (지난 수업은 그대로) ---- */
+async function openSeriesRepeat(id){
+  const x=state.schedules.find(s=>s.id===id); if(!x||!x.seriesId) return;
+  let all=[]; try{ all=await fetchSeries(x.seriesId); }catch(e){ showToast('반복 일정을 불러오지 못했어요'); return; }
+  const fut=all.filter(o=>o.date>=x.date).sort((a,b)=>a.date.localeCompare(b.date));
+  const curDays=new Set(fut.map(o=>WD_KO[wdOf(o.date)])), last=fut.length?fut[fut.length-1].date:x.date;
+  state.seriesCtx={ id, seriesId:x.seriesId };
+  openModal(`<div class="modal sched-modal" role="dialog" aria-labelledby="srT"><h3 id="srT">반복 바꾸기</h3>
+    <div class="stat-note" style="margin-bottom:10px;"><b>${Number(x.date.slice(5,7))}/${Number(x.date.slice(8))}</b>부터 적용돼요. 그 전 수업은 그대로예요. 지금 이후 반복 ${fut.length}개.</div>
+    <div class="field"><label>반복 요일</label><div class="day-pick">${['월','화','수','목','금','토','일'].map(w=>`<label class="day-btn"><input type="checkbox" name="srDays" value="${w}" ${curDays.has(w)?'checked':''}><span>${w}</span></label>`).join('')}</div></div>
+    <div class="field"><label>반복 끝나는 날</label><input type="date" id="srEnd" value="${last}" style="font-size:16px;"></div>
+    <div class="stat-note">· 새 요일·기간에 맞지 않는 <b>예정</b> 수업은 지워지고(완료·취소된 수업은 남겨요), 빠진 날짜는 이 일정 정보로 새로 만들어져요.<br>· 새로 생기는 수업의 코치는 '코치 미정'이에요 (주마다 정하기).</div>
+    <div id="srErr" role="alert"></div>
+    <div class="modal-actions"><button type="button" class="cancel" onclick="closeModal()">닫기</button><button type="button" class="confirm ok" id="srOk" onclick="submitSeriesRepeat()">적용</button></div></div>`);
+}
+async function submitSeriesRepeat(){
+  const c=state.seriesCtx, x=c&&state.schedules.find(s=>s.id===c.id), err=document.getElementById('srErr'), btn=document.getElementById('srOk');
+  if(!x){ closeModal(); return; }
+  const days=[...document.querySelectorAll('input[name=srDays]:checked')].map(i=>i.value), end=document.getElementById('srEnd').value;
+  if(!days.length){ err.innerHTML='<div class="se-e">반복할 요일을 골라 주세요</div>'; return; }
+  if(!PERF.validDate(end) || end<x.date){ err.innerHTML='<div class="se-e">끝나는 날을 이 일정 날짜 뒤로 골라 주세요</div>'; return; }
+  btn.disabled=true; btn.textContent='적용 중…';
+  try{
+    const all=await fetchSeries(c.seriesId), byDate={}; all.forEach(o=>byDate[o.date]=o);
+    const want=new Set(); for(let d=x.date; d<=end; d=ymdAdd(d,1)) if(days.includes(WD_KO[wdOf(d)])) want.add(d);
+    if(want.size>SCHED_MAX_SERIES){ err.innerHTML=`<div class="se-e">한 번에 ${SCHED_MAX_SERIES}개까지만 돼요. 끝나는 날을 앞당겨 주세요</div>`; btn.disabled=false; btn.textContent='적용'; return; }
+    const del=all.filter(o=>o.date>=x.date && (o.status||'scheduled')==='scheduled' && !want.has(o.date) && o.id!==x.id).map(o=>o.id);
+    const now=Date.now(), me=currentCoachEmail||'', b=db.batch(); let add=0;
+    want.forEach(d=>{ if(byDate[d]) return; add++;
+      b.set(db.collection('classSchedules').doc(c.seriesId+'_'+d), { branch:x.branch, studentIds:schedSuggest(x.branch,d,[]), coaches:[], forms:schedForms(x), date:d, startTime:x.startTime, endTime:x.endTime,
+        type:x.type, memo:x.memo||'', status:'scheduled', seriesId:c.seriesId, createdBy:me, createdAt:now, updatedAt:now, updatedBy:me, history:[{ at:now, by:me, what:'반복 바꾸기로 추가' }] }); });
+    del.forEach(id=>b.delete(db.collection('classSchedules').doc(id)));
+    if(add||del.length){ markUserWrite(); await b.commit(); }
+    closeModal(); showToast(`반복을 바꿨어요 · 추가 ${add}개, 삭제 ${del.length}개`);
+  }catch(e){ err.innerHTML=`<div class="se-e">적용하지 못했어요 — ${esc(e&&e.message||'')}</div>`; btn.disabled=false; btn.textContent='적용'; }
 }
 async function submitSchedCancel(id){
   const x=state.schedules.find(s=>s.id===id), r=(document.getElementById('scR').value||'').trim().slice(0,100), btn=document.getElementById('scOk');
