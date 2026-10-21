@@ -3963,6 +3963,30 @@ async function fetchLogsRange(from, to, force){
   }catch(e){ state.logCache[key]={ at:Date.now(), list:[] }; }
 }
 function cachedLogs(from, to){ const c=state.logCache[from+'|'+to]; return c && Array.isArray(c.list) ? c.list : null; }
+// 수업 일정도 같은 방식으로 (컨디션 캘린더에서 '이 학생이 그날 수업에 들어갔나' 확인용)
+state.schedCache = {};
+async function fetchSchedRange(from, to, force){
+  const key=from+'|'+to, c=state.schedCache[key];
+  if(!db || (!force && c && (c.list==='loading' || Date.now()-c.at<5*60*1000))) return;
+  state.schedCache[key]={ at:Date.now(), list:'loading' };
+  try{
+    const snap=await db.collection('classSchedules').where('date','>=',from).where('date','<=',to).get();
+    state.schedCache[key]={ at:Date.now(), list:snap.docs.map(d=>({id:d.id, ...d.data()})) };
+  }catch(e){ state.schedCache[key]={ at:Date.now(), list:[] }; }
+}
+function cachedScheds(from, to){ const c=state.schedCache[from+'|'+to]; return c && Array.isArray(c.list) ? c.list : null; }
+/* 이 학생이 그날 수업에 왔는가 (캘린더에 수업 형태를 보여 줄지)
+   1) 그날 일정이 있으면 → 일정에 이 학생이 들어 있을 때만 (휴강 제외)
+   2) 일정이 없으면 → 학생이 고른 수업 요일에만 (요일을 안 정한 학생은 지점 수업 전부) */
+function studentDayInfo(s, ds, scheds){
+  const mine=scheds.filter(x=>x.date===ds && x.status!=='cancelled' && (x.studentIds||[]).includes(s.id));
+  const branchDay=scheds.some(x=>x.date===ds && x.status!=='cancelled' && x.branch===s.branch);
+  if(mine.length) return { came:true, sched:mine };
+  if(branchDay) return { came:false, sched:[] };
+  const d=daysOf(s); if(!d.length) return { came:true, sched:[] };
+  return { came:d.includes(WEEK_ALL[new Date(ds+'T00:00:00').getDay()]), sched:[] };
+}
+const WEEK_ALL=['일','월','화','수','목','금','토'];
 // 수업 종류 이름에 지점 이름(해운대·사직·주례)이 들어 있으면 그 지점 수업으로 본다. 없으면 '' (공통 반)
 function logBranch(l){ const t=logTypeOf(l)||''; return BRANCHES.find(b=>t.includes(b.replace(/점$/,'')))||''; }
 const FORM_SHORT={'기술':'기','웨이트':'웨','스피드(야외)':'스','실내 체력':'체','재활':'재','테스트':'테'};
@@ -4212,8 +4236,8 @@ function openSchedEdit(id, date){
     <div class="se-grid">
       <div class="field"><label>지점</label><select name="branch" onchange="seRefill(this.form)">${BRANCHES.map(b=>`<option ${b===br?'selected':''}>${b}</option>`).join('')}</select></div>
       <div class="field"><label>날짜</label><input type="date" name="date" value="${d}" required onchange="seRefill(this.form)"></div>
-      <div class="field"><label>시작</label><input type="time" name="startTime" value="${x?esc(x.startTime):'18:00'}" required></div>
-      <div class="field"><label>끝</label><input type="time" name="endTime" value="${x?esc(x.endTime):'20:00'}" required></div>
+      <div class="field"><label>시작</label><input type="time" name="startTime" value="${x?esc(x.startTime):'19:00'}" required></div>
+      <div class="field"><label>끝</label><input type="time" name="endTime" value="${x?esc(x.endTime):'21:00'}" required></div>
     </div>
     <div class="field"><label>수업 종류</label><select name="type">${typeOpts.map(t=>`<option ${x&&x.type===t?'selected':''}>${esc(t)}</option>`).join('')}</select></div>
     <div class="field"><label>수업 형태 <span class="stat-note">· 여러 개 고를 수 있어요</span></label>
@@ -4904,9 +4928,20 @@ function ckCalHTML(s){
   const lf=ym+'-01', lt=ym+'-31';
   let mlogs=cachedLogs(lf,lt);
   if(!mlogs){ if(!state.logCache[lf+'|'+lt]) fetchLogsRange(lf,lt).then(refreshCkCal); mlogs=[]; }   // 불러오는 중이면 다시 부르지 않는다 (무한 반복 방지)
-  const myLogs={};
-  mlogs.forEach(l=>{ const b=logBranch(l); if(b && s.branch && b!==s.branch) return; (myLogs[l.date]=myLogs[l.date]||[]).push(l); });
-  const formsOf=ds=>[...new Set((myLogs[ds]||[]).flatMap(l=>[].concat(l.progress||[])).filter(Boolean))];
+  let msch=cachedScheds(lf,lt);
+  if(!msch){ if(!state.schedCache[lf+'|'+lt]) fetchSchedRange(lf,lt).then(refreshCkCal); msch=[]; }
+  const myLogs={}, mySched={}, dayInfo={};
+  const infoOf=ds=>dayInfo[ds]||(dayInfo[ds]=studentDayInfo(s,ds,msch));
+  mlogs.forEach(l=>{
+    const b=logBranch(l); if(b && s.branch && b!==s.branch) return;
+    if(l.scheduleId){ const sx=msch.find(x=>x.id===l.scheduleId); if(sx && !(sx.studentIds||[]).includes(s.id)) return; }   // 일정에서 만든 일지 = 그 일정 학생만
+    if(!infoOf(l.date).came) return;                                                                                       // 이 학생이 안 온 날
+    (myLogs[l.date]=myLogs[l.date]||[]).push(l);
+  });
+  msch.forEach(x=>{ if(x.date && infoOf(x.date).sched.includes(x)) (mySched[x.date]=mySched[x.date]||[]).push(x); });
+  // 수업 형태: 수업일지 → 없으면 일정에 적은 형태
+  const formsOf=ds=>{ const a=[...new Set((myLogs[ds]||[]).flatMap(l=>[].concat(l.progress||[])).filter(Boolean))];
+    return a.length ? a : [...new Set((mySched[ds]||[]).flatMap(x=>[].concat(x.forms||[])).filter(Boolean))]; };
   // 학원비 결제한 날 (이 달에 결제한 기록이면 몇 월 결제든 표시)
   const payOn={};
   Object.entries((s.pay&&typeof s.pay==='object')?s.pay:{}).forEach(([k,v])=>{ if(v&&!v.canceled&&v.date&&v.date.startsWith(ym)) (payOn[v.date]=payOn[v.date]||[]).push(payLabel(k)); });
@@ -4920,7 +4955,7 @@ function ckCalHTML(s){
     if(c) cnt[st]++;
     const wd=(first+d-1)%7;
     const bg=c?STATUS_COLOR[st]:'transparent', fg=c?(st==='RED'?'#ffffff':'#0d1a03'):'';
-    const forms=formsOf(ds), hadClass=!!(myLogs[ds]||[]).length;
+    const forms=formsOf(ds), hadClass=!!((myLogs[ds]||[]).length||(mySched[ds]||[]).length);
     const cls=['ckc-day', c?'has':'', ds===cal.sel?'sel':'', ds===today?'today':'', ds>today?'future':'', !c&&wd===0?'sun':'', !c&&wd===6?'sat':'', !c&&hadClass&&ds<=today?'missed':''].filter(Boolean).join(' ');
     cells+=`<button type="button" class="${cls}" style="${c?`background:${bg};color:${fg};`:''}" onclick="ckCalPick('${ds}')" aria-label="${m}월 ${d}일${c?', '+CK_LABEL[st]+(c.pain?', 통증':''):', 체크인 없음'}${forms.length?', 수업 '+forms.join(' '):''}${payOn[ds]?', '+payOn[ds].join(' '):''}"><span class="ckc-n">${d}</span><span class="ckc-f">${forms.slice(0,3).map(formShort).join('·')}</span>${c&&c.pain?'<i class="ckc-pain"></i>':''}${payOn[ds]?'<i class="ckc-pay">₩</i>':''}</button>`;
   }
@@ -4956,6 +4991,10 @@ function ckCalHTML(s){
     detail=`<div class="ckc-dhead"><b>${sm}월 ${sd}일 (${sw})</b></div><div class="ckc-line" style="color:var(--text-muted);">${cal.sel>today?'아직 오지 않은 날이에요':'체크인 안 한 날이에요'}</div>`;
   }
   const sf=formsOf(cal.sel), sl=myLogs[cal.sel]||[];
+  const ssc=mySched[cal.sel]||[];
+  if(!sl.length && ssc.length) detail+=`<div class="ckc-class"><div class="ckc-ch">그날 수업 일정 · ${esc(ssc.map(x=>x.startTime+'~'+x.endTime).join(', '))}</div>
+    ${sf.length?`<div class="ckc-chips">${sf.map(f=>`<span class="on">${esc(f)}</span>`).join('')}</div>`:''}</div>`;
+  else if(!sl.length && !infoOf(cal.sel).came) detail+=`<div class="ckc-line" style="color:var(--text-dim);">이 학생의 수업 날이 아니에요</div>`;
   if(sl.length) detail+=`<div class="ckc-class"><div class="ckc-ch">그날 수업 · ${esc([...new Set(sl.map(logTypeOf).filter(Boolean))].join(', '))}</div>
     ${sf.length?`<div class="ckc-chips">${sf.map(f=>`<span class="on">${esc(f)}</span>`).join('')}</div>`:''}
     <button type="button" class="link-btn" onclick="openClassLogAt('${cal.sel}')">이 날 수업일지 보기 ›</button></div>`;
