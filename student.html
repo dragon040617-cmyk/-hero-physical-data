@@ -61,6 +61,24 @@
   .lbl{ display:block; font-size:13px; color:var(--muted); margin-bottom:6px; font-weight:600; }
   #me-edit .box input.txt, #me-edit .box select.txt{ background:var(--bg,#12151c); }
   .month-open{ margin-top:14px; }
+  .tt-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px; display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .tt-card.big{ border-color:var(--lime); }
+  .tt-card.cancelled{ opacity:.75; border-style:dashed; } .tt-card.cancelled .tt-ty{ text-decoration:line-through; }
+  .tt-top{ display:flex; justify-content:space-between; align-items:center; gap:8px; } .tt-top b{ font-size:17px; }
+  .tt-st{ font-size:12px; font-weight:800; padding:3px 10px; border-radius:12px; border:1px solid; }
+  .tt-ty{ font-size:16px; font-weight:800; overflow-wrap:anywhere; }
+  .tt-chg{ font-style:normal; font-size:11.5px; font-weight:800; color:#ff9f1c; border:1px solid #ff9f1c66; padding:1px 7px; border-radius:10px; margin-left:4px; }
+  .tt-forms{ display:flex; gap:5px; flex-wrap:wrap; } .tt-forms span{ font-size:12px; font-weight:800; padding:3px 9px; border-radius:10px; background:var(--lime-soft); color:var(--lime); }
+  .tt-m{ font-size:13px; color:var(--muted); overflow-wrap:anywhere; }
+  .tt-cancel{ font-size:13px; color:#ff9f1c; font-weight:700; }
+  .tt-empty{ margin-top:8px; line-height:1.6; }
+  .tt-nav{ display:flex; align-items:center; gap:8px; margin:20px 0 6px; } .tt-nav b{ flex:1; text-align:center; font-size:16px; }
+  .tt-nav button{ min-width:44px; height:44px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:20px; cursor:pointer; font-family:inherit; }
+  .tt-nav .tt-this{ font-size:13px; font-weight:800; color:var(--lime); border-color:var(--lime); padding:0 10px; }
+  .tt-day{ border-top:1px solid var(--line); padding:12px 0; } .tt-day.today .tt-dh b{ color:var(--lime); }
+  .tt-dh{ display:flex; gap:8px; align-items:baseline; } .tt-dh span{ font-size:12px; color:var(--lime); font-weight:800; }
+  .tt-none{ font-size:13px; color:var(--dim); margin-top:6px; }
+  .tt-today .link{ margin-top:4px; }
   .m-top{ display:flex; align-items:center; gap:10px; margin-bottom:14px; } .m-top h1{ margin:0; }
   .m-back{ width:44px; height:44px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:22px; cursor:pointer; }
   .m-sum{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
@@ -208,10 +226,10 @@
   .err.warn{ color:#ffd23f; }
 
   /* ===== 아래 메뉴 (오늘 · 몸관리 · 실기 기록 · 내 정보) ===== */
-  .bnav{ position:fixed; left:0; right:0; bottom:0; z-index:50; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px;
+  .bnav{ position:fixed; left:0; right:0; bottom:0; z-index:50; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:2px;
     background:rgba(26,31,41,.97); border-top:1px solid var(--line); padding:6px 8px calc(6px + env(safe-area-inset-bottom)); }
   .bnav.hidden{ display:none; }
-  .bnav button{ background:none; border:0; border-radius:12px; color:var(--dim); font:inherit; font-size:12.5px; font-weight:600; min-height:54px;
+  .bnav button{ background:none; border:0; border-radius:12px; color:var(--dim); font:inherit; font-size:12px; white-space:nowrap; min-width:0; font-weight:600; min-height:54px;
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; }
   .bnav button .ic{ font-size:20px; line-height:1; filter:grayscale(.5); opacity:.9; }
   .bnav button[aria-current="page"]{ color:var(--lime); background:var(--lime-soft); }
@@ -365,10 +383,12 @@
 <section id="screen-perf" class="screen hidden"></section>
 <section id="screen-care" class="screen hidden"></section>
 <section id="screen-month" class="screen hidden"></section>
+<section id="screen-tt" class="screen hidden"></section>
 
 <!-- 아래 메뉴: 승인된 학생에게만 보인다 -->
 <nav id="bnav" class="bnav hidden" aria-label="학생 메뉴">
   <button type="button" data-nav="today"><span class="ic" aria-hidden="true">🏠</span>오늘</button>
+  <button type="button" data-nav="tt"><span class="ic" aria-hidden="true">📅</span>시간표</button>
   <button type="button" data-nav="care"><span class="ic" aria-hidden="true">🥗</span>몸관리</button>
   <button type="button" data-nav="perf"><span class="ic" aria-hidden="true">📈</span>실기 기록</button>
   <button type="button" data-nav="me"><span class="ic" aria-hidden="true">👤</span>내 정보</button>
@@ -846,7 +866,7 @@ const auth=fbApp.auth();
 const db=fbApp.firestore();
 const $=id=>document.getElementById(id);
 
-const NAV_OF={'screen-result':'today','screen-form':'today','screen-month':'today','screen-care':'care','screen-perf':'perf','screen-me':'me'};
+const NAV_OF={'screen-result':'today','screen-form':'today','screen-month':'today','screen-tt':'tt','screen-care':'care','screen-perf':'perf','screen-me':'me'};
 let navPopping=false;   // 뒤로 가기(옆으로 밀기)로 화면을 바꾸는 중이면 기록을 또 쌓지 않는다
 function show(id,fromPop){
   document.querySelectorAll('.screen').forEach(el=>el.classList.add('hidden'));
@@ -1175,6 +1195,7 @@ async function enterApp(student,ckPromise){
   myCheckins=list;
   loadedDate=todayStr();
   showResult();
+  loadTT();                          // 내 수업 일정
   loadPerfData();                    // 실기 기록은 체크인 화면을 먼저 보여 준 뒤 뒤에서 불러온다
   ensureChart().catch(()=>{});       // 그래프 파일도 화면이 뜬 다음에 받는다
 }
@@ -1366,6 +1387,7 @@ function showResult(){
     <button class="btn btn-2 edit-big" data-a="edit">✏️ 검사 고치기</button>
     ${today.pain?'<p class="pain-note">관절이나 뼈 통증은 참지 말고 선생님께 직접 보여 주세요. 이 앱은 진단하지 않아요.</p>':''}
 
+    <div id="tt-today">${ttTodayHTML()}</div>
     ${todoHTML(j,today)}
     <div id="days-hint">${daysHintHTML()}</div>
 
@@ -1447,6 +1469,75 @@ function weekCompareHTML(){   // 지난주와 비교 (자세히 안에)
   }
   return lines.length?`<div class="sec"><div class="sec-t">이번 주 vs 지난주</div><div class="week-s">${lines.join('<br>')}</div></div>`:'';
 }
+
+/* ============ 내 시간표: 선생님이 만든 수업 중 내가 들어간 것만 (classSchedules · studentIds 에 내 학생 ID) ============ */
+let ttList=null, ttErr='', ttWeek='', ttLoading=false;
+const TT_ST={ scheduled:{label:'예정', c:'#c6ff3d'}, completed:{label:'완료', c:'#7c9dff'}, cancelled:{label:'휴강', c:'#ff9f1c'} };
+const TT_WD=['일','월','화','수','목','금','토'];
+function ttWd(d){ const [y,m,dd]=d.split('-').map(Number); return new Date(y,m-1,dd).getDay(); }
+function ttMonday(d){ return addDays(d, -((ttWd(d)+6)%7)); }
+async function loadTT(force){
+  if(!myStudent || (ttLoading && !force)) return;
+  ttLoading=true;
+  try{
+    // 규칙이 '내 학생 ID가 들어 있는 일정'만 허락하므로 같은 조건으로만 묻는다 (다른 학생 일정은 받지 않음)
+    const snap=await db.collection('classSchedules').where('studentIds','array-contains',myStudent.id).get();
+    ttList=snap.docs.map(d=>{ const x=d.data()||{}; return { id:d.id, date:String(x.date||''), startTime:String(x.startTime||''), endTime:String(x.endTime||''), type:String(x.type||'수업'), branch:String(x.branch||''),
+      forms:Array.isArray(x.forms)?x.forms.filter(v=>typeof v==='string'):[], coaches:Array.isArray(x.coaches)?x.coaches.filter(v=>typeof v==='string'):(x.coachName?[String(x.coachName)]:[]),
+      status:['scheduled','completed','cancelled'].includes(x.status)?x.status:'scheduled', cancellationReason:String(x.cancellationReason||''),
+      changed: Array.isArray(x.history) && x.history.length>1 && (Date.now()-Number(x.updatedAt||0))<3*86400000 }; })   // 메모 등 선생님용 내용은 가져오지 않음
+      .filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.date)).sort((a,b)=>a.date.localeCompare(b.date)||a.startTime.localeCompare(b.startTime));
+    ttErr='';
+  }catch(e){ ttErr = e&&e.code==='permission-denied' ? 'denied' : 'error'; if(!ttList) ttList=null; }
+  ttLoading=false;
+  const t=$('tt-today'); if(t) t.innerHTML=ttTodayHTML();
+  if(!$('screen-tt').classList.contains('hidden')) renderTT();
+}
+function ttCardHTML(x, big){
+  const S=TT_ST[x.status]||TT_ST.scheduled;
+  return `<div class="tt-card ${x.status}${big?' big':''}">
+    <div class="tt-top"><b>${esc(x.startTime)}~${esc(x.endTime)}</b><span class="tt-st" style="color:${S.c};border-color:${S.c}66">${S.label}</span></div>
+    <div class="tt-ty">${esc(x.type)}${x.changed&&x.status!=='cancelled'?' <em class="tt-chg">시간·내용 바뀜</em>':''}</div>
+    ${x.forms.length?`<div class="tt-forms">${x.forms.map(f=>`<span>${esc(f)}</span>`).join('')}</div>`:''}
+    <div class="tt-m">${esc(x.branch)}${x.coaches.length?' · '+esc(x.coaches.join(', ')):''}</div>
+    ${x.status==='cancelled'?`<div class="tt-cancel">휴강${x.cancellationReason?' · '+esc(x.cancellationReason):''}</div>`:''}
+  </div>`;
+}
+function ttTodayHTML(){
+  if(!ttList) return '';
+  const t=todayStr(), list=ttList.filter(x=>x.date===t);
+  if(!list.length) return '';
+  return `<div class="sec tt-today"><div class="sec-t">오늘 수업</div>${list.map(x=>ttCardHTML(x,true)).join('')}<button type="button" class="link" data-a="tt">시간표 전체 보기 ›</button></div>`;
+}
+function openTT(){ if(!ttWeek) ttWeek=ttMonday(todayStr()); renderTT(); show('screen-tt'); window.scrollTo(0,0); loadTT(true); }
+function renderTT(){
+  const t=todayStr(), mon=ttWeek||ttMonday(t), days=Array.from({length:7},(_,i)=>addDays(mon,i)), sun=days[6];
+  const todayList=(ttList||[]).filter(x=>x.date===t);
+  let body;
+  if(ttErr==='denied' && !ttList) body='<div class="box">아직 시간표를 볼 수 없어요. 선생님께 "시간표 설정"을 부탁해 주세요.</div>';
+  else if(ttErr && !ttList) body='<div class="box">시간표를 불러오지 못했어요. <button type="button" class="link" data-t="retry">다시 시도</button></div>';
+  else if(!ttList) body='<p class="note">불러오는 중…</p>';
+  else{
+    const week=days.map(d=>{ const dl=ttList.filter(x=>x.date===d);
+      return `<div class="tt-day ${d===t?'today':''}"><div class="tt-dh"><b>${TT_WD[ttWd(d)]} ${Number(d.slice(5,7))}/${Number(d.slice(8))}</b>${d===t?'<span>오늘</span>':''}</div>
+        ${dl.length?dl.map(x=>ttCardHTML(x)).join(''):'<div class="tt-none">수업 없음</div>'}</div>`; }).join('');
+    const next=ttList.find(x=>x.date>t && x.status!=='cancelled');
+    body=`<div class="sec-t" style="margin-top:6px">오늘 수업</div>
+      ${todayList.length?todayList.map(x=>ttCardHTML(x,true)).join(''):`<div class="box tt-empty">오늘은 수업이 없어요${next?`<br><span class="note">다음 수업: ${Number(next.date.slice(5,7))}/${Number(next.date.slice(8))} (${TT_WD[ttWd(next.date)]}) ${esc(next.startTime)} ${esc(next.type)}</span>`:''}</div>`}
+      <div class="tt-nav"><button type="button" data-t="prev" aria-label="이전 주">‹</button><b>${Number(mon.slice(5,7))}/${Number(mon.slice(8))} ~ ${Number(sun.slice(5,7))}/${Number(sun.slice(8))}</b><button type="button" data-t="next" aria-label="다음 주">›</button>${mon!==ttMonday(t)?'<button type="button" class="tt-this" data-t="this">이번 주</button>':''}</div>
+      ${week}`;
+  }
+  $('screen-tt').innerHTML=`<h1>내 시간표</h1><p class="note" style="margin:-4px 0 12px">선생님이 정한 수업이에요. 바뀌면 여기에 바로 반영돼요.</p>${body}`;
+}
+$('screen-tt').addEventListener('click',e=>{
+  const b=e.target.closest('[data-t]'); if(!b) return;
+  const a=b.dataset.t;
+  if(a==='prev'){ ttWeek=addDays(ttWeek,-7); renderTT(); }
+  else if(a==='next'){ ttWeek=addDays(ttWeek,7); renderTT(); }
+  else if(a==='this'){ ttWeek=ttMonday(todayStr()); renderTT(); }
+  else if(a==='retry'){ ttErr=''; renderTT(); loadTT(true); }
+});
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-a="tt"]'); if(b) openTT(); });
 
 /* ============ 내 한 달: 체크인을 신호등 색 달력으로 (B-2) ============ */
 let monthYM='', monthSel='', monthCache={};
@@ -1574,6 +1665,7 @@ window.addEventListener('popstate',e=>{
     if(st.scr==='screen-result'){ if(myCheckins.some(c=>c.date===todayStr())) showResult(); else openForm(true); }
     else if(st.scr==='screen-care') openCare();
     else if(st.scr==='screen-month') openMonth();
+    else if(st.scr==='screen-tt') openTT();
     else if(st.scr==='screen-perf') openPerf();
     else if(st.scr==='screen-me') openMe(true);
     else if(st.scr==='screen-form') openForm(true);
@@ -1588,6 +1680,7 @@ $('bnav').addEventListener('click',e=>{
   else if(k==='care') openCare();
   else if(k==='perf') openPerf();
   else if(k==='me') openMe();
+  else if(k==='tt') openTT();
 });
 $('screen-result').addEventListener('click',e=>{
   const el=e.target.closest('[data-a],[data-trend],[data-range]'); if(!el) return;
