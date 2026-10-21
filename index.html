@@ -739,7 +739,9 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .pk-save input{ width:18px; height:18px; margin-top:2px; accent-color:var(--lime); flex:0 0 auto; }
   .pay-confirm input#pkDate{ font-size:16px; }
   .pay-confirm .modal-actions .confirm{ background:var(--lime); color:#0d1a03; }
-  .days-ro{ font-size:14px; padding:10px 12px; background:var(--surface-2); border-radius:10px; }
+  .days-ro{ font-size:14px; padding:10px 12px; background:var(--surface-2); border-radius:10px; display:flex; flex-direction:column; gap:4px; }
+  .rf-prev{ background:var(--surface-2); border-radius:12px; padding:12px; margin-top:4px; }
+  .rf-row{ display:flex; justify-content:space-between; gap:10px; padding:4px 0; font-size:14px; }
   .pay-chip:disabled{ opacity:.5; }
   .ck-cal-card{ padding:16px; display:grid; grid-template-columns:minmax(0,1fr); gap:16px; align-items:start; }
   @media (min-width:1100px){ .ck-cal-card{ grid-template-columns:minmax(0,480px) minmax(0,1fr); } }
@@ -2874,8 +2876,8 @@ function openEditStudentModal(sid){
         </div>
         <div class="field"><label>목표</label><input name="target" value="${esc(s.target||'')}"></div>
         <div class="field"><label>수업 요일</label>
-          <div class="days-ro">${daysOf(s).length?`<b>${daysOf(s).join('·')}</b> · 주 ${daysOf(s).length}회`:'<span style="color:var(--text-dim);">아직 안 정함</span>'}${s.daysAt?` <span class="stat-note">(학생이 ${md(localYmd(new Date(s.daysAt)))}에 고침)</span>`:''}</div>
-          <div class="stat-note" style="margin-top:4px;">요일은 학생이 학생 앱 '내 정보'에서 직접 고르고 고쳐요</div></div>
+          <div class="days-ro">${[curYM(), nextYM(curYM())].map(ym=>{ const d=daysOf(s,ym); return `<div>${Number(ym.slice(5))}월 · ${d.length?`<b>${d.join('·')}</b> · 주 ${d.length}회`:'<span style="color:var(--text-dim);">아직 안 정함</span>'}</div>`; }).join('')}${s.daysAt?`<span class="stat-note">(학생이 ${md(localYmd(new Date(s.daysAt)))}에 고침)</span>`:''}</div>
+          <div class="stat-note" style="margin-top:4px;">요일은 학생이 학생 앱 '내 정보'에서 <b>매달</b> 직접 골라요</div></div>
         <div class="field"><label for="feeIn">월 수강료</label>
           <div style="display:flex; align-items:center; gap:8px;"><input id="feeIn" name="fee" inputmode="numeric" autocomplete="off" placeholder="미설정" value="${feeOf(s)!=null?feeOf(s).toLocaleString('ko-KR'):''}" oninput="const d=this.value.replace(/[^0-9]/g,'').replace(/^0+/,'').slice(0,8); this.value=d?Number(d).toLocaleString('ko-KR'):'';" style="text-align:right;"><span>원</span></div>
           <div class="stat-note" style="margin-top:4px;">숫자만 입력 · 비우면 미설정 · 결제 체크할 때 자동으로 채워져요 · 바꿔도 지난 결제 금액은 그대로예요</div></div>
@@ -3983,7 +3985,7 @@ function studentDayInfo(s, ds, scheds){
   const branchDay=scheds.some(x=>x.date===ds && x.status!=='cancelled' && x.branch===s.branch);
   if(mine.length) return { came:true, sched:mine };
   if(branchDay) return { came:false, sched:[] };
-  const d=daysOf(s); if(!d.length) return { came:true, sched:[] };
+  const d=daysOf(s, ds.slice(0,7)); if(!d.length) return { came:true, sched:[] };
   return { came:d.includes(WEEK_ALL[new Date(ds+'T00:00:00').getDay()]), sched:[] };
 }
 const WEEK_ALL=['일','월','화','수','목','금','토'];
@@ -4143,7 +4145,7 @@ function schedCardHTML(x){
 function renderScheduleView(){
   return `<main class="sched">
     <div class="topbar"><div class="heading"><div><h2>수업 일정</h2><div class="tagline">${state.me?esc(state.me)+'의 수업만 보는 중':'전체 지점 · 코치 통합 시간표'}</div></div></div>
-      <div class="cl-top"><button type="button" class="submit-btn" style="height:40px;" onclick="openSchedEdit('')">+ 일정 만들기</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openCoachRoster()">코치 지정</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openSchedBulkDelete()">일정 지우기</button></div></div>
+      <div class="cl-top"><button type="button" class="submit-btn" style="height:40px;" onclick="openSchedEdit('')">+ 일정 만들기</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openCoachRoster()">코치 지정</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openSchedRefill()">학생 다시 맞추기</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openSchedBulkDelete()">일정 지우기</button></div></div>
     <div class="lane-divider"></div>
     ${meBarHTML('sched')}
     <div id="schedBody">${schedBodyHTML()}</div>
@@ -4211,8 +4213,8 @@ async function schedToggleDone(id){
 /* ---- 일정 만들기·고치기 ---- */
 function schedSuggest(branch, date){
   // 지점 + 그 요일을 '수업 요일'로 고른 학생 (코치와는 연결하지 않음 — 담당 학생은 '코치 지정'에서만 정함)
-  const wd=WD_KO[wdOf(date)];
-  return state.students.filter(s=>s.branch===branch && daysOf(s).includes(wd)).map(s=>s.id);
+  const wd=WD_KO[wdOf(date)], ym=String(date).slice(0,7);
+  return state.students.filter(s=>s.branch===branch && daysOf(s, ym).includes(wd)).map(s=>s.id);
 }
 function openSchedEdit(id, date){
   seForce=false;
@@ -4246,7 +4248,7 @@ function openSchedEdit(id, date){
       <div class="se-coaches"><span class="se-role">메인</span>${coachPills(INSTRUCTORS.main||[])}</div>
       <div class="se-coaches"><span class="se-role">보조</span>${coachPills(INSTRUCTORS.assistant||[])}${coachPills(extraCoaches)}</div></div>
     <div class="field"><label>참여 학생 <b id="seCnt" style="color:var(--lime);">${sel.size}명</b> <span class="stat-note">· 지점 + 수업 요일로 자동 체크</span></label>
-      <div class="se-students" id="seStudents">${seStudentsHTML(br, sel)}</div></div>
+      <div class="se-students" id="seStudents">${seStudentsHTML(br, sel, String(d).slice(0,7))}</div></div>
     ${x?'':`<div class="field"><label>반복</label>
       <select name="repeat" onchange="document.getElementById('seRep').hidden=this.value!=='weekly'"><option value="none">반복 없음</option><option value="weekly">매주 같은 요일</option></select>
       <div id="seRep" hidden style="margin-top:8px;">
@@ -4271,17 +4273,17 @@ function openSchedEdit(id, date){
     ${x&&Array.isArray(x.history)&&x.history.length?`<details class="se-hist"><summary>변경 기록 ${x.history.length}개</summary>${x.history.slice().reverse().map(h=>`<div>${esc(localYmd(new Date(h.at)))} · ${esc(h.what||'')}</div>`).join('')}</details>`:''}
   </div>`);
 }
-function seStudentsHTML(br, sel){
+function seStudentsHTML(br, sel, ym){
   const list=state.students.filter(s=>s.branch===br).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
   const others=[...sel].filter(id=>!list.some(s=>s.id===id)).map(getStudent).filter(Boolean);
   const all=[...list, ...others];
   if(!all.length) return '<div class="stat-note">이 지점 학생이 없어요</div>';
-  return all.map(s=>`<label class="chk-pill"><input type="checkbox" name="studentIds" value="${s.id}" ${sel.has(s.id)?'checked':''} onchange="document.getElementById('seCnt').textContent=this.form.querySelectorAll('input[name=studentIds]:checked').length+'명'"> ${esc(s.name)}${daysOf(s).length?` <small>${daysOf(s).join('')}</small>`:''}</label>`).join('');
+  return all.map(s=>`<label class="chk-pill"><input type="checkbox" name="studentIds" value="${s.id}" ${sel.has(s.id)?'checked':''} onchange="document.getElementById('seCnt').textContent=this.form.querySelectorAll('input[name=studentIds]:checked').length+'명'"> ${esc(s.name)}${daysOf(s,ym).length?` <small>${daysOf(s,ym).join('')}</small>`:''}</label>`).join('');
 }
 function seRefill(form){
   const br=form.branch.value, d=form.date.value; if(!PERF.validDate(d)) return;
   const sel=new Set(schedSuggest(br,d));
-  document.getElementById('seStudents').innerHTML=seStudentsHTML(br, sel);
+  document.getElementById('seStudents').innerHTML=seStudentsHTML(br, sel, d.slice(0,7));
   document.getElementById('seCnt').textContent=sel.size+'명';
   const rd=form.querySelectorAll('input[name=repDays]'); if(rd.length && ![...rd].some(i=>i.checked)) rd.forEach(i=>{ i.checked = i.value===WD_KO[wdOf(d)]; });
 }
@@ -4426,6 +4428,63 @@ async function submitSchedDelete(id){
     const n=await schedBatchDelete(ids);
     closeModal(); showToast(`일정 ${n}개를 삭제했어요`);
   }catch(e){ err.textContent='삭제하지 못했어요 — '+(e&&e.code==='permission-denied'?'삭제 권한이 없어요 (Firebase 규칙 확인)':(e&&e.message||'')); btn.disabled=false; btn.textContent='삭제하기'; }
+}
+/* ---- 매달 리셋: 그 달 '예정' 수업의 학생을 학생들이 고른 그 달 요일로 다시 채운다 ----
+   완료·취소된 수업과 오늘 이전 수업은 그대로 둔다 (지난 기록은 바뀌지 않음) */
+function openSchedRefill(){
+  const t=HC.todayStr(), base=state.schedDate&&state.schedDate.slice(0,7)>=t.slice(0,7)?state.schedDate.slice(0,7):t.slice(0,7);
+  const months=[t.slice(0,7), nextYM(t.slice(0,7))];
+  if(!months.includes(base)) months.push(base);
+  openModal(`<div class="modal" role="dialog" aria-labelledby="rfT"><h3 id="rfT">학생 다시 맞추기</h3>
+    <div class="stat-note" style="margin-bottom:10px;">학생들이 고른 <b>그 달 수업 요일</b>대로 일정의 참여 학생을 다시 채워요. 오늘부터의 <b>예정</b> 수업만 바뀌고, 지난 수업·완료·휴강 수업은 그대로예요.</div>
+    <div class="se-grid"><div class="field"><label for="rfYM">달</label><select id="rfYM" style="font-size:16px;" onchange="schedRefillPreview()">${months.map(m=>`<option value="${m}" ${m===base?'selected':''}>${m.slice(0,4)}년 ${Number(m.slice(5))}월</option>`).join('')}</select></div>
+    <div class="field"><label for="rfBr">지점</label><select id="rfBr" style="font-size:16px;" onchange="schedRefillPreview()"><option value="">전체 지점</option>${BRANCHES.map(b=>`<option>${b}</option>`).join('')}</select></div></div>
+    <div id="rfPrev" class="rf-prev"><div class="stat-note">확인하는 중…</div></div>
+    <div id="rfErr" class="stat-note" style="color:#ff7a66; min-height:18px;" role="alert"></div>
+    <div class="modal-actions"><button type="button" class="cancel" onclick="closeModal()">닫기</button><button type="button" class="confirm" id="rfOk" disabled onclick="submitSchedRefill()">다시 맞추기</button></div></div>`);
+  schedRefillPreview();
+}
+let rfPlan=null;
+async function schedRefillPreview(){
+  const ym=document.getElementById('rfYM').value, br=document.getElementById('rfBr').value, box=document.getElementById('rfPrev'), ok=document.getElementById('rfOk');
+  rfPlan=null; ok.disabled=true; box.innerHTML='<div class="stat-note">확인하는 중…</div>';
+  const t=HC.todayStr(), [y,m]=ym.split('-').map(Number), last=`${ym}-${String(new Date(y,m,0).getDate()).padStart(2,'0')}`;
+  const from=ym+'-01'>t?ym+'-01':t;
+  let list=[];
+  try{ const snap=await db.collection('classSchedules').where('date','>=',from).where('date','<=',last).get(); list=snap.docs.map(d=>({id:d.id,...d.data()})); }
+  catch(e){ box.innerHTML=`<div class="stat-note" style="color:#ff7a66;">일정을 불러오지 못했어요 — ${esc(e&&e.code==='permission-denied'?'권한이 없어요':(e&&e.message||''))}</div>`; return; }
+  if(document.getElementById('rfYM')?.value!==ym || document.getElementById('rfBr')?.value!==br) return;   // 그사이 선택이 바뀜
+  const target=list.filter(x=>(x.status||'scheduled')==='scheduled' && (!br || x.branch===br));
+  const changes=target.map(x=>({ x, ids:schedSuggest(x.branch, x.date) })).filter(c=>{ const a=[...(c.x.studentIds||[])].sort().join(), b=c.ids.slice().sort().join(); return a!==b; });
+  const studs=state.students.filter(s=>!br || s.branch===br), unset=studs.filter(s=>!daysOf(s,ym).length);
+  rfPlan={ ym, changes };
+  box.innerHTML=`<div class="rf-row"><span>${Number(ym.slice(5))}월 예정 수업</span><b>${target.length}개</b></div>
+    <div class="rf-row"><span>학생이 바뀌는 수업</span><b style="color:var(--lime);">${changes.length}개</b></div>
+    <div class="rf-row"><span>${Number(ym.slice(5))}월 요일을 아직 안 고른 학생</span><b style="color:${unset.length?'#ffb020':'var(--text)'};">${unset.length}명</b></div>
+    ${unset.length?`<div class="stat-note" style="margin-top:6px;">이 학생들은 어느 수업에도 안 들어가요 → 학생 앱 '내 정보'에서 ${Number(ym.slice(5))}월 요일을 고르게 해 주세요<br><b>${unset.slice(0,30).map(s=>esc(s.name)).join(', ')}${unset.length>30?' 외 '+(unset.length-30)+'명':''}</b></div>
+    <button type="button" class="link-btn" onclick="copyUnsetDays('${ym}','${br}')">안 고른 학생 이름 복사 (단톡방 공지용)</button>`:''}`;
+  ok.disabled=!changes.length; ok.textContent=changes.length?`${changes.length}개 다시 맞추기`:'바꿀 게 없어요';
+}
+function copyUnsetDays(ym, br){
+  const names=state.students.filter(s=>(!br||s.branch===br) && !daysOf(s,ym).length).map(s=>s.name);
+  const txt=`[${Number(ym.slice(5))}월 수업 요일] 아직 안 고른 친구: ${names.join(', ')}\n학생 앱 → 내 정보 → 수업 요일에서 골라 주세요!`;
+  try{ navigator.clipboard.writeText(txt).then(()=>showToast('복사했어요'),()=>window.prompt('복사해서 쓰세요',txt)); }catch(e){ window.prompt('복사해서 쓰세요',txt); }
+}
+async function submitSchedRefill(){
+  const err=document.getElementById('rfErr'), btn=document.getElementById('rfOk');
+  if(!rfPlan || !rfPlan.changes.length) return;
+  if(navigator.onLine===false){ err.textContent='인터넷이 끊겨 있어요'; return; }
+  btn.disabled=true; btn.textContent='저장 중…'; markUserWrite();
+  const now=Date.now(), me=currentCoachEmail||'';
+  try{
+    for(let i=0;i<rfPlan.changes.length;i+=400){
+      const b=db.batch();
+      rfPlan.changes.slice(i,i+400).forEach(({x,ids})=>b.update(db.collection('classSchedules').doc(x.id), { studentIds:ids, updatedAt:now, updatedBy:me,
+        history:[...(Array.isArray(x.history)?x.history:[]), { at:now, by:me, what:`${Number(rfPlan.ym.slice(5))}월 요일로 학생 다시 맞춤 (${(x.studentIds||[]).length}→${ids.length}명)` }].slice(-20) }));
+      await b.commit();
+    }
+    const n=rfPlan.changes.length; rfPlan=null; closeModal(); showToast(`수업 ${n}개의 학생을 다시 맞췄어요`);
+  }catch(e){ err.textContent='저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'권한이 없어요 (Firebase 규칙 확인)':(e&&e.message||'')); btn.disabled=false; btn.textContent='다시 맞추기'; }
 }
 function openSchedBulkDelete(){
   const [from,to]=schedRange();
@@ -4577,7 +4636,18 @@ async function rosterSave(){
                                             canceled?, canceledAt?, canceledBy?, cancelReason?, history?[] }
    예전 기록 { date, by, at } 은 그대로 '결제 완료'로 읽는다. 취소는 지우지 않고 canceled + 사유로 남긴다. */
 const WEEK=['월','화','수','목','금','토','일'];
-function daysOf(s){ return Array.isArray(s.days) ? WEEK.filter(w=>s.days.includes(w)) : []; }
+/* 수업 요일은 매달 새로 고른다: students/{id}.daysByMonth['YYYY-MM'] = ['월','수']
+   예전 방식(days 한 칸)은 2026년 10월까지만 그대로 인정한다 → 11월부터는 그 달 요일을 새로 골라야 '정함'이 된다 */
+const DAYS_LEGACY_UNTIL='2026-10';
+function curYM(){ return HC.todayStr().slice(0,7); }
+function nextYM(ym){ let [y,m]=ym.split('-').map(Number); m++; if(m>12){m=1;y++;} return `${y}-${String(m).padStart(2,'0')}`; }
+function daysOf(s, ym){
+  ym = ym || curYM();
+  const bm = s && s.daysByMonth && typeof s.daysByMonth==='object' ? s.daysByMonth[ym] : null;
+  if(Array.isArray(bm)) return WEEK.filter(w=>bm.includes(w));
+  if(ym<=DAYS_LEGACY_UNTIL && s && Array.isArray(s.days)) return WEEK.filter(w=>s.days.includes(w));
+  return [];
+}
 function feeOf(s){ const n=Number(s.fee); return Number.isFinite(n) && n>0 ? Math.round(n) : null; }
 function won(n){ return n==null ? '미설정' : Number(n).toLocaleString('ko-KR')+'원'; }
 function payLabel(ym){ return Number(ym.slice(5,7))+'월결제'; }
@@ -4594,7 +4664,7 @@ function cntMatch(n, c){ return !c || (c==='4' ? n>=4 : n===Number(c)); }
 function payFilter(list, ym, f){
   const q=(f.q||'').trim();
   return list.filter(s=>(!f.br || s.branch===f.br) && (!q || String(s.name).includes(q))
-    && (!f.st || (f.st==='paid')===!!payOf(s,ym)) && cntMatch(daysOf(s).length, f.cnt) && (!f.day || daysOf(s).includes(f.day)));
+    && (!f.st || (f.st==='paid')===!!payOf(s,ym)) && cntMatch(daysOf(s,ym).length, f.cnt) && (!f.day || daysOf(s,ym).includes(f.day)));
 }
 function paySort(list, ym){
   return list.slice().sort((a,b)=>(!!payOf(a,ym))-(!!payOf(b,ym)) || (a.branch||'힣').localeCompare(b.branch||'힣') || String(a.name).localeCompare(String(b.name)));
@@ -4688,7 +4758,7 @@ function payRows(){ const ym=state.payYM; return paySort(payFilter(state.student
 function payDynHTML(){
   if(!state.studentsLoaded) return '<div class="empty-mini">학생 명단 불러오는 중…</div>';
   const ym=state.payYM, rows=payRows(), today=HC.todayStr(), future=ym>today.slice(0,7);
-  const items=rows.map(s=>{ const p=payOf(s,ym), r=payRec(s,ym), d=daysOf(s), busy=!!state.payBusy[s.id];
+  const items=rows.map(s=>{ const p=payOf(s,ym), r=payRec(s,ym), d=daysOf(s,ym), busy=!!state.payBusy[s.id];
     const cancel = r && r.canceled ? `<div class="pi-cancel">취소됨 ${r.canceledAt?md(localYmd(new Date(r.canceledAt))):''} · 사유: ${esc(r.cancelReason||'-')}</div>` : '';
     return `<div class="pay-item ${p?'paid':'unpaid'}">
       <div class="pi-who"><b>${esc(s.name)}</b><span>${esc(s.branch||'지점 없음')} · ${esc(s.grade||'')}</span></div>
@@ -4732,7 +4802,7 @@ function payCSV(){
   const ym=state.payYM, rows=payRows();
   const q=v=>{ const t=String(v==null?'':v); return /[",\n]/.test(t) ? '"'+t.replace(/"/g,'""')+'"' : t; };
   const head=['학생 이름','지점','학년','수업 요일','주당 횟수','월 수강료','월','결제 상태','결제일','결제 금액','취소 사유'];
-  const lines=rows.map(s=>{ const p=payOf(s,ym), r=payRec(s,ym), d=daysOf(s);
+  const lines=rows.map(s=>{ const p=payOf(s,ym), r=payRec(s,ym), d=daysOf(s,ym);
     return [s.name, s.branch||'', s.grade||'', d.join('·'), d.length||'', feeOf(s)??'', ym, p?'결제 완료':(r&&r.canceled?'취소됨':'미결제'), p?p.date:'', p&&p.amount!=null?p.amount:'', r&&r.canceled?(r.cancelReason||''):''].map(q).join(','); });
   const blob=new Blob(['﻿'+[head.join(','),...lines].join('\r\n')], {type:'text/csv;charset=utf-8'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`학원비_${ym}.csv`; document.body.appendChild(a); a.click();
@@ -4766,7 +4836,7 @@ function payCheck(sid, ym){
 // 결제 체크: 학생 정보를 한 번 더 확인하고, 이번 달 결제 금액을 적는다
 function openPayConfirm(sid, ym){
   const s=getStudent(sid); if(!s) return;
-  const d=daysOf(s), fee=feeOf(s), today=HC.todayStr();
+  const d=daysOf(s,ym), fee=feeOf(s), today=HC.todayStr();
   const defDate = ym===today.slice(0,7) ? today : (ym+'-'+String(new Date(Number(ym.slice(0,4)), Number(ym.slice(5,7)), 0).getDate()).padStart(2,'0'));
   openModal(`<div class="modal pay-confirm" role="dialog" aria-labelledby="pkTitle">
     <h3 id="pkTitle">${Number(ym.slice(5,7))}월결제 확인</h3>
