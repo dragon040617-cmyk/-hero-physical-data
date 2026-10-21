@@ -4029,7 +4029,7 @@ function setMe(n){
 function meBarHTML(where){
   const set=myStudentSet();
   const info = !state.me ? '내 이름을 고르면 내 수업 · 내 담당 학생만 보여요'
-    : (set ? `담당 학생 ${set.size}명만 보는 중` : '담당 학생을 아직 안 정했어요 (일정 › 코치 명단)');
+    : (set ? `담당 학생 ${set.size}명만 보는 중` : '담당 학생을 아직 안 정했어요 (일정 › 코치 지정)');
   return `<div class="me-bar">
     <button type="button" class="me-pick ${state.me?'on':''}" onclick="openMePicker()" aria-haspopup="dialog">👤 ${state.me?esc(state.me):'내 이름 고르기'} <span aria-hidden="true">▾</span></button>
     <span class="me-info">${info}</span>
@@ -4119,7 +4119,7 @@ function schedCardHTML(x){
 function renderScheduleView(){
   return `<main class="sched">
     <div class="topbar"><div class="heading"><div><h2>수업 일정</h2><div class="tagline">${state.me?esc(state.me)+'의 수업만 보는 중':'전체 지점 · 코치 통합 시간표'}</div></div></div>
-      <div class="cl-top"><button type="button" class="submit-btn" style="height:40px;" onclick="openSchedEdit('')">+ 일정 만들기</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openCoachRoster()">코치 명단</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openSchedBulkDelete()">일정 지우기</button></div></div>
+      <div class="cl-top"><button type="button" class="submit-btn" style="height:40px;" onclick="openSchedEdit('')">+ 일정 만들기</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openCoachRoster()">코치 지정</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openSchedBulkDelete()">일정 지우기</button></div></div>
     <div class="lane-divider"></div>
     ${meBarHTML('sched')}
     <div id="schedBody">${schedBodyHTML()}</div>
@@ -4185,14 +4185,10 @@ async function schedToggleDone(id){
 }
 
 /* ---- 일정 만들기·고치기 ---- */
-function schedSuggest(branch, date, coaches){
-  // 지점 + 그 요일을 '수업 요일'로 고른 학생. 고른 코치에게 담당 학생이 있으면 그중에서만
+function schedSuggest(branch, date){
+  // 지점 + 그 요일을 '수업 요일'로 고른 학생 (코치와는 연결하지 않음 — 담당 학생은 '코치 지정'에서만 정함)
   const wd=WD_KO[wdOf(date)];
-  const base=state.students.filter(s=>s.branch===branch && daysOf(s).includes(wd)).map(s=>s.id);
-  const mine=new Set((coaches||[]).flatMap(c=>state.coachStudents[c]||[]));
-  if(!mine.size) return base;
-  const f=base.filter(id=>mine.has(id));
-  return f.length ? f : base;
+  return state.students.filter(s=>s.branch===branch && daysOf(s).includes(wd)).map(s=>s.id);
 }
 function openSchedEdit(id, date){
   seForce=false;
@@ -4203,10 +4199,10 @@ function openSchedEdit(id, date){
   const st = x ? (x.status||'scheduled') : 'scheduled';
   const cs = new Set(x ? schedCoaches(x) : (state.me?[state.me]:[]));
   const fm = new Set(x ? schedForms(x) : []);
-  const sel = new Set(x ? (x.studentIds||[]) : schedSuggest(br, d, [...cs]));
+  const sel = new Set(x ? (x.studentIds||[]) : schedSuggest(br, d));
   const editable = st!=='cancelled';
   const typeOpts=[...new Set([...CLASS_TYPES, ...(x&&x.type?[x.type]:[])])];
-  const coachPills=(arr,role)=>arr.map(n=>`<label class="chk-pill"><input type="checkbox" name="coaches" value="${esc(n)}" ${cs.has(n)?'checked':''} onchange="seRefill(this.form)"> ${esc(n)}</label>`).join('');
+  const coachPills=(arr,role)=>arr.map(n=>`<label class="chk-pill"><input type="checkbox" name="coaches" value="${esc(n)}" ${cs.has(n)?'checked':''}> ${esc(n)}</label>`).join('');
   const extraCoaches=[...cs].filter(n=>!allCoachNames().includes(n));   // 명단에서 빠진 코치도 기존 일정에서는 유지
   openModal(`<div class="modal sched-modal" role="dialog" aria-labelledby="seTitle">
     <h3 id="seTitle">${x?(editable?'일정 고치기':'일정 보기'):'일정 만들기'}${x&&x.seriesId?' <span class="stat-note">· 반복 일정</span>':''}</h3>
@@ -4225,7 +4221,7 @@ function openSchedEdit(id, date){
     <div class="field"><label>코치 <span class="stat-note">· 여러 명 고를 수 있어요${x&&x.seriesId?' · 이 수업에만 적용돼요':''}</span></label>
       <div class="se-coaches"><span class="se-role">메인</span>${coachPills(INSTRUCTORS.main||[])}</div>
       <div class="se-coaches"><span class="se-role">보조</span>${coachPills(INSTRUCTORS.assistant||[])}${coachPills(extraCoaches)}</div></div>
-    <div class="field"><label>참여 학생 <b id="seCnt" style="color:var(--lime);">${sel.size}명</b> <span class="stat-note">· 지점 + 수업 요일 (+ 고른 코치의 담당 학생)으로 자동 체크</span></label>
+    <div class="field"><label>참여 학생 <b id="seCnt" style="color:var(--lime);">${sel.size}명</b> <span class="stat-note">· 지점 + 수업 요일로 자동 체크</span></label>
       <div class="se-students" id="seStudents">${seStudentsHTML(br, sel)}</div></div>
     ${x?'':`<div class="field"><label>반복</label>
       <select name="repeat" onchange="document.getElementById('seRep').hidden=this.value!=='weekly'"><option value="none">반복 없음</option><option value="weekly">매주 같은 요일</option></select>
@@ -4260,8 +4256,7 @@ function seStudentsHTML(br, sel){
 }
 function seRefill(form){
   const br=form.branch.value, d=form.date.value; if(!PERF.validDate(d)) return;
-  const cs=[...form.querySelectorAll('input[name=coaches]:checked')].map(i=>i.value);
-  const sel=new Set(schedSuggest(br,d,cs));
+  const sel=new Set(schedSuggest(br,d));
   document.getElementById('seStudents').innerHTML=seStudentsHTML(br, sel);
   document.getElementById('seCnt').textContent=sel.size+'명';
   const rd=form.querySelectorAll('input[name=repDays]'); if(rd.length && ![...rd].some(i=>i.checked)) rd.forEach(i=>{ i.checked = i.value===WD_KO[wdOf(d)]; });
@@ -4306,7 +4301,7 @@ async function submitSched(id){
         if(!days.includes(WD_KO[wdOf(d)])) continue;
         const first=!items.length;
         const coaches = first || !firstOnly ? base.coaches : [];
-        const sids = first ? base.studentIds : schedSuggest(base.branch, d, coaches);
+        const sids = first ? base.studentIds : schedSuggest(base.branch, d);
         items.push({ ...base, date:d, coaches, studentIds:sids, seriesId, _id:seriesId+'_'+d });
         if(items.length>SCHED_MAX_SERIES) return seErr(`<div class="se-e">한 번에 ${SCHED_MAX_SERIES}개까지만 만들 수 있어요. 끝나는 날을 앞당겨 주세요</div>`);
       }
@@ -4465,7 +4460,7 @@ async function submitSeriesRepeat(){
     const del=all.filter(o=>o.date>=x.date && (o.status||'scheduled')==='scheduled' && !want.has(o.date) && o.id!==x.id).map(o=>o.id);
     const now=Date.now(), me=currentCoachEmail||'', b=db.batch(); let add=0;
     want.forEach(d=>{ if(byDate[d]) return; add++;
-      b.set(db.collection('classSchedules').doc(c.seriesId+'_'+d), { branch:x.branch, studentIds:schedSuggest(x.branch,d,[]), coaches:[], forms:schedForms(x), date:d, startTime:x.startTime, endTime:x.endTime,
+      b.set(db.collection('classSchedules').doc(c.seriesId+'_'+d), { branch:x.branch, studentIds:schedSuggest(x.branch,d), coaches:[], forms:schedForms(x), date:d, startTime:x.startTime, endTime:x.endTime,
         type:x.type, memo:x.memo||'', status:'scheduled', seriesId:c.seriesId, createdBy:me, createdAt:now, updatedAt:now, updatedBy:me, history:[{ at:now, by:me, what:'반복 바꾸기로 추가' }] }); });
     del.forEach(id=>b.delete(db.collection('classSchedules').doc(id)));
     if(add||del.length){ markUserWrite(); await b.commit(); }
@@ -4527,7 +4522,7 @@ function openCoachRoster(sel){
       <div class="stat-note">한 학생을 여러 코치가 같이 맡을 수 있어요 (메인·보조 모두)</div>
       <div id="roErr" class="stat-note" style="color:#ff7a66;"></div>
       <button type="button" class="submit-btn" style="width:100%; height:46px;" onclick="rosterSave()">저장</button></div>` : '';
-  const html=`<div class="modal roster-modal" role="dialog" aria-labelledby="roT"><h3 id="roT">코치 명단</h3>
+  const html=`<div class="modal roster-modal" role="dialog" aria-labelledby="roT"><h3 id="roT">코치 지정</h3>
     <div class="stat-note" style="margin-bottom:10px;">수업일지 강사 명단과 같은 이름이에요. 이름을 누르고 담당 학생을 체크하세요. 이름을 더하거나 고치려면 수업일지의 ＋ 추가 / ✏️ 수정을 쓰세요.</div>
     <div class="ro-list">${rows||'<div class="stat-note">강사 명단이 비어 있어요</div>'}</div>
     ${panel}
