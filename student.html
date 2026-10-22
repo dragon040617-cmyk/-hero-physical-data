@@ -79,6 +79,38 @@
   .tt-dh{ display:flex; gap:8px; align-items:baseline; } .tt-dh span{ font-size:12px; color:var(--lime); font-weight:800; }
   .tt-none{ font-size:13px; color:var(--dim); margin-top:6px; }
   .tt-today .link{ margin-top:4px; }
+  .tt-seg{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:0 0 12px; }
+  .tt-seg button{ min-height:44px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--muted); font:inherit; font-size:15px; font-weight:800; cursor:pointer; }
+  .tt-seg button.on{ border-color:var(--lime); color:var(--lime); background:var(--lime-soft); }
+  .ex-dd{ margin-top:10px; padding:12px 14px; border-radius:14px; border:1px solid var(--line); background:var(--surface); display:flex; flex-direction:column; gap:6px; }
+  .ex-dd-top{ display:flex; justify-content:space-between; gap:8px; font-size:13px; color:var(--muted); flex-wrap:wrap; }
+  .ex-dd-n{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; } .ex-dd-n b{ font-size:32px; color:var(--lime); line-height:1.1; } .ex-dd-n span{ font-size:14px; font-weight:800; }
+  .ex-more{ margin-top:8px; } .ex-more summary{ cursor:pointer; min-height:40px; display:flex; align-items:center; font-size:14px; font-weight:700; color:var(--muted); }
+  .ex-o{ display:flex; justify-content:space-between; gap:8px; font-size:13.5px; padding:6px 0; border-top:1px solid var(--line); } .ex-o b{ color:var(--lime); }
+  .ex-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px; display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .ex-card.taper{ border-color:#9fb4e0; } .ex-card.day{ border-color:var(--lime); } .ex-card.cancelled{ opacity:.75; border-style:dashed; } .ex-card.cancelled .ex-nm{ text-decoration:line-through; }
+  .ex-nm{ font-size:16px; font-weight:800; overflow-wrap:anywhere; } .ex-n{ font-size:18px; color:var(--lime); }
+  .ex-ty{ display:inline-block; font-size:12px; font-weight:800; padding:2px 9px; border-radius:10px; border:1px solid; }
+  .ex-ty.t-exam{ color:var(--lime); border-color:var(--lime); } .ex-ty.t-mock{ color:#9fb4e0; border-color:#9fb4e0; } .ex-ty.t-other{ color:var(--muted); border-color:var(--line); }
+  .ex-act{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px; } .ex-act .btn{ margin:0; min-height:44px; } .ex-act .btn.danger{ border-color:#ff9f1c; color:#ff9f1c; }
+  .ex-add{ margin:0 0 4px; }
+  .ex-form{ display:flex; flex-direction:column; gap:10px; }
+  .ex-l{ display:flex; flex-direction:column; gap:4px; font-size:13px; color:var(--muted); }
+  .ex-l input{ min-height:46px; border-radius:12px; border:1px solid var(--line); background:var(--bg, #12151c); color:var(--text); padding:0 12px; font:inherit; font-size:16px; }
+  .ex-pick{ display:flex; gap:6px; flex-wrap:wrap; }
+  .ex-chip{ position:relative; } .ex-chip input{ position:absolute; opacity:0; width:1px; height:1px; }
+  .ex-chip span{ display:flex; align-items:center; min-height:44px; padding:0 14px; border-radius:22px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:14px; font-weight:700; cursor:pointer; }
+  .ex-chip input:checked + span{ border-color:var(--lime); color:var(--lime); background:var(--lime-soft); } .ex-chip input:checked + span::before{ content:'✓ '; white-space:pre; }
+  .ex-chip input:focus-visible + span{ outline:2px solid #fff; outline-offset:2px; }
+  .tt-ex{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; width:100%; min-height:44px; margin-top:8px; padding:8px 12px; border-radius:12px; border:1px dashed #9fb4e0; background:transparent; color:var(--text); font:inherit; font-size:14px; text-align:left; cursor:pointer; } .tt-ex b{ color:var(--lime); margin-left:auto; }
+  .feat-row{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:10px; }
+  .feat-sw{ flex:0 0 auto; min-width:72px; min-height:44px; border-radius:22px; border:1px solid var(--line); background:var(--surface); color:var(--muted); font:inherit; font-weight:800; cursor:pointer; }
+  .feat-sw.on{ border-color:var(--lime); color:#0d1a03; background:var(--lime); }
+  .mc-ex{ position:absolute; top:1px; right:2px; font-size:9px; font-weight:800; line-height:1; padding:1px 3px; border-radius:4px; background:#12151c; color:#fff; }
+  .mc-day.exday{ outline:2px solid #fff; outline-offset:-2px; }
+  .mc-tp{ position:absolute; left:4px; right:4px; bottom:3px; height:4px; border-radius:2px; background:repeating-linear-gradient(45deg,#9fb4e0 0 3px,transparent 3px 6px); }
+  .mc-ex-l{ font-size:10px; font-weight:800; padding:1px 3px; border-radius:4px; background:#12151c; color:#fff; outline:1px solid #fff; }
+  .mc-tp-l{ display:inline-block; width:18px; height:6px; border-radius:2px; background:repeating-linear-gradient(45deg,#9fb4e0 0 3px,transparent 3px 6px); vertical-align:1px; }
   .m-top{ display:flex; align-items:center; gap:10px; margin-bottom:14px; } .m-top h1{ margin:0; }
   .m-back{ width:44px; height:44px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:22px; cursor:pointer; }
   .m-sum{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
@@ -378,6 +410,7 @@
   <div id="me-edit"></div>
   <p class="note" style="margin-top:12px">이름·학년·지점·목표 학교는 직접 고칠 수 있어요. 부상 이력은 선생님께 말씀해 주세요.</p>
   <div class="box" id="me-days" style="margin-top:20px"></div>
+  <div class="box" id="me-feat" style="margin-top:20px"></div>
   <div class="box install" id="me-install" style="margin-top:20px"></div>
   <button class="btn btn-2" style="margin-top:20px" onclick="if(confirm('로그아웃할까요? 다시 들어올 때 구글 로그인이 필요해요.')) logout()">로그아웃</button>
 </section>
@@ -392,7 +425,7 @@
 <!-- 아래 메뉴: 승인된 학생에게만 보인다 -->
 <nav id="bnav" class="bnav hidden" aria-label="학생 메뉴">
   <button type="button" data-nav="today"><span class="ic" aria-hidden="true">🏠</span>오늘</button>
-  <button type="button" data-nav="tt"><span class="ic" aria-hidden="true">📅</span>시간표</button>
+  <button type="button" data-nav="tt"><span class="ic" aria-hidden="true">📅</span>일정</button>
   <button type="button" data-nav="care"><span class="ic" aria-hidden="true">🥗</span>몸관리</button>
   <button type="button" data-nav="perf"><span class="ic" aria-hidden="true">📈</span>실기 기록</button>
   <button type="button" data-nav="me"><span class="ic" aria-hidden="true">👤</span>내 정보</button>
@@ -1164,14 +1197,14 @@ async function openMe(fromPop){
   try{ const d=await db.collection('joinRequests').doc(auth.currentUser.uid).get(); myReq=d.exists?d.data():null; }catch(e){ myReq=null; }
   refreshMe();
   $('me-install').innerHTML=installHTML();
-  daysDraft=null; refreshDaysUI();
+  daysDraft=null; refreshDaysUI(); renderFeatBox();
   show('screen-me',fromPop);
 }
 
 auth.onAuthStateChanged(async user=>{
   stopListening();
   // 로그인 안 됨 → 첫 화면(코치·학생 공용 로그인)으로. 코치 계정이면 코치 화면으로.
-  if(!user){ myStudent=null; myCheckins=[]; goHome(); return; }
+  if(!user){ myStudent=null; myCheckins=[]; ttList=null; exList=null; exErr=''; exForm=null; exEnabled=true; ttSeg='class'; goHome(); return; }
   if(((user.providerData||[])[0]||{}).providerId!=='google.com'){ goHome(); return; }
   lsSet('heroRole','student');
   $('user-email').textContent=user.email;
@@ -1216,6 +1249,7 @@ async function enterApp(student,ckPromise){
   loadedDate=todayStr();
   showResult();
   loadTT();                          // 내 수업 일정
+  loadExams();                       // 내 실기 일정 (D-day)
   loadPerfData();                    // 실기 기록은 체크인 화면을 먼저 보여 준 뒤 뒤에서 불러온다
   ensureChart().catch(()=>{});       // 그래프 파일도 화면이 뜬 다음에 받는다
 }
@@ -1510,8 +1544,8 @@ async function loadTT(force){
     ttErr='';
   }catch(e){ ttErr = e&&e.code==='permission-denied' ? 'denied' : 'error'; if(!ttList) ttList=null; }
   ttLoading=false;
-  const t=$('tt-today'); if(t) t.innerHTML=ttTodayHTML();
-  if(!$('screen-tt').classList.contains('hidden')) renderTT();
+  refreshTodayCard();
+  if(!$('screen-tt').classList.contains('hidden') && !exForm) renderTT();
 }
 function ttCardHTML(x, big){
   const S=TT_ST[x.status]||TT_ST.scheduled;
@@ -1523,23 +1557,36 @@ function ttCardHTML(x, big){
     ${x.status==='cancelled'?`<div class="tt-cancel">휴강${x.cancellationReason?' · '+esc(x.cancellationReason):''}</div>`:''}
   </div>`;
 }
+// 오늘 화면 카드 1장: 오늘 수업 + 가장 가까운 실기 D-day (시험이 없으면 수업 안내만)
 function ttTodayHTML(){
-  if(!ttList) return '';
-  const t=todayStr(), list=ttList.filter(x=>x.date===t);
-  if(!list.length) return '';
-  return `<div class="sec tt-today"><div class="sec-t">오늘 수업</div>${list.map(x=>ttCardHTML(x,true)).join('')}<button type="button" class="link" data-a="tt">시간표 전체 보기 ›</button></div>`;
+  const t=todayStr(), dd=exDdayHTML(t);
+  if(!ttList && !dd) return '';
+  let cls='';
+  if(ttList){
+    const list=ttList.filter(x=>x.date===t), next=ttList.find(x=>x.date>t && x.status!=='cancelled');
+    cls = list.length ? list.map(x=>ttCardHTML(x,true)).join('')
+      : `<p class="note" style="margin:6px 0 0">오늘은 수업이 없어요${next?` · 다음 수업 ${Number(next.date.slice(5,7))}/${Number(next.date.slice(8))} (${TT_WD[ttWd(next.date)]}) ${esc(next.startTime)}`:''}</p>`;
+  }
+  return `<div class="sec tt-today"><div class="sec-t">오늘 수업${dd?' · 실기 D-day':''}</div>${cls}${dd}<button type="button" class="link" data-a="tt">일정 전체 보기 ›</button></div>`;
 }
-function openTT(){ if(!ttWeek) ttWeek=ttMonday(todayStr()); renderTT(); show('screen-tt'); window.scrollTo(0,0); loadTT(true); }
+function openTT(seg){ if(!ttWeek) ttWeek=ttMonday(todayStr()); if(seg) ttSeg=seg; exForm=null; exMsg=''; exCancelArm=''; renderTT(); show('screen-tt'); window.scrollTo(0,0); loadTT(true); loadExams(true); }
 function renderTT(){
   const t=todayStr(), mon=ttWeek||ttMonday(t), days=Array.from({length:7},(_,i)=>addDays(mon,i)), sun=days[6];
   const todayList=(ttList||[]).filter(x=>x.date===t);
+  const seg=`<div class="tt-seg" role="tablist">${[['class','수업 일정'],['exam','실기 일정']].map(([k,l])=>`<button type="button" role="tab" aria-selected="${ttSeg===k}" class="${ttSeg===k?'on':''}" data-x="seg" data-s="${k}">${l}</button>`).join('')}</div>`;
+  if(ttSeg==='exam'){
+    $('screen-tt').innerHTML=`<h1>내 일정</h1>${seg}<p class="note" style="margin:0 0 12px">학교·전형·시험 날짜를 넣어 두면 D-day를 알려 줘요. 선생님도 같이 봐요.</p>${exPaneHTML()}`;
+    return;
+  }
+  const exOnDay=d=>exEnabled&&exList?exList.filter(x=>x.status==='active'&&x.examDate===d):[];
   let body;
   if(ttErr==='denied' && !ttList) body='<div class="box">아직 시간표를 볼 수 없어요. 선생님께 "시간표 설정"을 부탁해 주세요.</div>';
   else if(ttErr && !ttList) body='<div class="box">시간표를 불러오지 못했어요. <button type="button" class="link" data-t="retry">다시 시도</button></div>';
   else if(!ttList) body='<p class="note">불러오는 중…</p>';
   else{
-    const week=days.map(d=>{ const dl=ttList.filter(x=>x.date===d);
+    const week=days.map(d=>{ const dl=ttList.filter(x=>x.date===d), ex=exOnDay(d);
       return `<div class="tt-day ${d===t?'today':''}"><div class="tt-dh"><b>${TT_WD[ttWd(d)]} ${Number(d.slice(5,7))}/${Number(d.slice(8))}</b>${d===t?'<span>오늘</span>':''}</div>
+        ${ex.map(x=>`<button type="button" class="tt-ex" data-x="seg" data-s="exam"><span class="ex-ty t-${x.scheduleType}">${EX_TYPE[x.scheduleType]}</span> ${esc(x.schoolName)} <b>${exDLabel(exDiff(x.examDate,t))}</b></button>`).join('')}
         ${dl.length?dl.map(x=>ttCardHTML(x)).join(''):'<div class="tt-none">수업 없음</div>'}</div>`; }).join('');
     const next=ttList.find(x=>x.date>t && x.status!=='cancelled');
     body=`<div class="sec-t" style="margin-top:6px">오늘 수업</div>
@@ -1547,7 +1594,7 @@ function renderTT(){
       <div class="tt-nav"><button type="button" data-t="prev" aria-label="이전 주">‹</button><b>${Number(mon.slice(5,7))}/${Number(mon.slice(8))} ~ ${Number(sun.slice(5,7))}/${Number(sun.slice(8))}</b><button type="button" data-t="next" aria-label="다음 주">›</button>${mon!==ttMonday(t)?'<button type="button" class="tt-this" data-t="this">이번 주</button>':''}</div>
       ${week}`;
   }
-  $('screen-tt').innerHTML=`<h1>내 시간표</h1><p class="note" style="margin:-4px 0 12px">선생님이 정한 수업이에요. 바뀌면 여기에 바로 반영돼요.</p>${body}`;
+  $('screen-tt').innerHTML=`<h1>내 일정</h1>${seg}<p class="note" style="margin:0 0 12px">선생님이 정한 수업이에요. 바뀌면 여기에 바로 반영돼요.</p>${body}`;
 }
 $('screen-tt').addEventListener('click',e=>{
   const b=e.target.closest('[data-t]'); if(!b) return;
@@ -1558,6 +1605,169 @@ $('screen-tt').addEventListener('click',e=>{
   else if(a==='retry'){ ttErr=''; renderTT(); loadTT(true); }
 });
 document.addEventListener('click',e=>{ const b=e.target.closest('[data-a="tt"]'); if(b) openTT(); });
+
+/* ============ 실기 일정 (D-day): examSchedules 중 studentId 가 '나'인 것만 ============
+   · 내가 넣은 일정은 내가 고치거나 취소할 수 있고, 선생님이 넣은 일정은 보기만 한다 (규칙에서도 같은 조건)
+   · 지우지 않고 '취소'로 남긴다. 단계 안내는 일정용 기본 분류일 뿐 훈련 처방이 아니다 (실제 조절은 선생님이 정함)
+   · D-day 는 날짜 글자끼리 빼서 계산한다 (시간대 때문에 하루 밀리지 않게) */
+const EX_TYPE={ exam:'실기시험', mock:'모의시험', other:'기타 일정' };
+const EX_TIP={ base:'기본기를 꾸준히 다지는 시기예요.', practice:'모의시험으로 실전 감각을 익히는 시기예요.',
+  taper:'새로운 것보다 잠·식사·컨디션을 챙기는 시기예요. 훈련은 선생님과 상의해요.', day:'오늘이 시험날이에요. 평소처럼 준비해요.' };
+let exList=null, exErr='', exLoading=false, ttSeg='class', exForm=null, exSaving=false, exMsg='', exCancelArm='', exEnabled=true, exEnSaving=false;
+function exDiff(date, today){ const p=v=>{ const [y,m,d]=String(v).split('-').map(Number); return Date.UTC(y,m-1,d); }; return Math.round((p(date)-p(today))/86400000); }
+function exDLabel(n){ return n===0?'D-day':n>0?'D-'+n:'D+'+(-n); }
+function exPhase(x, today){
+  const n=exDiff(x.examDate, today);
+  if(n<0) return { key:'done', label:'지난 일정' };
+  if(x.scheduleType!=='exam') return n===0?{ key:'day', label:'오늘' }:{ key:'', label:'' };
+  if(n===0) return { key:'day', label:'시험 당일' };
+  if(n<=7) return { key:'taper', label:'컨디션 조절 단계' };
+  if(n<=21) return { key:'practice', label:'실전 연습·모의시험 단계' };
+  return { key:'base', label:'기초 준비 단계' };
+}
+function cleanEx(id, x){
+  x=x||{}; const d=String(x.examDate||'');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d)) return null;
+  return { id, schoolName:String(x.schoolName||'').slice(0,40), admissionRoute:String(x.admissionRoute||'').slice(0,30), examDate:d,
+    scheduleType:EX_TYPE[x.scheduleType]?x.scheduleType:'other', events:Array.isArray(x.events)?x.events.filter(e=>typeof e==='string').slice(0,10):[],
+    memo:String(x.memo||'').slice(0,100), status:x.status==='cancelled'?'cancelled':'active', createdBy:x.createdBy==='student'?'student':'coach', createdAt:Number(x.createdAt)||0 };
+}
+function exSort(a,b){ return a.examDate.localeCompare(b.examDate) || a.schoolName.localeCompare(b.schoolName); }
+async function loadExams(force){
+  if(!myStudent || (exLoading && !force)) return;
+  exLoading=true;
+  try{
+    // 규칙이 '내 학생 ID 인 일정'만 허락하므로 같은 조건으로만 묻는다
+    const snap=await db.collection('examSchedules').where('studentId','==',myStudent.id).get();
+    exList=snap.docs.map(d=>cleanEx(d.id,d.data())).filter(Boolean).sort(exSort); exErr='';
+  }catch(e){ exErr=e&&e.code==='permission-denied'?'denied':'error'; }
+  exLoading=false;
+  refreshTodayCard();
+  if(!$('screen-tt').classList.contains('hidden') && !exForm) renderTT();
+}
+function exUpcoming(today){ return (exList||[]).filter(x=>x.status==='active' && x.examDate>=today).sort(exSort); }
+// 대표 일정: 가장 가까운 '실기시험' → 없으면 가장 가까운 아무 일정
+function exRep(today){ const up=exUpcoming(today); return up.find(x=>x.scheduleType==='exam') || up[0] || null; }
+function refreshTodayCard(){ const t=$('tt-today'); if(t) t.innerHTML=ttTodayHTML(); }
+function exDdayHTML(today){
+  if(!exEnabled || !exList) return '';
+  const rep=exRep(today); if(!rep) return '';
+  const n=exDiff(rep.examDate,today), ph=exPhase(rep,today), others=exUpcoming(today).filter(x=>x.id!==rep.id);
+  return `<div class="ex-dd">
+    <div class="ex-dd-top"><span>${esc(rep.schoolName)}${rep.admissionRoute?' · '+esc(rep.admissionRoute):''} · ${EX_TYPE[rep.scheduleType]}</span><span>${Number(rep.examDate.slice(5,7))}/${Number(rep.examDate.slice(8))} (${TT_WD[ttWd(rep.examDate)]})</span></div>
+    <div class="ex-dd-n"><b>${exDLabel(n)}</b>${ph.label?`<span>${ph.label}</span>`:''}</div>
+    ${EX_TIP[ph.key]?`<p class="note" style="margin:0">${EX_TIP[ph.key]}</p>`:''}
+    ${others.length?`<details class="ex-more"><summary>다른 일정 ${others.length}개</summary>${others.map(x=>`<div class="ex-o"><span>${EX_TYPE[x.scheduleType]} · ${esc(x.schoolName)}</span><b>${exDLabel(exDiff(x.examDate,today))}</b></div>`).join('')}</details>`:''}
+  </div>`;
+}
+function exCardHTML(x, today){
+  const n=exDiff(x.examDate,today), ph=exPhase(x,today), mine=x.createdBy==='student';
+  return `<div class="ex-card ${x.status} ${ph.key}">
+    <div class="tt-top"><span class="ex-ty t-${x.scheduleType}">${EX_TYPE[x.scheduleType]}</span><b class="ex-n">${x.status==='cancelled'?'취소됨':exDLabel(n)}</b></div>
+    <div class="ex-nm">${esc(x.schoolName)}${x.admissionRoute?' · '+esc(x.admissionRoute):''}</div>
+    <div class="tt-m">${x.examDate.slice(0,4)}년 ${Number(x.examDate.slice(5,7))}월 ${Number(x.examDate.slice(8))}일 (${TT_WD[ttWd(x.examDate)]})${ph.label&&x.status==='active'?' · '+ph.label:''}</div>
+    ${x.events.length?`<div class="tt-forms">${x.events.map(e=>`<span>${esc(e)}</span>`).join('')}</div>`:''}
+    ${x.memo?`<div class="tt-m">메모: ${esc(x.memo)}</div>`:''}
+    ${x.status==='active'?(mine?`<div class="ex-act"><button type="button" class="btn btn-2" data-x="edit" data-id="${x.id}">고치기</button><button type="button" class="btn btn-2 ${exCancelArm===x.id?'danger':''}" data-x="cancel" data-id="${x.id}">${exCancelArm===x.id?'정말 취소할까요? 한 번 더':'일정 취소'}</button></div>`
+      :'<div class="tt-m">선생님이 넣은 일정이에요. 바뀌면 선생님께 말씀해 주세요.</div>'):''}
+  </div>`;
+}
+function exFormHTML(){
+  const p=exForm.prev, evs=[...new Set([...perfEvents(), ...(p?p.events:[])])], ty=p?p.scheduleType:'exam';
+  return `<div class="box ex-form">
+    <b>${p?'실기 일정 고치기':'실기 일정 넣기'}</b>
+    <label class="ex-l">학교 이름 (꼭 적기)<input id="exSchool" maxlength="40" value="${p?esc(p.schoolName):''}" placeholder="예: 부산대 체육교육과"></label>
+    <label class="ex-l">전형 (선택)<input id="exRoute" maxlength="30" value="${p?esc(p.admissionRoute):''}" placeholder="예: 수시 실기"></label>
+    <label class="ex-l">날짜 (꼭 고르기)<input type="date" id="exDate" value="${p?p.examDate:''}" min="2025-01-01" max="2030-12-31"></label>
+    <div class="ex-l">종류</div>
+    <div class="ex-pick">${Object.entries(EX_TYPE).map(([k,l])=>`<label class="ex-chip"><input type="radio" name="exType" value="${k}" ${ty===k?'checked':''}><span>${l}</span></label>`).join('')}</div>
+    <div class="ex-l">실기 종목 (선택)</div>
+    <div class="ex-pick">${evs.length?evs.map(e=>`<label class="ex-chip"><input type="checkbox" name="exEv" value="${esc(e)}" ${p&&p.events.includes(e)?'checked':''}><span>${esc(e)}</span></label>`).join(''):'<p class="note" style="margin:0">실기 기록에 종목이 생기면 여기서 고를 수 있어요.</p>'}</div>
+    <label class="ex-l">메모 (선택)<input id="exMemo" maxlength="100" value="${p?esc(p.memo):''}"></label>
+    <p class="note" id="exFormMsg" role="status" style="margin:0;color:#ff9f1c"></p>
+    <div class="ex-act"><button type="button" class="btn btn-2" data-x="close">닫기</button><button type="button" class="btn" data-x="save">${p?'고친 내용 저장':'저장'}</button></div>
+  </div>`;
+}
+function exPaneHTML(){
+  const t=todayStr();
+  if(!exEnabled) return `<div class="box">실기 일정 기능을 꺼 두었어요. 넣어 둔 일정은 지워지지 않았어요.<br><button type="button" class="btn" style="margin-top:10px" data-x="enable" ${exEnSaving?'disabled':''}>${exEnSaving?'켜는 중…':'다시 켜기'}</button></div>`;
+  if(exErr==='denied' && !exList) return '<div class="box">아직 실기 일정을 볼 수 없어요. 선생님께 "실기 일정 설정"을 부탁해 주세요.</div>';
+  if(exErr && !exList) return '<div class="box">실기 일정을 불러오지 못했어요. <button type="button" class="link" data-x="retry">다시 시도</button></div>';
+  if(!exList) return '<p class="note">불러오는 중…</p>';
+  if(exForm) return exFormHTML();
+  const up=exUpcoming(t), past=exList.filter(x=>x.status==='active' && x.examDate<t).reverse(), canc=exList.filter(x=>x.status==='cancelled');
+  return `${exMsg?`<p class="note" role="status" style="color:var(--lime)">${esc(exMsg)}</p>`:''}
+    <button type="button" class="btn ex-add" data-x="add">+ 실기 일정 넣기</button>
+    ${up.length?up.map(x=>exCardHTML(x,t)).join(''):'<div class="box tt-empty">아직 다가오는 실기 일정이 없어요.<br><span class="note">학교·날짜만 넣으면 오늘 화면에 D-day가 떠요.</span></div>'}
+    ${past.length?`<details class="ex-more"><summary>지난 일정 ${past.length}개</summary>${past.map(x=>exCardHTML(x,t)).join('')}</details>`:''}
+    ${canc.length?`<details class="ex-more"><summary>취소한 일정 ${canc.length}개</summary>${canc.map(x=>exCardHTML(x,t)).join('')}</details>`:''}
+    <p class="note" style="margin-top:12px">단계(기초 준비 · 실전 연습 · 컨디션 조절)는 일정을 보기 쉽게 나눈 거예요. 훈련은 선생님이 정해요.</p>`;
+}
+async function saveExam(){
+  if(!exForm || exSaving) return;
+  const msg=t=>{ const el=$('exFormMsg'); if(el) el.textContent=t; };
+  const school=($('exSchool').value||'').trim(), route=($('exRoute').value||'').trim(), date=$('exDate').value, memo=($('exMemo').value||'').trim();
+  const type=(document.querySelector('#screen-tt input[name=exType]:checked')||{}).value||'exam';
+  const events=[...document.querySelectorAll('#screen-tt input[name=exEv]:checked')].map(i=>i.value).slice(0,10);
+  if(!school) return msg('학교 이름을 적어 주세요');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || date<'2025-01-01' || date>'2030-12-31') return msg('날짜를 골라 주세요');
+  const norm=v=>v.replace(/\s+/g,'');
+  if((exList||[]).some(e=>e.id!==exForm.id && e.status==='active' && e.examDate===date && e.scheduleType===type && norm(e.schoolName)===norm(school))) return msg('같은 날짜·종류·학교 일정이 이미 있어요');
+  if(navigator.onLine===false) return msg('인터넷이 끊겨 있어요. 연결된 뒤 다시 눌러 주세요');
+  const p=exForm.prev, now=Date.now();
+  const doc={ studentId:myStudent.id, schoolName:school, admissionRoute:route, examDate:date, scheduleType:type, events, memo, status:'active',
+    createdBy:'student', createdAt:p&&p.createdAt?p.createdAt:now, updatedAt:now, updatedBy:'student', editorName:String(myStudent.name||'').slice(0,20) };
+  exSaving=true; const b=document.querySelector('#screen-tt [data-x="save"]'); if(b){ b.disabled=true; b.textContent='저장 중…'; }
+  try{
+    await db.collection('examSchedules').doc(exForm.id).set(doc);   // 문서 이름을 폼 열 때 정해 둬서 다시 눌러도 같은 문서 (중복 없음)
+    exList=[...(exList||[]).filter(e=>e.id!==exForm.id), cleanEx(exForm.id,doc)].sort(exSort);
+    exForm=null; exMsg=p?'고친 내용을 저장했어요':'실기 일정을 저장했어요'; renderTT(); refreshTodayCard();
+  }catch(e){
+    msg(e&&e.code==='permission-denied'?'아직 저장할 수 없어요. 선생님께 "실기 일정 설정"을 부탁해 주세요.':'저장하지 못했어요. 인터넷을 확인하고 다시 눌러 주세요.');
+    if(b){ b.disabled=false; b.textContent=p?'고친 내용 저장':'저장'; }
+  }finally{ exSaving=false; }
+}
+async function cancelExam(id){
+  const x=(exList||[]).find(e=>e.id===id); if(!x || exSaving) return;
+  if(exCancelArm!==id){ exCancelArm=id; exMsg=''; renderTT(); return; }
+  if(navigator.onLine===false){ exMsg='인터넷이 끊겨 있어요. 연결된 뒤 다시 눌러 주세요'; exCancelArm=''; renderTT(); return; }
+  exSaving=true;
+  try{
+    await db.collection('examSchedules').doc(id).update({ status:'cancelled', updatedAt:Date.now(), updatedBy:'student', editorName:String(myStudent.name||'').slice(0,20) });
+    x.status='cancelled'; exMsg='일정을 취소했어요 (취소한 일정에 남아 있어요)';
+  }catch(e){ exMsg=e&&e.code==='permission-denied'?'이 일정은 취소할 수 없어요':'취소하지 못했어요. 인터넷을 확인해 주세요'; }
+  finally{ exSaving=false; exCancelArm=''; renderTT(); refreshTodayCard(); }
+}
+async function setExEnabled(on){
+  if(exEnSaving) return;
+  if(navigator.onLine===false){ exMsg='인터넷이 끊겨 있어요'; return; }
+  exEnSaving=true; renderFeatBox(); if(!$('screen-tt').classList.contains('hidden')) renderTT();
+  try{ await db.collection('students').doc(myStudent.id).update({ examScheduleEnabled:on }); exEnabled=on; }
+  catch(e){ const m=$('feat-msg'); if(m) m.textContent=e&&e.code==='permission-denied'?'아직 바꿀 수 없어요. 선생님께 "기능 설정"을 부탁해 주세요.':'바꾸지 못했어요. 인터넷을 확인해 주세요.'; }
+  finally{ exEnSaving=false; renderFeatBox(); refreshTodayCard(); if(!$('screen-tt').classList.contains('hidden')) renderTT(); }
+}
+function renderFeatBox(){
+  const b=$('me-feat'); if(!b) return;
+  b.innerHTML=`<b>기능 설정</b>
+    <div class="feat-row"><div><b>실기 일정 · D-day</b><br><span class="note">끄면 오늘 화면에 D-day가 안 떠요. 넣어 둔 일정은 지워지지 않아요.</span></div>
+      <button type="button" class="feat-sw ${exEnabled?'on':''}" role="switch" aria-checked="${exEnabled}" data-x="feat-ex" ${exEnSaving?'disabled':''}>${exEnabled?'켜짐':'꺼짐'}</button></div>
+    <p class="note" id="feat-msg" role="status" style="margin:6px 0 0"></p>`;
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-x]'); if(!b || !myStudent) return;
+  const a=b.dataset.x;
+  if(a==='feat-ex'){ setExEnabled(!exEnabled); return; }
+  if(!b.closest('#screen-tt')) return;
+  if(a==='add'){ exForm={ id:db.collection('examSchedules').doc().id, prev:null }; exMsg=''; exCancelArm=''; renderTT(); }
+  else if(a==='edit'){ const x=(exList||[]).find(v=>v.id===b.dataset.id); if(x){ exForm={ id:x.id, prev:x }; exMsg=''; exCancelArm=''; renderTT(); } }
+  else if(a==='close'){ exForm=null; renderTT(); }
+  else if(a==='save') saveExam();
+  else if(a==='cancel') cancelExam(b.dataset.id);
+  else if(a==='retry'){ exErr=''; renderTT(); loadExams(true); }
+  else if(a==='enable') setExEnabled(true);
+  else if(a==='seg'){ ttSeg=b.dataset.s; exCancelArm=''; renderTT(); }
+});
+
 
 /* ============ 내 한 달: 체크인을 신호등 색 달력으로 (B-2) ============ */
 let monthYM='', monthSel='', monthCache={};
@@ -1611,8 +1821,9 @@ function renderMonth(){
   for(let d=1; d<=last; d++){
     const ds=`${ym}-${String(d).padStart(2,'0')}`, c=map[ds], st=c?(c.status||'BASE'):'', ui=c?STATUS_UI[st]:null;
     const myDay=daysFor(ym).includes(MWK[wdIdx(ds)]) && ds<=today; if(myDay) classDays++;
-    const cls=['mc-day', c?'has':'', ds===monthSel?'sel':'', ds===today?'today':'', ds>today?'future':'', !c&&myDay?'missed':''].filter(Boolean).join(' ');
-    cells+=`<button type="button" class="${cls}" style="${c?`background:${ui.color};color:${st==='RED'?'#fff':'#0d1a03'};`:''}" data-m="pick" data-d="${ds}" aria-label="${m}월 ${d}일${c?', '+ui.label+(c.pain?', 통증':''):myDay?', 수업 날 · 체크인 안 함':''}">${d}${c&&c.pain?'<i class="mc-pain"></i>':''}</button>`;
+    const ex=exEnabled&&exList?exList.filter(x=>x.status==='active'&&x.examDate===ds):[], tp=exEnabled&&exList?exList.filter(x=>x.status==='active'&&x.scheduleType==='exam'&&(n=>n>=1&&n<=7)(exDiff(x.examDate,ds))):[];
+    const cls=['mc-day', c?'has':'', ex.length?'exday':'', ds===monthSel?'sel':'', ds===today?'today':'', ds>today?'future':'', !c&&myDay?'missed':''].filter(Boolean).join(' ');
+    cells+=`<button type="button" class="${cls}" style="${c?`background:${ui.color};color:${st==='RED'?'#fff':'#0d1a03'};`:''}" data-m="pick" data-d="${ds}" aria-label="${m}월 ${d}일${c?', '+ui.label+(c.pain?', 통증':''):myDay?', 수업 날 · 체크인 안 함':''}${ex.length?', '+ex.map(x=>EX_TYPE[x.scheduleType]+' '+x.schoolName).join(', '):''}${tp.length?', 컨디션 조절 구간':''}">${d}${c&&c.pain?'<i class="mc-pain"></i>':''}${ex.length?`<span class="mc-ex">${ex[0].scheduleType==='exam'?'시험':ex[0].scheduleType==='mock'?'모의':'일정'}</span>`:''}${tp.length?'<i class="mc-tp" aria-hidden="true"></i>':''}</button>`;
   }
   const sc=map[monthSel], [sy,sm,sd]=monthSel.split('-').map(Number);
   let det;
@@ -1624,6 +1835,7 @@ function renderMonth(){
     const myDay=daysFor(ym).includes(MWK[wdIdx(monthSel)]);
     det=`<div class="md-head"><b>${sm}월 ${sd}일 (${MWK[wdIdx(monthSel)]})</b></div><div class="md-line note">${monthSel>today?'아직 오지 않은 날이에요':myDay?'수업 날인데 체크인을 안 했어요':'체크인 안 한 날이에요'}</div>`;
   }
+  if(exEnabled && exList){ const ex=exList.filter(x=>x.status==='active'&&x.examDate===monthSel); if(ex.length) det+=ex.map(x=>`<div class="md-line"><span class="ex-ty t-${x.scheduleType}">${EX_TYPE[x.scheduleType]}</span> ${esc(x.schoolName)}${x.admissionRoute?' · '+esc(x.admissionRoute):''}</div>`).join(''); }
   const tips=monthTips(map, ym), n=Object.keys(map).length, loading=monthCache[ym]==='loading', err=monthCache[ym]==='error';
   $('screen-month').innerHTML=`<div class="m-top"><button type="button" class="m-back" data-m="back" aria-label="뒤로">‹</button><h1>내 한 달</h1></div>
     <div class="box m-sum"><div><div class="note">${m}월 체크인</div><div class="m-n">${n}번${daysFor(ym).length?` <small>/ 수업 날 ${classDays}일</small>`:''}</div></div>
@@ -1633,7 +1845,7 @@ function renderMonth(){
       <div class="mc-week">${MWK.map((w,i)=>`<span class="${i===5?'sat':i===6?'sun':''}">${w}</span>`).join('')}</div>
       <div class="mc-grid">${cells}</div>
       ${loading?'<p class="note" style="margin:8px 0 0">불러오는 중…</p>':err?'<p class="note" style="margin:8px 0 0">이 달 기록을 불러오지 못했어요. <button type="button" class="link" data-m="retry">다시 시도</button></p>':''}
-      <p class="note mc-legend">칸 색 = 그날 내 컨디션${daysFor(ym).length?' · 점선 = 수업 날인데 체크인 깜빡':' · 내 정보에서 수업 요일을 정하면 깜빡한 날도 보여요'} · 흰 점 = 통증</p>
+      <p class="note mc-legend">${exEnabled&&exList&&exList.length?'<span class="mc-ex-l">시험</span> 실기·모의 일정 · <i class="mc-tp-l"></i> 컨디션 조절 구간(시험 D-7~D-1) · ':''}칸 색 = 그날 내 컨디션${daysFor(ym).length?' · 점선 = 수업 날인데 체크인 깜빡':' · 내 정보에서 수업 요일을 정하면 깜빡한 날도 보여요'} · 흰 점 = 통증</p>
     </div>
     <div class="box m-det">${det}</div>
     <div class="box m-tips"><b>이번 달 내 몸이 알려 준 것</b>
@@ -1770,6 +1982,8 @@ async function loadPerfData(){
     myDaysLegacy=Array.isArray(x.days)?WEEK.filter(w=>x.days.includes(w)):[];
     myDaysBM={}; if(x.daysByMonth&&typeof x.daysByMonth==='object') Object.entries(x.daysByMonth).forEach(([k,v])=>{ if(/^\d{4}-\d{2}$/.test(k)&&Array.isArray(v)) myDaysBM[k]=v; });
     myDaysLoaded=true; refreshDaysUI();
+    exEnabled = x.examScheduleEnabled!==false;   // 없으면 켜짐
+    renderFeatBox(); refreshTodayCard();
     myInfo={ name:String(x.name||myStudent.name||''), grade:String(x.grade||''), branch:String(x.branch||''), target:String(x.target||'') };
     perf.coach={events:Array.isArray(x.events)?x.events.filter(e=>PERF.safeEvent(e)):[],
       targets:(x.targets&&typeof x.targets==='object')?x.targets:{}, records:(x.records&&typeof x.records==='object')?x.records:{}};
