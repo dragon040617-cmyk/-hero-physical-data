@@ -103,10 +103,23 @@
   .ex-chip input:checked + span{ border-color:var(--lime); color:var(--lime); background:var(--lime-soft); } .ex-chip input:checked + span::before{ content:'✓ '; white-space:pre; }
   .ex-chip input:focus-visible + span{ outline:2px solid #fff; outline-offset:2px; }
   .tt-ex{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; width:100%; min-height:44px; margin-top:8px; padding:8px 12px; border-radius:12px; border:1px dashed #9fb4e0; background:transparent; color:var(--text); font:inherit; font-size:14px; text-align:left; cursor:pointer; } .tt-ex b{ color:var(--lime); margin-left:auto; }
+  .meal-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%; min-height:56px; margin:10px 0 0; padding:10px 14px; border-radius:14px; border:1px dashed var(--line); background:transparent; color:var(--text); font:inherit; font-size:15px; text-align:left; cursor:pointer; }
+  .meal-row.done{ border-style:solid; } .meal-row .note{ font-size:13px; } .meal-go{ flex:0 0 auto; color:var(--lime); font-weight:800; }
+  .meal-slot{ margin-bottom:10px; } .meal-h{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; } .meal-h b{ font-size:16px; }
+  .meal-st{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+  .ms{ min-height:46px; border-radius:12px; border:1px solid var(--line); background:var(--surface2); color:var(--text); font:inherit; font-size:14px; font-weight:800; cursor:pointer; padding:0 4px; }
+  .ms.on{ border-color:var(--lime); background:var(--lime-soft); color:var(--lime); } .ms.on::before{ content:'✓ '; }
+  .ms.on.none{ border-color:#aab2c5; background:rgba(170,178,197,.14); color:#fff; }
+  .meal-foods{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .mf{ min-height:40px; padding:0 12px; border-radius:20px; border:1px solid var(--line); background:transparent; color:var(--muted); font:inherit; font-size:13.5px; font-weight:700; cursor:pointer; }
+  .mf.on{ border-color:var(--lime); color:var(--lime); background:var(--lime-soft); } .mf.on::before{ content:'✓ '; }
+  .meal-fb p{ margin:0 0 6px; color:var(--text); font-size:14px; line-height:1.6; } .meal-fb p:last-child{ margin:0; color:var(--muted); }
+  .mc-ml{ position:absolute; right:5px; bottom:9px; width:6px; height:6px; border-radius:50%; background:#fff; border:1px solid #12151c; }
+  .mc-ml-l{ display:inline-block; width:7px; height:7px; border-radius:50%; background:#fff; vertical-align:1px; }
   .feat-row{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:10px; }
   .feat-sw{ flex:0 0 auto; min-width:72px; min-height:44px; border-radius:22px; border:1px solid var(--line); background:var(--surface); color:var(--muted); font:inherit; font-weight:800; cursor:pointer; }
   .feat-sw.on{ border-color:var(--lime); color:#0d1a03; background:var(--lime); }
-  .mc-ex{ position:absolute; top:1px; right:2px; font-size:9px; font-weight:800; line-height:1; padding:1px 3px; border-radius:4px; background:#12151c; color:#fff; }
+  .mc-ex{ position:absolute; top:1px; left:2px; font-size:9px; font-weight:800; line-height:1; padding:1px 3px; border-radius:4px; background:#12151c; color:#fff; }
   .mc-day.exday{ outline:2px solid #fff; outline-offset:-2px; }
   .mc-tp{ position:absolute; left:4px; right:4px; bottom:3px; height:4px; border-radius:2px; background:repeating-linear-gradient(45deg,#9fb4e0 0 3px,transparent 3px 6px); }
   .mc-ex-l{ font-size:10px; font-weight:800; padding:1px 3px; border-radius:4px; background:#12151c; color:#fff; outline:1px solid #fff; }
@@ -421,6 +434,7 @@
 <section id="screen-care" class="screen hidden"></section>
 <section id="screen-month" class="screen hidden"></section>
 <section id="screen-tt" class="screen hidden"></section>
+<section id="screen-meal" class="screen hidden"></section>
 
 <!-- 아래 메뉴: 승인된 학생에게만 보인다 -->
 <nav id="bnav" class="bnav hidden" aria-label="학생 메뉴">
@@ -903,7 +917,7 @@ const auth=fbApp.auth();
 const db=fbApp.firestore();
 const $=id=>document.getElementById(id);
 
-const NAV_OF={'screen-result':'today','screen-form':'today','screen-month':'today','screen-tt':'tt','screen-care':'care','screen-perf':'perf','screen-me':'me'};
+const NAV_OF={'screen-result':'today','screen-form':'today','screen-month':'today','screen-meal':'today','screen-tt':'tt','screen-care':'care','screen-perf':'perf','screen-me':'me'};
 let navPopping=false;   // 뒤로 가기(옆으로 밀기)로 화면을 바꾸는 중이면 기록을 또 쌓지 않는다
 function show(id,fromPop){
   document.querySelectorAll('.screen').forEach(el=>el.classList.add('hidden'));
@@ -1204,7 +1218,7 @@ async function openMe(fromPop){
 auth.onAuthStateChanged(async user=>{
   stopListening();
   // 로그인 안 됨 → 첫 화면(코치·학생 공용 로그인)으로. 코치 계정이면 코치 화면으로.
-  if(!user){ myStudent=null; myCheckins=[]; ttList=null; exList=null; exErr=''; exForm=null; exEnabled=true; ttSeg='class'; goHome(); return; }
+  if(!user){ myStudent=null; myCheckins=[]; ttList=null; exList=null; exErr=''; exForm=null; exEnabled=true; ttSeg='class'; mealToday=null; mealLoaded=false; mealMonth={}; mealEnabled=true; mealDraft=null; goHome(); return; }
   if(((user.providerData||[])[0]||{}).providerId!=='google.com'){ goHome(); return; }
   lsSet('heroRole','student');
   $('user-email').textContent=user.email;
@@ -1250,6 +1264,7 @@ async function enterApp(student,ckPromise){
   showResult();
   loadTT();                          // 내 수업 일정
   loadExams();                       // 내 실기 일정 (D-day)
+  loadMealToday();                   // 오늘 식사 기록 (선택)
   loadPerfData();                    // 실기 기록은 체크인 화면을 먼저 보여 준 뒤 뒤에서 불러온다
   ensureChart().catch(()=>{});       // 그래프 파일도 화면이 뜬 다음에 받는다
 }
@@ -1439,6 +1454,7 @@ function showResult(){
       ${j.reasons.length?`<div class="reasons">${j.reasons.map(r=>`<span>${esc(r)}</span>`).join('')}</div>`:''}
     </div>
     <button class="btn btn-2 edit-big" data-a="edit">✏️ 검사 고치기</button>
+    <div id="meal-row">${mealRowHTML()}</div>
     ${today.pain?'<p class="pain-note">관절이나 뼈 통증은 참지 말고 선생님께 직접 보여 주세요. 이 앱은 진단하지 않아요.</p>':''}
 
     <div id="tt-today">${ttTodayHTML()}</div>
@@ -1751,6 +1767,8 @@ function renderFeatBox(){
   b.innerHTML=`<b>기능 설정</b>
     <div class="feat-row"><div><b>실기 일정 · D-day</b><br><span class="note">끄면 오늘 화면에 D-day가 안 떠요. 넣어 둔 일정은 지워지지 않아요.</span></div>
       <button type="button" class="feat-sw ${exEnabled?'on':''}" role="switch" aria-checked="${exEnabled}" data-x="feat-ex" ${exEnSaving?'disabled':''}>${exEnabled?'켜짐':'꺼짐'}</button></div>
+    <div class="feat-row"><div><b>식사 기록</b><br><span class="note">끄면 오늘 화면에 식사 기록 줄이 안 떠요. 남긴 기록은 지워지지 않아요.</span></div>
+      <button type="button" class="feat-sw ${mealEnabled?'on':''}" role="switch" aria-checked="${mealEnabled}" data-ml="feat" ${mealEnSaving?'disabled':''}>${mealEnabled?'켜짐':'꺼짐'}</button></div>
     <p class="note" id="feat-msg" role="status" style="margin:6px 0 0"></p>`;
 }
 document.addEventListener('click',e=>{
@@ -1768,6 +1786,124 @@ document.addEventListener('click',e=>{
   else if(a==='seg'){ ttSeg=b.dataset.s; exCancelArm=''; renderTT(); }
 });
 
+
+/* ============ 식사 기록 (선택): students/{나}/meals/{YYYY-MM-DD} ============
+   · 체크인과 따로 저장한다 (체크인 문서는 그대로). 문서 이름 = 날짜라서 다시 저장해도 하루 1개 (중복 없음)
+   · 끼니마다 먹음 / 조금 먹음 / 먹지 않음 중 하나. 누르지 않은 끼니는 '기록하지 않음' = 저장하지 않는다 (먹지 않음으로 치지 않음)
+   · 칼로리·체중·양 숫자는 받지 않는다. 음식 종류는 골라도 되고 안 골라도 된다
+   · inputSec: 식사 화면을 연 뒤 저장까지 걸린 초 (입력이 20초 안팎인지 확인용, 다른 뜻 없음) */
+const MEAL_SLOTS=[['previousDinner','어제 저녁'],['breakfast','오늘 아침'],['lunch','오늘 점심'],['preTrainingSnack','운동 전 간식']];
+const MEAL_ST={ ate:'먹음', little:'조금 먹음', none:'먹지 않음' };
+const MEAL_FOODS=['밥·곡류','고기','생선','달걀','채소·과일','면','빵','학교 급식','편의점 음식','바나나','우유','요구르트','삼각김밥','에너지바','기타'];
+let mealToday=null, mealLoaded=false, mealErr='', mealDraft=null, mealSaving=false, mealOpenedAt=0, mealEnabled=true, mealDone=false, mealEnSaving=false, mealMonth={};
+function cleanSlots(m){
+  const out={}; if(!m||typeof m!=='object') return out;
+  MEAL_SLOTS.forEach(([k])=>{ const v=m[k]; if(v && MEAL_ST[v.status]) out[k]={ status:v.status, foods:Array.isArray(v.foods)?v.foods.filter(f=>MEAL_FOODS.includes(f)).slice(0,15):[] }; });
+  return out;
+}
+async function loadMealToday(){
+  if(!myStudent) return;
+  const d=todayStr();
+  try{ const x=await db.collection('students').doc(myStudent.id).collection('meals').doc(d).get();
+    mealToday=x.exists?{ ...x.data(), mealSlots:cleanSlots((x.data()||{}).mealSlots) }:null; mealErr=''; }
+  catch(e){ mealErr=e&&e.code==='permission-denied'?'denied':'error'; }
+  mealLoaded=true; refreshMealRow();
+}
+function mealSummary(slots){
+  return MEAL_SLOTS.filter(([k])=>slots[k]).map(([k,l])=>`${l} ${MEAL_ST[slots[k].status]}`).join(' · ');
+}
+// 오늘 화면 체크인 카드 아래 한 줄 (선택 사항 — 안 해도 경고 없음)
+function mealRowHTML(){
+  if(!mealEnabled || !mealLoaded || mealErr==='denied') return '';
+  const s=mealToday?mealToday.mealSlots:null, n=s?Object.keys(s).length:0;
+  if(n) return `<button type="button" class="meal-row done" data-ml="open"><span><b>식사 기록함</b><br><span class="note">${esc(mealSummary(s))}</span></span><span class="meal-go">고치기 ›</span></button>`;
+  return `<button type="button" class="meal-row" data-ml="open"><span><b>식사 기록하기</b> <span class="note">(선택 · 약 20초)</span><br><span class="note">먹었는지만 눌러도 돼요</span></span><span class="meal-go">›</span></button>`;
+}
+function refreshMealRow(){ const el=$('meal-row'); if(el) el.innerHTML=mealRowHTML(); }
+function openMeal(fromPop){
+  if(mealToday && mealToday.dateKey!==todayStr()) mealToday=null;   // 자정이 지나면 새 날
+  mealDraft=JSON.parse(JSON.stringify(mealToday?mealToday.mealSlots:{}));
+  mealOpenedAt=Date.now(); mealDone=false; renderMeal(); show('screen-meal',fromPop); window.scrollTo(0,0);
+}
+function mealFeedback(slots){
+  const t=[], none=Object.values(slots).filter(v=>v.status==='none').length;
+  if(slots.preTrainingSnack && slots.preTrainingSnack.status==='none') t.push('운동 전 식사가 부담스럽다면 소화가 편한 간식을 고려해 보세요.');
+  if(none>=2) t.push('배고픔이나 식사에 관한 고민이 계속되면 보호자나 선생님, 적절한 전문가와 상의해 보세요.');
+  t.push('식사 패턴은 하루만 보고 판단하지 않아요.');
+  return t;
+}
+function renderMeal(){
+  const top=`<div class="m-top"><button type="button" class="m-back" data-ml="back" aria-label="뒤로">‹</button><h1>오늘 식사</h1></div>`;
+  if(mealDone){
+    const s=mealToday?mealToday.mealSlots:{};
+    $('screen-meal').innerHTML=`${top}<div class="box"><b style="color:var(--lime)">저장했어요</b><p class="note" style="margin:6px 0 0">${Object.keys(s).length?esc(mealSummary(s)):'기록한 끼니가 없어요'}</p></div>
+      <div class="box meal-fb">${mealFeedback(s).map(x=>`<p>${esc(x)}</p>`).join('')}</div>
+      <button type="button" class="btn" data-ml="back">오늘 화면으로</button>`;
+    return;
+  }
+  const d=mealDraft||{};
+  $('screen-meal').innerHTML=`${top}
+    <p class="note" style="margin:-4px 0 14px">먹었는지만 눌러도 돼요. 음식 종류는 골라도 되고 안 골라도 돼요. 양이나 칼로리는 적지 않아요. 기억 안 나는 끼니는 그냥 두세요.</p>
+    ${MEAL_SLOTS.map(([k,l])=>{ const v=d[k];
+      return `<div class="box meal-slot"><div class="meal-h"><b>${l}</b>${v?'':'<span class="note">기록 안 함</span>'}</div>
+        <div class="meal-st">${Object.entries(MEAL_ST).map(([sk,sl])=>`<button type="button" class="ms ${v&&v.status===sk?'on '+sk:''}" aria-pressed="${!!(v&&v.status===sk)}" data-ml="st" data-k="${k}" data-v="${sk}">${sl}</button>`).join('')}</div>
+        ${v&&v.status!=='none'?`<div class="meal-foods">${MEAL_FOODS.map(f=>`<button type="button" class="mf ${v.foods.includes(f)?'on':''}" aria-pressed="${v.foods.includes(f)}" data-ml="food" data-k="${k}" data-f="${esc(f)}">${esc(f)}</button>`).join('')}</div>`:''}
+      </div>`; }).join('')}
+    <p class="note" id="meal-msg" role="status" style="color:#ff9f1c;margin:4px 0 0"></p>
+    <button type="button" class="btn" data-ml="save" ${mealSaving?'disabled':''}>${mealSaving?'저장 중…':'저장'}</button>`;
+}
+async function saveMeal(){
+  if(mealSaving || !mealDraft) return;
+  const msg=t=>{ const el=$('meal-msg'); if(el) el.textContent=t; };
+  if(navigator.onLine===false) return msg('인터넷이 끊겨 있어요. 연결된 뒤 다시 눌러 주세요');
+  const slots=cleanSlots(mealDraft);
+  if(!Object.keys(slots).length && !mealToday) return msg('기록할 끼니를 하나 이상 눌러 주세요 (안 해도 괜찮아요)');
+  const now=Date.now(), d=todayStr();
+  const doc={ studentId:myStudent.id, dateKey:d, mealSlots:slots, createdAt:mealToday&&mealToday.createdAt?mealToday.createdAt:now, updatedAt:now, schemaVersion:1,
+    inputSec:Math.max(0,Math.min(3600,Math.round((now-mealOpenedAt)/1000))) };
+  mealSaving=true; renderMeal();
+  try{
+    await db.collection('students').doc(myStudent.id).collection('meals').doc(d).set(doc);   // 날짜 = 문서 이름 → 다시 눌러도 하루 1개
+    mealToday=doc; mealDone=true; delete mealMonth[d.slice(0,7)];
+  }catch(e){
+    mealSaving=false; renderMeal();
+    msg(e&&e.code==='permission-denied'?'아직 저장할 수 없어요. 선생님께 "식사 기록 설정"을 부탁해 주세요.':'저장하지 못했어요. 인터넷을 확인하고 다시 눌러 주세요.');
+    return;
+  }
+  mealSaving=false; renderMeal(); refreshMealRow();
+}
+async function setMealEnabled(on){
+  if(mealEnSaving) return;
+  mealEnSaving=true; renderFeatBox();
+  try{ await db.collection('students').doc(myStudent.id).update({ mealLogEnabled:on }); mealEnabled=on; }
+  catch(e){ const m=$('feat-msg'); if(m) m.textContent=e&&e.code==='permission-denied'?'아직 바꿀 수 없어요. 선생님께 "기능 설정"을 부탁해 주세요.':'바꾸지 못했어요. 인터넷을 확인해 주세요.'; }
+  finally{ mealEnSaving=false; renderFeatBox(); refreshMealRow(); }
+}
+// 내 한 달 달력용: 그 달 식사 기록 (기록 있는 날만 표시)
+async function loadMealMonth(ym){
+  if(mealMonth[ym] && mealMonth[ym]!=='error') return;
+  mealMonth[ym]='loading';
+  try{ const snap=await db.collection('students').doc(myStudent.id).collection('meals')
+      .where(firebase.firestore.FieldPath.documentId(),'>=',ym+'-01').where(firebase.firestore.FieldPath.documentId(),'<=',ym+'-31').get();
+    const m={}; snap.docs.forEach(x=>{ m[x.id]=cleanSlots((x.data()||{}).mealSlots); }); mealMonth[ym]=m; }
+  catch(e){ mealMonth[ym]='error'; }
+  if(!$('screen-month').classList.contains('hidden')) renderMonth();
+}
+function mealOn(ds){ const m=mealMonth[ds.slice(0,7)]; return m&&typeof m==='object'&&m[ds]&&Object.keys(m[ds]).length?m[ds]:null; }
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-ml]'); if(!b || !myStudent) return;
+  const a=b.dataset.ml;
+  if(a==='open') openMeal();
+  else if(a==='back'){ if(myCheckins.some(c=>c.date===todayStr())) showResult(); else openForm(true); }
+  else if(a==='save') saveMeal();
+  else if(a==='st'){ const k=b.dataset.k, v=b.dataset.v, cur=mealDraft[k];
+    if(cur && cur.status===v) delete mealDraft[k];                 // 한 번 더 누르면 '기록 안 함'으로
+    else mealDraft[k]={ status:v, foods: v==='none'?[]:(cur?cur.foods:[]) };
+    renderMeal(); }
+  else if(a==='food'){ const k=b.dataset.k, f=b.dataset.f, cur=mealDraft[k]; if(!cur) return;
+    cur.foods = cur.foods.includes(f) ? cur.foods.filter(x=>x!==f) : cur.foods.concat([f]); renderMeal(); }
+  else if(a==='feat'){ setMealEnabled(!mealEnabled); }
+});
 
 /* ============ 내 한 달: 체크인을 신호등 색 달력으로 (B-2) ============ */
 let monthYM='', monthSel='', monthCache={};
@@ -1814,6 +1950,7 @@ function monthTips(map, ym){
 function renderMonth(){
   const ym=monthYM, [y,m]=ym.split('-').map(Number), today=todayStr();
   if(!monthCache[ym]) loadMonth(ym);
+  if(mealEnabled && !mealMonth[ym]) loadMealMonth(ym);
   const map=monthDays(ym), last=new Date(y,m,0).getDate(), first=wdIdx(ym+'-01');
   const cnt={GREEN:0,YELLOW:0,AMBER:0,RED:0,BASE:0}; Object.values(map).forEach(c=>{ cnt[c.status||'BASE']=(cnt[c.status||'BASE']||0)+1; });
   let classDays=0, cells='';
@@ -1823,7 +1960,7 @@ function renderMonth(){
     const myDay=daysFor(ym).includes(MWK[wdIdx(ds)]) && ds<=today; if(myDay) classDays++;
     const ex=exEnabled&&exList?exList.filter(x=>x.status==='active'&&x.examDate===ds):[], tp=exEnabled&&exList?exList.filter(x=>x.status==='active'&&x.scheduleType==='exam'&&(n=>n>=1&&n<=7)(exDiff(x.examDate,ds))):[];
     const cls=['mc-day', c?'has':'', ex.length?'exday':'', ds===monthSel?'sel':'', ds===today?'today':'', ds>today?'future':'', !c&&myDay?'missed':''].filter(Boolean).join(' ');
-    cells+=`<button type="button" class="${cls}" style="${c?`background:${ui.color};color:${st==='RED'?'#fff':'#0d1a03'};`:''}" data-m="pick" data-d="${ds}" aria-label="${m}월 ${d}일${c?', '+ui.label+(c.pain?', 통증':''):myDay?', 수업 날 · 체크인 안 함':''}${ex.length?', '+ex.map(x=>EX_TYPE[x.scheduleType]+' '+x.schoolName).join(', '):''}${tp.length?', 컨디션 조절 구간':''}">${d}${c&&c.pain?'<i class="mc-pain"></i>':''}${ex.length?`<span class="mc-ex">${ex[0].scheduleType==='exam'?'시험':ex[0].scheduleType==='mock'?'모의':'일정'}</span>`:''}${tp.length?'<i class="mc-tp" aria-hidden="true"></i>':''}</button>`;
+    cells+=`<button type="button" class="${cls}" style="${c?`background:${ui.color};color:${st==='RED'?'#fff':'#0d1a03'};`:''}" data-m="pick" data-d="${ds}" aria-label="${m}월 ${d}일${c?', '+ui.label+(c.pain?', 통증':''):myDay?', 수업 날 · 체크인 안 함':''}${ex.length?', '+ex.map(x=>EX_TYPE[x.scheduleType]+' '+x.schoolName).join(', '):''}${tp.length?', 컨디션 조절 구간':''}${mealOn(ds)?', 식사 기록 있음':''}">${d}${mealOn(ds)?'<i class="mc-ml" aria-hidden="true"></i>':''}${c&&c.pain?'<i class="mc-pain"></i>':''}${ex.length?`<span class="mc-ex">${ex[0].scheduleType==='exam'?'시험':ex[0].scheduleType==='mock'?'모의':'일정'}</span>`:''}${tp.length?'<i class="mc-tp" aria-hidden="true"></i>':''}</button>`;
   }
   const sc=map[monthSel], [sy,sm,sd]=monthSel.split('-').map(Number);
   let det;
@@ -1835,6 +1972,7 @@ function renderMonth(){
     const myDay=daysFor(ym).includes(MWK[wdIdx(monthSel)]);
     det=`<div class="md-head"><b>${sm}월 ${sd}일 (${MWK[wdIdx(monthSel)]})</b></div><div class="md-line note">${monthSel>today?'아직 오지 않은 날이에요':myDay?'수업 날인데 체크인을 안 했어요':'체크인 안 한 날이에요'}</div>`;
   }
+  if(mealEnabled){ const ml=mealOn(monthSel); det+= ml ? `<div class="md-line">식사: ${esc(mealSummary(ml))}</div>` : `<div class="md-line note">식사 기록 없음 (기록하지 않은 날)</div>`; }
   if(exEnabled && exList){ const ex=exList.filter(x=>x.status==='active'&&x.examDate===monthSel); if(ex.length) det+=ex.map(x=>`<div class="md-line"><span class="ex-ty t-${x.scheduleType}">${EX_TYPE[x.scheduleType]}</span> ${esc(x.schoolName)}${x.admissionRoute?' · '+esc(x.admissionRoute):''}</div>`).join(''); }
   const tips=monthTips(map, ym), n=Object.keys(map).length, loading=monthCache[ym]==='loading', err=monthCache[ym]==='error';
   $('screen-month').innerHTML=`<div class="m-top"><button type="button" class="m-back" data-m="back" aria-label="뒤로">‹</button><h1>내 한 달</h1></div>
@@ -1845,7 +1983,7 @@ function renderMonth(){
       <div class="mc-week">${MWK.map((w,i)=>`<span class="${i===5?'sat':i===6?'sun':''}">${w}</span>`).join('')}</div>
       <div class="mc-grid">${cells}</div>
       ${loading?'<p class="note" style="margin:8px 0 0">불러오는 중…</p>':err?'<p class="note" style="margin:8px 0 0">이 달 기록을 불러오지 못했어요. <button type="button" class="link" data-m="retry">다시 시도</button></p>':''}
-      <p class="note mc-legend">${exEnabled&&exList&&exList.length?'<span class="mc-ex-l">시험</span> 실기·모의 일정 · <i class="mc-tp-l"></i> 컨디션 조절 구간(시험 D-7~D-1) · ':''}칸 색 = 그날 내 컨디션${daysFor(ym).length?' · 점선 = 수업 날인데 체크인 깜빡':' · 내 정보에서 수업 요일을 정하면 깜빡한 날도 보여요'} · 흰 점 = 통증</p>
+      <p class="note mc-legend">${exEnabled&&exList&&exList.length?'<span class="mc-ex-l">시험</span> 실기·모의 일정 · <i class="mc-tp-l"></i> 컨디션 조절 구간(시험 D-7~D-1) · ':''}${mealEnabled?'<i class="mc-ml-l"></i> 식사 기록한 날 · ':''}칸 색 = 그날 내 컨디션${daysFor(ym).length?' · 점선 = 수업 날인데 체크인 깜빡':' · 내 정보에서 수업 요일을 정하면 깜빡한 날도 보여요'} · 흰 점 = 통증</p>
     </div>
     <div class="box m-det">${det}</div>
     <div class="box m-tips"><b>이번 달 내 몸이 알려 준 것</b>
@@ -1898,6 +2036,7 @@ window.addEventListener('popstate',e=>{
     else if(st.scr==='screen-care') openCare();
     else if(st.scr==='screen-month') openMonth();
     else if(st.scr==='screen-tt') openTT();
+    else if(st.scr==='screen-meal') openMeal(true);
     else if(st.scr==='screen-perf') openPerf();
     else if(st.scr==='screen-me') openMe(true);
     else if(st.scr==='screen-form') openForm(true);
@@ -1983,6 +2122,8 @@ async function loadPerfData(){
     myDaysBM={}; if(x.daysByMonth&&typeof x.daysByMonth==='object') Object.entries(x.daysByMonth).forEach(([k,v])=>{ if(/^\d{4}-\d{2}$/.test(k)&&Array.isArray(v)) myDaysBM[k]=v; });
     myDaysLoaded=true; refreshDaysUI();
     exEnabled = x.examScheduleEnabled!==false;   // 없으면 켜짐
+    mealEnabled = x.mealLogEnabled!==false;      // 없으면 켜짐 (기록은 언제나 선택)
+    refreshMealRow();
     renderFeatBox(); refreshTodayCard();
     myInfo={ name:String(x.name||myStudent.name||''), grade:String(x.grade||''), branch:String(x.branch||''), target:String(x.target||'') };
     perf.coach={events:Array.isArray(x.events)?x.events.filter(e=>PERF.safeEvent(e)):[],

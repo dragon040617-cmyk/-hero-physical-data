@@ -763,7 +763,11 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .sc-exam{ display:flex; align-items:center; gap:6px; width:100%; min-height:44px; padding:8px 10px; margin-bottom:6px; border-radius:10px; border:1px dashed #9fb4e0; background:transparent; color:var(--text); font:inherit; font-size:13.5px; text-align:left; cursor:pointer; overflow-wrap:anywhere; }
   .smc-day i.smc-ex{ color:#9fb4e0; }
   .ckc-day{ position:relative; }
-  .ckc-ex{ position:absolute; top:1px; right:2px; font-size:9.5px; font-weight:800; line-height:1; padding:1px 3px; border-radius:4px; background:#12151c; color:#ffffff; }
+  .ckc-ex{ position:absolute; top:1px; left:50%; transform:translateX(-50%); font-size:9.5px; font-weight:800; line-height:1; padding:1px 3px; border-radius:4px; background:#12151c; color:#ffffff; }
+  .ckc-ml{ position:absolute; left:4px; bottom:8px; width:6px; height:6px; border-radius:50%; background:#fff; border:1px solid #12151c; }
+  .ckc-ml-l{ display:inline-block; width:7px; height:7px; border-radius:50%; background:#fff; margin-right:4px; vertical-align:1px; }
+  .ml-sum{ display:flex; flex-direction:column; gap:4px; } .ml-k{ display:flex; justify-content:space-between; gap:10px; font-size:14px; }
+  .ml-rep{ margin-top:10px; display:flex; flex-direction:column; gap:6px; } .ml-row{ grid-template-columns:auto minmax(0,1fr); }
   .ckc-day.exday{ outline:2px solid #ffffff; outline-offset:-2px; }
   .ckc-tp{ position:absolute; left:3px; right:3px; bottom:2px; height:4px; border-radius:2px; background:repeating-linear-gradient(45deg,#9fb4e0 0 3px,transparent 3px 6px); }
   .ckc-ex-l{ font-size:10px; padding:1px 3px; border-radius:4px; background:#12151c; color:#fff; outline:1px solid #fff; margin-right:4px; }
@@ -1692,6 +1696,10 @@ function renderTeamOverview(){
         <div class="card"><h3>B · 볼륨 축소</h3><div class="stat">${by.YELLOW.length+by.AMBER.length}명</div><div class="stat-note">${[...by.AMBER,...by.YELLOW].map(s=>esc(s.name)).join(', ')||'-'}</div></div>
         <div class="card"><h3>C · 저충격 대체</h3><div class="stat">${by.RED.length}명</div><div class="stat-note">${by.RED.map(s=>esc(s.name)).join(', ')||'-'}</div></div>
       </div>
+
+      <div class="lane-divider"></div>
+      <div class="section-title">식사 기록 · 실제로 기록한 것만 <span class="info-tag">참고</span></div>
+      <div class="card" id="mealBrief">${mealBriefHTML(list)}</div>
 
       <div class="lane-divider"></div>
       <div class="section-title">다가오는 실기 · 7일 안 <span class="info-tag">일정 안내</span></div>
@@ -3146,7 +3154,7 @@ function initFirebase(){
         if(unsubscribeInstructors){ unsubscribeInstructors(); unsubscribeInstructors=null; }
         if(unsubscribeCoachStudents){ unsubscribeCoachStudents(); unsubscribeCoachStudents=null; } stopSchedules();
         hideAuthWait();
-        state.exams={}; state.exSoon=null; state.exRange={}; state.baseline={ saved:null, loaded:false, busy:false, err:'' }; state.students=[]; state.studentsLoaded=false; state.todayCk={}; state.hist={}; state.histReq={}; state.ckMonth={}; state.perf={}; state.perfFull={}; state.perfAllAt=0; ckStudentKey='';
+        state.meals7=null; state.mealMonth={}; state.exams={}; state.exSoon=null; state.exRange={}; state.baseline={ saved:null, loaded:false, busy:false, err:'' }; state.students=[]; state.studentsLoaded=false; state.todayCk={}; state.hist={}; state.histReq={}; state.ckMonth={}; state.perf={}; state.perfFull={}; state.perfAllAt=0; ckStudentKey='';
         document.getElementById('loginScreen').style.display='';
         document.getElementById('app').style.display='none';
       }
@@ -4151,6 +4159,7 @@ function baselineHTML(){
   const b=state.baseline, sv=b.saved, last=sv&&sv.latest;
   if(!b.loaded){ loadBaseline(); }
   return `${last?`<div>${baselineFmt(last)}</div>
+      ${last.mealDocs!=null?`<div class="stat-note" style="margin-top:4px;">식사 기록 ${last.mealDocs}건 (${last.mealStudents}명)${last.mealMedianSec!=null?` · 입력 시간 중앙값 <b style="color:var(--text);">${last.mealMedianSec}초</b>`:''}</div>`:''}
       ${last.byBranch?`<div class="stat-note" style="margin-top:4px;">${Object.entries(last.byBranch).map(([k,v])=>`${esc(k)} ${v.rate==null?'-':v.rate+'%'}`).join(' · ')}</div>`:''}
       <div class="stat-note" style="margin-top:4px;">계산한 날: ${esc(localYmd(new Date(last.at)))}</div>
       ${Array.isArray(sv.history)&&sv.history.length>1?`<details class="ex-more"><summary>지난 기준선 ${sv.history.length-1}개</summary>${sv.history.slice(0,-1).reverse().map(r=>`<div class="stat-note">${esc(localYmd(new Date(r.at)))} · ${r.rate==null?'-':r.rate+'%'}</div>`).join('')}</details>`:''}`
@@ -4167,7 +4176,7 @@ async function computeBaseline(){
     const ss=await db.collection('classSchedules').where('date','>=',from).where('date','<=',to).get();
     const scheds=ss.docs.map(d=>({id:d.id,...d.data()}));
     const days=[]; for(let d=from; d<=to; d=HC.addDays(d,1)) days.push(d);
-    const tot={classDays:0,checked:0,students:0,excluded:0}, byB={};
+    const tot={classDays:0,checked:0,students:0,excluded:0}, byB={}; let mealN=0, mealStu=0; const mealSec=[];
     await Promise.all(state.students.map(async s=>{
       const basis=scheds.some(x=>(x.studentIds||[]).includes(s.id)) || days.some(d=>daysOf(s,d.slice(0,7)).length);
       if(!basis){ tot.excluded++; return; }
@@ -4175,10 +4184,13 @@ async function computeBaseline(){
       const have=new Set(snap.docs.map(d=>d.id));
       let cd=0, ch=0; days.forEach(d=>{ if(studentDayInfo(s,d,scheds).came){ cd++; if(have.has(d)) ch++; } });
       tot.classDays+=cd; tot.checked+=ch; tot.students++;
+      try{ const ms=await db.collection('students').doc(s.id).collection('meals').where(firebase.firestore.FieldPath.documentId(),'>=',from).where(firebase.firestore.FieldPath.documentId(),'<=',to).get();
+        ms.docs.forEach(d=>{ const x=d.data()||{}; mealN++; const n=Number(x.inputSec); if(Number.isFinite(n)&&n>0&&n<=3600) mealSec.push(n); }); if(ms.size) mealStu++; }catch(e){}
       const k=s.branch||'지점 없음'; (byB[k]=byB[k]||{classDays:0,checked:0}); byB[k].classDays+=cd; byB[k].checked+=ch;
     }));
     const rate=(a,b)=>b?Math.round(a/b*1000)/10:null;
-    const r={ at:Date.now(), from, to, ...tot, rate:rate(tot.checked,tot.classDays), byBranch:Object.fromEntries(Object.entries(byB).map(([k,v])=>[k,{...v, rate:rate(v.checked,v.classDays)}])) };
+    const med=a=>{ if(!a.length) return null; const b=a.slice().sort((x,y)=>x-y), m=Math.floor(b.length/2); return b.length%2?b[m]:Math.round((b[m-1]+b[m])/2); };
+    const r={ at:Date.now(), from, to, ...tot, mealDocs:mealN, mealStudents:mealStu, mealMedianSec:med(mealSec), rate:rate(tot.checked,tot.classDays), byBranch:Object.fromEntries(Object.entries(byB).map(([k,v])=>[k,{...v, rate:rate(v.checked,v.classDays)}])) };
     const prevH=(b.saved&&Array.isArray(b.saved.history))?b.saved.history:[];
     const doc={ latest:r, history:[...prevH, r].slice(-24) };
     await db.collection('settings').doc('checkinBaseline').set(doc);
@@ -4186,6 +4198,63 @@ async function computeBaseline(){
   }catch(e){ b.err='계산하지 못했어요 — '+(e&&e.code==='permission-denied'?'권한이 없어요':(e&&e.message||'')); }
   finally{ b.busy=false; if(el()) el().innerHTML=baselineHTML(); }
 }
+
+/* ==== 식사 기록 (학생이 선택해서 남김): students/{id}/meals/{YYYY-MM-DD} ====
+   mealSlots: { previousDinner|breakfast|lunch|preTrainingSnack: { status 'ate'|'little'|'none', foods[] } }
+   · 없는 끼니 = '기록하지 않음' (먹지 않음으로 세지 않는다). 집계는 실제로 '먹지 않음'이라고 기록한 것만
+   · 식사 기록만으로 건강 상태를 판단하지 않는다 */
+const MEAL_SLOTS=[['previousDinner','어제 저녁'],['breakfast','아침'],['lunch','점심'],['preTrainingSnack','운동 전 간식']];
+const MEAL_ST={ ate:'먹음', little:'조금', none:'먹지 않음' };
+function cleanSlots(m){ const out={}; if(!m||typeof m!=='object') return out;
+  MEAL_SLOTS.forEach(([k])=>{ const v=m[k]; if(v && MEAL_ST[v.status]) out[k]={ status:v.status, foods:Array.isArray(v.foods)?v.foods.filter(f=>typeof f==='string').slice(0,15):[] }; }); return out; }
+function mealText(sl){ return MEAL_SLOTS.map(([k,l])=>sl[k]?`${l} ${MEAL_ST[sl[k].status]}${sl[k].foods.length?' ('+sl[k].foods.join('·')+')':''}`:`${l} 기록 안 함`).join(' · '); }
+// 최근 7일 식사 기록 (학생마다 날짜 범위로 한 번씩 → 기록이 없으면 학생당 1번만 읽음). 10분 보관
+state.meals7=null;
+async function fetchMeals7(force){
+  const t=HC.todayStr(), from=HC.addDays(t,-6);
+  if(!db || (!force && state.meals7 && state.meals7.key===t && (state.meals7.map==='loading' || Date.now()-state.meals7.at<10*60*1000))) return;
+  state.meals7={ key:t, map:'loading', at:Date.now(), err:'' };
+  let denied=false;
+  const res=await Promise.all(state.students.map(s=>db.collection('students').doc(s.id).collection('meals')
+    .where(firebase.firestore.FieldPath.documentId(),'>=',from).where(firebase.firestore.FieldPath.documentId(),'<=',t).get()
+    .then(snap=>[s.id, Object.fromEntries(snap.docs.map(d=>[d.id, cleanSlots((d.data()||{}).mealSlots)]))])
+    .catch(e=>{ if(e&&e.code==='permission-denied') denied=true; return [s.id,{}]; })));
+  state.meals7={ key:t, map:Object.fromEntries(res), at:Date.now(), err:denied?'denied':'' };
+}
+function mealBriefHTML(students){
+  const c=state.meals7;
+  if(!c || c.key!==HC.todayStr()){ fetchMeals7().then(()=>{ const el=document.getElementById('mealBrief'); if(el) el.innerHTML=mealBriefHTML(students); }); return '<div class="empty-mini">불러오는 중…</div>'; }
+  if(c.map==='loading') return '<div class="empty-mini">불러오는 중…</div>';
+  if(c.err==='denied') return '<div class="empty-mini">식사 기록을 읽을 권한이 없어요 (Firebase 규칙에 meals 추가 필요)</div>';
+  const t=HC.todayStr(), rows=students.map(s=>({ s, days:c.map[s.id]||{} }));
+  const todayRec=rows.filter(r=>r.days[t] && Object.keys(r.days[t]).length);
+  const bf=todayRec.filter(r=>r.days[t].breakfast&&r.days[t].breakfast.status==='none');
+  const sn=todayRec.filter(r=>r.days[t].preTrainingSnack&&r.days[t].preTrainingSnack.status==='none');
+  // 최근 7일에 '먹지 않음'이라고 직접 기록한 끼니가 3번 이상인 학생
+  const rep=rows.map(r=>{ let none=0, rec=0; Object.values(r.days).forEach(sl=>{ const v=Object.values(sl); rec+=v.length; none+=v.filter(x=>x.status==='none').length; }); return { ...r, none, rec, nd:Object.keys(r.days).length }; })
+    .filter(r=>r.none>=3).sort((a,b)=>b.none-a.none);
+  const names=a=>a.map(r=>`<button type="button" class="link-btn" onclick="selectStudent('${r.s.id}')">${esc(r.s.name)}</button>`).join(', ');
+  return `<div class="ml-sum">
+      <div class="ml-k"><span>오늘 식사를 기록한 학생</span><b>${todayRec.length} / ${students.length}명</b></div>
+      <div class="ml-k"><span>아침 '먹지 않음' 기록</span><b>${bf.length}명</b></div>
+      <div class="ml-k"><span>운동 전 간식 '먹지 않음' 기록</span><b>${sn.length}명</b></div>
+    </div>
+    ${bf.length||sn.length?`<div class="stat-note" style="margin-top:6px;">${bf.length?'아침: '+names(bf):''}${bf.length&&sn.length?'<br>':''}${sn.length?'운동 전 간식: '+names(sn):''}</div>`:''}
+    <div class="ml-rep"><b>최근 7일 '먹지 않음' 기록이 3번 이상</b>${rep.length?rep.map(r=>`<button type="button" class="ex-soon ml-row" onclick="selectStudent('${r.s.id}')"><b>${esc(r.s.name)}</b><span class="stat-note">기록한 날 ${r.nd}일 · 기록한 끼니 ${r.rec}번 중 '먹지 않음' ${r.none}번</span></button>`).join(''):'<div class="stat-note">없어요</div>'}</div>
+    <div class="stat-note" style="margin-top:8px;">${todayRec.length<3?'오늘 기록한 학생이 적어 전체 경향을 판단하기 어려워요. ':''}기록하지 않은 끼니는 세지 않아요. 식사 기록만으로 건강 상태를 판단하지 않아요.</div>`;
+}
+// 학생 상세 캘린더용: 그 달 식사 기록
+state.mealMonth={};
+async function fetchMealMonth(sid, ym){
+  const k=sid+'|'+ym, c=state.mealMonth[k];
+  if(!db || (c && (c==='loading' || (c.at && Date.now()-c.at<5*60*1000)))) return;
+  state.mealMonth[k]='loading';
+  try{ const snap=await db.collection('students').doc(sid).collection('meals')
+      .where(firebase.firestore.FieldPath.documentId(),'>=',ym+'-01').where(firebase.firestore.FieldPath.documentId(),'<=',ym+'-31').get();
+    state.mealMonth[k]={ at:Date.now(), map:Object.fromEntries(snap.docs.map(d=>[d.id, cleanSlots((d.data()||{}).mealSlots)])) }; }
+  catch(e){ state.mealMonth[k]={ at:Date.now(), map:{}, err:true }; }
+}
+function mealOf(sid, ds){ const c=state.mealMonth[sid+'|'+ds.slice(0,7)]; const m=c&&c.map&&c.map[ds]; return m&&Object.keys(m).length?m:null; }
 
 /* ==== 수업 일정 (통합 시간표) ====
    classSchedules/{id} : { branch, studentIds[], coaches[](강사 이름), forms[](수업 형태), date 'YYYY-MM-DD', startTime 'HH:mm', endTime 'HH:mm',
@@ -5212,6 +5281,7 @@ function ckCalHTML(s){
   const exl=studentExams(s.id);
   if(!exl && !state.exams[s.id]) fetchStudentExams(s.id).then(()=>{ refreshCkCal(); refreshExCard(); });
   const exOn=ds=>(exl||[]).filter(x=>x.status==='active' && x.examDate===ds);
+  if(!state.mealMonth[s.id+'|'+ym]) fetchMealMonth(s.id, ym).then(refreshCkCal);
   const [y,m]=ym.split('-').map(Number);
   const first=new Date(y,m-1,1).getDay(), last=new Date(y,m,0).getDate(), today=HC.todayStr();
   const cnt={GREEN:0,YELLOW:0,AMBER:0,RED:0,BASE:0};
@@ -5225,7 +5295,7 @@ function ckCalHTML(s){
     const forms=formsOf(ds), hadClass=!!((myLogs[ds]||[]).length||(mySched[ds]||[]).length);
     const exd=exOn(ds), tp=examTaperOn(exl,ds);
     const cls=['ckc-day', c?'has':'', exd.length?'exday':'', tp.length?'taper':'', ds===cal.sel?'sel':'', ds===today?'today':'', ds>today?'future':'', !c&&wd===0?'sun':'', !c&&wd===6?'sat':'', !c&&hadClass&&ds<=today?'missed':''].filter(Boolean).join(' ');
-    cells+=`<button type="button" class="${cls}" style="${c?`background:${bg};color:${fg};`:''}" onclick="ckCalPick('${ds}')" aria-label="${m}월 ${d}일${c?', '+CK_LABEL[st]+(c.pain?', 통증':''):', 체크인 없음'}${forms.length?', 수업 '+forms.join(' '):''}${payOn[ds]?', '+payOn[ds].join(' '):''}${exd.length?', '+exd.map(x=>EXAM_TYPE[x.scheduleType]+' '+x.schoolName).join(', '):''}${tp.length?', 컨디션 조절 구간 '+exDLabel(exDiff(tp[0].examDate,ds)):''}"><span class="ckc-n">${d}</span>${exd.length?`<span class="ckc-ex">${EXAM_SHORT[exd[0].scheduleType]}</span>`:''}${tp.length?'<i class="ckc-tp" aria-hidden="true"></i>':''}<span class="ckc-f">${forms.slice(0,3).map(formShort).join('·')}</span>${c&&c.pain?'<i class="ckc-pain"></i>':''}${payOn[ds]?'<i class="ckc-pay">₩</i>':''}</button>`;
+    cells+=`<button type="button" class="${cls}" style="${c?`background:${bg};color:${fg};`:''}" onclick="ckCalPick('${ds}')" aria-label="${m}월 ${d}일${c?', '+CK_LABEL[st]+(c.pain?', 통증':''):', 체크인 없음'}${forms.length?', 수업 '+forms.join(' '):''}${payOn[ds]?', '+payOn[ds].join(' '):''}${exd.length?', '+exd.map(x=>EXAM_TYPE[x.scheduleType]+' '+x.schoolName).join(', '):''}${tp.length?', 컨디션 조절 구간 '+exDLabel(exDiff(tp[0].examDate,ds)):''}${mealOf(s.id,ds)?', 식사 기록 있음':''}"><span class="ckc-n">${d}</span>${mealOf(s.id,ds)?'<i class="ckc-ml" aria-hidden="true"></i>':''}${exd.length?`<span class="ckc-ex">${EXAM_SHORT[exd[0].scheduleType]}</span>`:''}${tp.length?'<i class="ckc-tp" aria-hidden="true"></i>':''}<span class="ckc-f">${forms.slice(0,3).map(formShort).join('·')}</span>${c&&c.pain?'<i class="ckc-pain"></i>':''}${payOn[ds]?'<i class="ckc-pay">₩</i>':''}</button>`;
   }
   const days=Object.values(map);
   // 이 달의 반복 패턴: 같은 요일에 주의 이상이 몰리는지 · 같은 부위 통증이 반복되는지
@@ -5266,6 +5336,8 @@ function ckCalHTML(s){
   if(sl.length) detail+=`<div class="ckc-class"><div class="ckc-ch">그날 수업 · ${esc([...new Set(sl.map(logTypeOf).filter(Boolean))].join(', '))}</div>
     ${sf.length?`<div class="ckc-chips">${sf.map(f=>`<span class="on">${esc(f)}</span>`).join('')}</div>`:''}
     <button type="button" class="link-btn" onclick="openClassLogAt('${cal.sel}')">이 날 수업일지 보기 ›</button></div>`;
+  const sml=mealOf(s.id,cal.sel);
+  detail+= sml ? `<div class="ckc-line">식사: ${esc(mealText(sml))}</div>` : `<div class="ckc-line" style="color:var(--text-muted);">식사 기록 없음 (기록하지 않은 날)</div>`;
   const sex=exOn(cal.sel), stp=examTaperOn(exl,cal.sel);
   if(sex.length) detail+=sex.map(x=>`<div class="ckc-line"><span class="ex-type t-${x.scheduleType}">${EXAM_TYPE[x.scheduleType]}</span> <b>${esc(x.schoolName)}</b>${x.admissionRoute?' · '+esc(x.admissionRoute):''}${x.events.length?' · '+esc(x.events.join('·')):''}</div>`).join('');
   if(stp.length) detail+=`<div class="ckc-line" style="color:#9fb4e0;">컨디션 조절 구간 · ${esc(stp[0].schoolName)} ${exDLabel(exDiff(stp[0].examDate,cal.sel))}</div>`;
@@ -5282,7 +5354,7 @@ function ckCalHTML(s){
     <div class="cal-week"><span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span></div>
     <div class="ckc-grid">${cells}</div>
     ${list==='loading'?'<div class="cal-loading">불러오는 중…</div>':list==='error'?'<div class="cal-loading">이 달 기록을 불러오지 못했어요. 새로고침해 주세요.</div>':''}
-    <div class="ckc-legend">${['GREEN','YELLOW','AMBER','RED'].map(k=>`<span><i style="background:${STATUS_COLOR[k]}"></i>${CK_LABEL[k]}</span>`).join('')}<span><i class="ckc-pain-l"></i>통증</span><span><i class="ckc-miss-l"></i>수업일 · 체크인 안 함</span><span><b class="ckc-pay-l">₩</b>학원비 결제</span><span><b class="ckc-ex-l">시험</b>실기·모의 일정</span><span><i class="ckc-tp-l"></i>컨디션 조절 구간 (시험 D-7~D-1)</span><span>칸 아래 글자 = 그날 수업 (기·웨·스·체·재·테)</span></div>
+    <div class="ckc-legend">${['GREEN','YELLOW','AMBER','RED'].map(k=>`<span><i style="background:${STATUS_COLOR[k]}"></i>${CK_LABEL[k]}</span>`).join('')}<span><i class="ckc-pain-l"></i>통증</span><span><i class="ckc-miss-l"></i>수업일 · 체크인 안 함</span><span><b class="ckc-pay-l">₩</b>학원비 결제</span><span><b class="ckc-ex-l">시험</b>실기·모의 일정</span><span><i class="ckc-tp-l"></i>컨디션 조절 구간 (시험 D-7~D-1)</span><span><i class="ckc-ml-l"></i>식사 기록한 날</span><span>칸 아래 글자 = 그날 수업 (기·웨·스·체·재·테)</span></div>
     </div><div class="ckc-right">
     <div class="ckc-detail">${detail}</div>
     ${pat.length?`<div class="insight-box flag ckc-pat"><b>이 달 반복 패턴</b><br>${pat.join('<br>')}</div>`:''}
