@@ -772,6 +772,49 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .ckc-tp{ position:absolute; left:3px; right:3px; bottom:2px; height:4px; border-radius:2px; background:repeating-linear-gradient(45deg,#9fb4e0 0 3px,transparent 3px 6px); }
   .ckc-ex-l{ font-size:10px; padding:1px 3px; border-radius:4px; background:#12151c; color:#fff; outline:1px solid #fff; margin-right:4px; }
   .ckc-tp-l{ display:inline-block; width:18px; height:6px; border-radius:2px; background:repeating-linear-gradient(45deg,#9fb4e0 0 3px,transparent 3px 6px); margin-right:4px; vertical-align:1px; }
+  .brief2 .topbar{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .bt-tabs{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; padding:4px; border-radius:14px; background:var(--surface); border:1px solid var(--line); margin:4px 0 12px; }
+  .bt-tabs button{ min-height:42px; border-radius:10px; border:0; background:transparent; color:var(--text-muted); font:inherit; font-size:14px; font-weight:800; cursor:pointer; }
+  .bt-tabs button.on{ background:var(--lime); color:#0d1a03; }
+  .bsum{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:12px; }
+  @media (max-width:700px){ .bsum{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  .bsum-t{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:4px; min-width:0; color:var(--text); font:inherit; text-align:left; }
+  button.bsum-t{ cursor:pointer; } .bsum-t.hot{ border-color:#ff7a6688; }
+  .bsum-t > span:first-child{ font-size:12px; color:var(--text-muted); } .bsum-t b{ font-size:24px; line-height:1.1; } .bsum-t b small{ font-size:13px; color:var(--text-dim); font-weight:700; }
+  .bsum-bar{ display:block; height:6px; border-radius:3px; background:var(--line); overflow:hidden; } .bsum-bar i{ display:block; height:6px; background:var(--lime); }
+  .bs-card{ display:flex; flex-direction:column; gap:6px; } .bs-title{ font-size:15px; }
+  .bs-row{ display:grid; grid-template-columns:56px minmax(0,1fr) auto; gap:10px; align-items:center; min-height:52px; padding:4px 0; border:0; border-top:1px solid var(--line); background:transparent; color:var(--text); font:inherit; text-align:left; cursor:pointer; }
+  .bs-row:disabled{ cursor:default; opacity:.85; }
+  .bs-mid{ display:flex; flex-direction:column; gap:5px; min-width:0; }
+  .bs-bar{ display:flex; height:9px; border-radius:5px; overflow:hidden; background:var(--line); } .bs-bar i{ display:block; height:9px; }
+  .bs-ck{ font-size:13px; color:var(--text-muted); white-space:nowrap; }
+  .bi-head{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:8px; }
+  .bi-chips{ display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:10px; }
+  .bi-chip{ flex:0 0 auto; min-height:40px; padding:0 14px; border-radius:20px; border:1px solid var(--line); background:var(--surface); color:var(--text-muted); font:inherit; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
+  .bi-chip.on{ border-color:var(--lime); color:var(--lime); background:rgba(198,255,61,.12); }
+  .bi-grp{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .bi-gh{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; } .bi-gh i{ width:10px; height:10px; border-radius:50%; } .bi-gh b{ font-size:14.5px; }
+  .bi-row{ display:flex; gap:10px; align-items:flex-start; padding:12px; border-radius:14px; background:var(--surface); border:1px solid var(--line); }
+  .bi-row.red{ border-color:#ff4b3388; } .bi-row.done{ opacity:.5; }
+  .bi-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; padding:0; border:0; background:transparent; color:var(--text); font:inherit; text-align:left; cursor:pointer; }
+  .bi-top{ display:flex; gap:6px; align-items:baseline; flex-wrap:wrap; } .bi-top b{ font-size:15.5px; }
+  .bi-tag{ font-size:11.5px; font-weight:800; padding:1px 7px; border-radius:7px; border:1px solid; }
+  .bi-why{ font-size:13px; line-height:1.5; color:var(--text); overflow-wrap:anywhere; } .bi-det{ font-size:12.5px; color:var(--text-muted); }
+  .bi-extra{ font-size:11px; font-weight:800; color:#9fb4e0; border:1px solid #9fb4e0; border-radius:6px; padding:0 5px; }
+  .bi-ck{ flex:0 0 auto; min-width:58px; min-height:44px; border-radius:12px; border:1px solid var(--lime); background:var(--lime); color:#0d1a03; font:inherit; font-size:13px; font-weight:800; cursor:pointer; }
+  .bi-ck.on{ background:transparent; color:var(--lime); border-color:var(--line); }
+  .b2-cols{ display:block; }
+  @media (min-width:1100px){ .b2-cols{ display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:24px; align-items:start; } .b2-b .note-grid{ grid-template-columns:1fr; } }
+  .b2-a, .b2-b{ min-width:0; }
+  .bf-list{ display:flex; flex-direction:column; gap:8px; }
+  .bf{ padding:0; } .bf summary{ list-style:none; display:flex; justify-content:space-between; align-items:center; gap:10px; min-height:52px; padding:0 16px; cursor:pointer; font-weight:800; font-size:14.5px; }
+  .bf summary::-webkit-details-marker{ display:none; } .bf[open] .bf-ar{ transform:rotate(180deg); } .bf-ar{ color:var(--text-muted); transition:transform .15s; }
+  .bf-body{ padding:0 16px 14px; }
+  .bf-area{ display:grid; grid-template-columns:72px minmax(0,1fr) 40px; gap:10px; align-items:center; margin:6px 0; font-size:13px; }
+  .bf-track{ height:8px; border-radius:4px; background:var(--line); } .bf-track div{ height:8px; border-radius:4px; background:#ff9f1c; }
+  .miss-list{ display:flex; flex-wrap:wrap; gap:6px; }
+  .miss-n{ min-height:40px; padding:0 12px; border-radius:20px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); font:inherit; font-size:13.5px; font-weight:700; cursor:pointer; }
+  .miss-n small{ color:#ffb020; font-weight:800; margin-left:4px; }
   .sq, #sqBody{ display:flex; flex-direction:column; gap:12px; } .sq-go, .sq-more, .sq-stu{ width:100%; }
   .sq-head{ display:flex; justify-content:space-between; align-items:center; }
   .sq-x{ width:44px; height:44px; border-radius:12px; border:1px solid var(--line); background:transparent; color:var(--text); font-size:20px; cursor:pointer; }
@@ -1321,7 +1364,7 @@ function renderSidebar(){
   const q = (document.getElementById('searchInput')?.value || '').trim();
   const branchFilter = state.sidebarBranchFilter;
   const cards = buildStudentCardsHTML(getFilteredStudents());
-  const dangerCount = state.students.filter(s=> computeFatigueMetrics(s).riskLevel==='danger').length;
+  const dangerCount = state.students.filter(s=>statusOf(s)==='RED').length;   // 브리핑의 '위험'(오늘 체크인 빨강)과 같은 숫자
 
   return `
     <div class="sidebar ${state.mobileSidebarOpen?'open':''}">
@@ -1611,146 +1654,146 @@ function computeWeeklyBalance(s){
 /* ---- 오늘 일괄 입력 (전체 학생 대상 빠른 피로도 입력) ---- */
 /* ---- 팀 전체 현황 (전체 학생 총괄 대시보드) ---- */
 function renderTeamOverview(){
-  // 오늘 브리핑: 훈련 전에 '손봐야 할 학생'을 먼저 보여 준다
-  const branch=state.briefBranch||'';
+  // 오늘 브리핑 (전체 기준): 요약 → 지점별 현황 → 먼저 확인할 학생 → 수업일지 특이사항 → 접어 둔 자료 → 체크인 미입력
+  const today=HC.todayStr(), branch=state.briefBranch||'';
   const list=meFilterStudents(state.students).filter(s=>!branch||s.branch===branch);
   const by={RED:[],AMBER:[],YELLOW:[],GREEN:[],BASE:[],NONE:[]};
   list.forEach(s=>{ const st=statusOf(s); by[st||'NONE'].push(s); });
   const done=list.length-by.NONE.length;
-  // [I1] 색 칸을 누르면 그 색 학생만 (한 번 더 누르면 전체)
-  const filt=state.briefFilter||'';
-  const cnt=k=>k==='GREEN'?by.GREEN.length+by.BASE.length:by[k].length;
-  const tile=(k,label)=>`<button type="button" class="brief-tile ${filt===k?'on':''}" aria-pressed="${filt===k}" style="border-color:${STATUS_COLOR[k]}${filt===k?'':'55'};" onclick="setBriefFilter('${k}')"><div class="stat-note" style="color:${STATUS_COLOR[k]};">${label}</div><div class="n" style="color:${STATUS_COLOR[k]};">${cnt(k)}</div>${k!=='GREEN'&&cnt(k)?`<div class="stat-note tile-names">${sorted(k).slice(0,2).map(x=>esc(x.name)).join(', ')}${cnt(k)>2?' 외':''}</div>`:''}</button>`;
-  const sorted=k=>(k==='GREEN'?[...by.GREEN,...by.BASE]:by[k].slice()).sort((a,b)=>sevScore(b)-sevScore(a));
-  // [I4] 최근 7일 같은 부위 통증 3번 이상 → 맨 위 고정 (오늘 통증이 있는 학생만 지난 기록을 읽는다)
   ensurePainHistory(list);
-  const pinned=list.map(s=>({s,rp:repeatPain(s)})).filter(x=>x.rp).sort((a,b)=>b.rp.n-a.rp.n);
-  const pinnedIds=new Set(pinned.map(x=>x.s.id));
-  const listBlock=(k,items,mk,moved)=>{ const all=state.briefMore[k]||filt===k, show=all?items:items.slice(0,5);
-    return `<div class="card" style="padding:0;">${show.map(mk).join('')||`<div class="empty-mini" style="padding:14px;">${moved?`위 📌 칸에 ${moved}명`:'해당 학생 없음'}</div>`}</div>`
-      +(items.length>show.length?`<button class="ghost-btn" style="width:100%; margin-top:8px;" onclick="state.briefMore['${k}']=true; rerender();">+ ${items.length-show.length}명 더 보기</button>`:''); };
-  const rowSev=s=>row(s,painNote(s)+(pinnedIds.has(s.id)?'<div class="stat-note" style="margin-top:2px; color:#ff9f1c;">📌 같은 부위 통증 반복</div>':''));
-  const row=(s,extra)=>{ const t=todayCkOf(s.id); const r=(t&&t.reasons)||[];
-    return `<div class="brief-row" role="button" tabindex="0" onclick="selectStudent('${s.id}')">
-      <div><b>${esc(s.name)}</b> <span class="stat-note">${esc(s.branch||'')}${s.grade?' · '+esc(s.grade):''}</span>
-      ${r.length?`<div class="stat-note" style="margin-top:3px; color:var(--text);">${r.map(esc).join(' · ')}</div>`:''}${extra||''}</div>
-      <span class="stat-note">›</span></div>`; };
-  const painNote=s=>{ const t=todayCkOf(s.id); return t&&t.pain&&t.painNote?`<div class="stat-note" style="margin-top:2px;">"${esc(t.painNote)}"</div>`:''; };
+  // 식사(최근 7일)·실기(7일 안)·오늘 수업은 따로 읽어 두었다가 목록에 합친다 (각각 캐시가 있어 다시 읽지 않음)
+  if(!state.meals7 || state.meals7.key!==today) fetchMeals7().then(()=>{ if(state.teamViewOpen) softRerender(); });
+  if(!state.exSoon || state.exSoon.key!==today) fetchExamSoon().then(()=>{ if(state.teamViewOpen) softRerender(); });
+  let sch=cachedScheds(today,today);
+  if(!sch){ if(!state.schedCache[today+'|'+today]) fetchSchedRange(today,today).then(()=>{ if(state.teamViewOpen) softRerender(); }); sch=[]; }
+  const todaySch=sch.filter(x=>(x.status||'scheduled')!=='cancelled' && (!branch||x.branch===branch));
+  // ---- 확인함 (이 기기 · 오늘만 기억) ----
+  const doneIds=briefDoneIds();
+  // ---- 먼저 확인할 학생 ----
+  const ckLine=s=>{ const t=todayCkOf(s.id); if(!t) return '';
+    return [t.sleepMin?`잠 ${Math.floor(t.sleepMin/60)}시간${t.sleepMin%60?' '+t.sleepMin%60+'분':''}`:'', t.fatigue!=null?`피로 ${t.fatigue}`:'', t.readiness!=null?`준비도 ${t.readiness}`:''].filter(Boolean).join(' · '); };
+  const reasonOf=s=>{ const t=todayCkOf(s.id)||{}, r=[];
+    if(t.pain) r.push(`통증 ${esc((t.painAreas||[]).join('·')||'')}${t.painLevel!=null?' '+esc(t.painLevel)+'/10':''}${t.painNote?' · "'+esc(t.painNote)+'"':''}`);
+    (t.reasons||[]).forEach(x=>{ if(!(t.pain && /통증/.test(x))) r.push(esc(x)); });
+    const rp=repeatPain(s); if(rp) r.push(`<b style="color:#ff9f1c;">📌 같은 부위 통증 반복</b> (${esc(rp.area)} · 7일 중 ${rp.n}번)`);
+    return r.join(' · '); };
+  const items=new Map();   // 학생 ID → { s, lv, tag, reasons[] }  (한 학생은 한 줄, 가장 높은 단계에)
+  const LV={ R:{t:'위험',c:STATUS_COLOR.RED}, A:{t:'경고',c:STATUS_COLOR.AMBER}, Y:{t:'주의',c:STATUS_COLOR.YELLOW}, I:{t:'참고',c:'#9fb4e0'} };
+  [['RED','R'],['AMBER','A'],['YELLOW','Y']].forEach(([k,lv])=>by[k].slice().sort((a,b)=>sevScore(b)-sevScore(a)).forEach(s=>items.set(s.id,{ s, lv, tag:LV[lv].t, reasons:[reasonOf(s)].filter(Boolean), detail:ckLine(s) })));
+  const addInfo=(s,tag,text)=>{ const it=items.get(s.id); if(it){ it.reasons.push(`<span class="bi-extra">${tag}</span> ${text}`); return; }
+    items.set(s.id,{ s, lv:'I', tag, reasons:[text], detail:'' }); };
+  const ids=new Set(list.map(s=>s.id));
+  // 식사: 최근 7일 '먹지 않음'이라고 직접 기록한 끼니 3번 이상 (기록하지 않은 끼니는 세지 않음)
+  const m7=state.meals7&&state.meals7.key===today&&typeof state.meals7.map==='object'?state.meals7.map:null;
+  if(m7) list.forEach(s=>{ const days=m7[s.id]||{}; let none=0, rec=0; Object.values(days).forEach(sl=>{ const v=Object.values(sl); rec+=v.length; none+=v.filter(x=>x.status==='none').length; });
+    if(none>=3) addInfo(s,'식사',`최근 7일 '먹지 않음' 기록 ${none}번 (기록한 끼니 ${rec}번 중)`); });
+  // 실기: 앞으로 7일 안 (위험 신호가 아니라 일정 안내)
+  const ex=state.exSoon&&state.exSoon.key===today&&Array.isArray(state.exSoon.list)?state.exSoon.list:[];
+  ex.filter(x=>ids.has(x.studentId)).forEach(x=>{ const s=getStudent(x.studentId); if(!s) return; const n=exDiff(x.examDate,today);
+    addInfo(s,'실기',`${esc(x.schoolName)} ${EXAM_TYPE[x.scheduleType]} ${exDLabel(n)}${x.scheduleType==='exam'&&n>=1&&n<=7?' · 컨디션 조절 구간':''}`); });
+  // 기록 부족: 오늘 체크인은 했지만 평소 기준을 만들 기록이 아직 적은 학생
+  by.BASE.forEach(s=>addInfo(s,'기록 부족','기록이 적어 평소와 비교하기 어려워요 (최근 28일 체크인 6번 미만)'));
+  const all=[...items.values()];
+  const exCnt=new Set(ex.filter(x=>ids.has(x.studentId)).map(x=>x.studentId)).size, exMin=ex.filter(x=>ids.has(x.studentId)).map(x=>exDiff(x.examDate,today)).sort((a,b)=>a-b)[0];
+  const filt=state.briefFilter||'';
+  const inF=it=>!filt || (filt==='R'&&it.lv==='R') || (filt==='AY'&&(it.lv==='A'||it.lv==='Y')) || (filt==='I'&&it.lv==='I');
+  const grp=(lvs)=>all.filter(it=>lvs.includes(it.lv) && inF(it)).sort((a,b)=>(doneIds.has(a.s.id)-doneIds.has(b.s.id)));
+  const rowHTML=it=>{ const L=LV[it.lv], dn=doneIds.has(it.s.id), tc=it.lv==='I'?'#9fb4e0':L.c;
+    return `<div class="bi-row ${it.lv==='R'?'red':''} ${dn?'done':''}">
+      <button type="button" class="bi-main" onclick="selectStudent('${it.s.id}')">
+        <span class="bi-top"><b>${esc(it.s.name)}</b><span class="stat-note">${esc(it.s.branch||'지점 없음')}${it.s.grade?' · '+esc(it.s.grade):''}</span><span class="bi-tag" style="color:${tc};border-color:${tc};">${esc(it.tag)}</span></span>
+        ${it.reasons.length?`<span class="bi-why">${it.reasons.join(' · ')}</span>`:''}
+        ${it.detail?`<span class="bi-det">${esc(it.detail)}</span>`:''}
+      </button>
+      <button type="button" class="bi-ck ${dn?'on':''}" aria-pressed="${dn}" aria-label="${esc(it.s.name)} ${dn?'확인 취소':'확인함'}" onclick="briefToggleDone('${it.s.id}')">${dn?'✓':'확인'}</button>
+    </div>`; };
+  const block=(key,title,hint,color,lvs)=>{ const rows=grp(lvs); if(!rows.length) return '';
+    const more=state.briefMore[key], shown=more?rows:rows.slice(0,8);
+    return `<div class="bi-grp"><div class="bi-gh"><i style="background:${color};"></i><b>${title}</b><span class="stat-note">${hint} · ${rows.length}명</span></div>
+      ${shown.map(rowHTML).join('')}
+      ${rows.length>shown.length?`<button type="button" class="ghost-btn" style="width:100%;" onclick="state.briefMore['${key}']=true; rerender();">+ ${rows.length-shown.length}명 더 보기</button>`:''}</div>`; };
+  const nR=all.filter(i=>i.lv==='R').length, nAY=all.filter(i=>i.lv==='A'||i.lv==='Y').length, nI=all.filter(i=>i.lv==='I').length;
+  const fchip=(k,l,n)=>`<button type="button" class="bi-chip ${filt===k?'on':''}" aria-pressed="${filt===k}" onclick="setBriefFilter('${k}')">${l} ${n}</button>`;
+  const listHTML=(block('R','즉시 확인','훈련 전에 직접 보기',STATUS_COLOR.RED,['R'])+block('AY','경고 · 주의','수업 중 반응 보기',STATUS_COLOR.AMBER,['A','Y'])+block('I','참고','식사 · 실기 · 기록 부족 (위험 신호 아님)','#9fb4e0',['I']))
+    || `<div class="card"><div class="empty-mini">${filt?'이 분류에 해당하는 학생이 없어요.':done?'지금 먼저 확인할 학생이 없어요. 👍':'아직 체크인한 학생이 없어요.'}</div></div>`;
+  // ---- 지점별 현황 (전체 볼 때만) ----
+  const segOrder=[['RED',STATUS_COLOR.RED],['AMBER',STATUS_COLOR.AMBER],['YELLOW',STATUS_COLOR.YELLOW],['GREEN',STATUS_COLOR.GREEN],['NONE','#3a4152']];
+  const branchRows=branch?'':[...BRANCHES, ...(state.students.some(s=>!s.branch)?['__none__']:[])].map(bn=>{
+    const ss=meFilterStudents(state.students).filter(s=>bn==='__none__'?!s.branch:s.branch===bn); if(!ss.length) return '';
+    const c={RED:0,AMBER:0,YELLOW:0,GREEN:0,NONE:0}; ss.forEach(s=>{ const st=statusOf(s); c[st==='BASE'?'GREEN':(st||'NONE')]++; });
+    const label=bn==='__none__'?'지점 미지정':bn.replace(/점$/,'');
+    return `<button type="button" class="bs-row" ${bn==='__none__'?'disabled':''} onclick="state.briefBranch='${bn}'; state.briefMore={}; rerender(); window.scrollTo(0,0);" aria-label="${esc(label)} 체크인 ${ss.length-c.NONE}/${ss.length}, 위험 ${c.RED}, 경고 ${c.AMBER}, 주의 ${c.YELLOW}, 미입력 ${c.NONE}">
+      <b>${esc(label)}</b>
+      <span class="bs-mid"><span class="bs-bar">${segOrder.map(([k,col])=>c[k]?`<i style="flex:${c[k]} 0 0; background:${col};"></i>`:'').join('')}</span>
+        <span class="stat-note">위험 ${c.RED} · 경고 ${c.AMBER} · 주의 ${c.YELLOW} · 미입력 ${c.NONE}</span></span>
+      <span class="bs-ck">${ss.length-c.NONE}/${ss.length}${bn==='__none__'?'':' ›'}</span></button>`; }).join('');
+  // ---- 접어 둔 자료 ----
   const areaCount={};
-  list.forEach(s=>{ const t=todayCkOf(s.id); if(!t) return;
-    [...new Set([...(t.pain?t.painAreas||[]:[]),...(t.soreness>0?t.sorenessAreas||[]:[])])].forEach(a=>areaCount[a]=(areaCount[a]||0)+1); });
-  const areaRows=Object.entries(areaCount).sort((a,b)=>b[1]-a[1]);
-  const maxA=areaRows.length?areaRows[0][1]:1;
-  // ---- 지점별 현황 (전체 지점을 볼 때만) ----
-  const branchNames=[...BRANCHES, ...(state.students.some(s=>!s.branch)?['__none__']:[])];
-  const branchCards=branchNames.map(bn=>{
-    const ss=state.students.filter(s=>bn==='__none__'?!s.branch:s.branch===bn);
-    if(!ss.length) return '';
-    const c={RED:0,AMBER:0,YELLOW:0,GREEN:0,BASE:0,NONE:0}, ac={};
-    ss.forEach(s=>{ const st=statusOf(s); c[st||'NONE']++;
-      const t=todayCkOf(s.id); if(t) [...new Set([...(t.pain?t.painAreas||[]:[]),...(t.soreness>0?t.sorenessAreas||[]:[])])].forEach(a=>ac[a]=(ac[a]||0)+1); });
-    const doneN=ss.length-c.NONE, pct=Math.round(doneN/ss.length*100);
-    const urgent=ss.filter(s=>['RED','AMBER'].includes(statusOf(s)));
-    const topArea=Object.entries(ac).sort((a,b)=>b[1]-a[1])[0];
-    const label=bn==='__none__'?'지점 미지정':bn;
-    const chip=(k,txt)=>c[k]?`<span style="color:${STATUS_COLOR[k]}; font-weight:800;">${txt} ${c[k]}</span>`:'';
-    return `<div class="branch-card" role="button" tabindex="0" onclick="state.briefBranch='${bn==='__none__'?'':bn}'; rerender();" onkeydown="if(event.key==='Enter'){state.briefBranch='${bn==='__none__'?'':bn}'; rerender();}">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
-        <b style="font-size:15px;">${esc(label)}</b><span class="stat-note">체크인 ${doneN}/${ss.length}</span>
-      </div>
-      <div class="branch-bar"><i style="width:${pct}%;"></i></div>
-      <div class="branch-chips">${chip('RED','빨강')}${chip('AMBER','주황')}${chip('YELLOW','노랑')}${c.GREEN+c.BASE?`<span style="color:${STATUS_COLOR.GREEN};">정상 ${c.GREEN+c.BASE}</span>`:''}${c.NONE?`<span class="stat-note">미입력 ${c.NONE}</span>`:''}</div>
-      ${urgent.length?`<div class="stat-note" style="margin-top:6px; color:var(--text);">확인: ${urgent.map(s=>`<span style="color:${STATUS_COLOR[statusOf(s)]};">${esc(s.name)}</span>`).join(', ')}</div>`:''}
-      ${topArea?`<div class="stat-note" style="margin-top:4px;">많은 불편 부위: ${esc(topArea[0])} ${topArea[1]}명</div>`:''}
-      ${c.NONE?`<button class="ghost-btn" style="margin-top:8px; padding:6px 10px; font-size:12px;" onclick="event.stopPropagation(); copyBranchMissing('${bn}')">📋 미입력 명단 복사</button>`:''}
-    </div>`;
-  }).join('');
+  list.forEach(s=>{ const t=todayCkOf(s.id); if(!t) return; [...new Set([...(t.pain?t.painAreas||[]:[]),...(t.soreness>0?t.sorenessAreas||[]:[])])].forEach(a=>areaCount[a]=(areaCount[a]||0)+1); });
+  const areaRows=Object.entries(areaCount).sort((a,b)=>b[1]-a[1]), maxA=areaRows.length?areaRows[0][1]:1;
+  const perfRows=todayPerfRows(list);
+  const fold=(k,title,sub,body)=>`<details class="card bf" ${state.briefFold[k]?'open':''} ontoggle="state.briefFold['${k}']=this.open">
+      <summary><span>${title} <span class="stat-note">${sub}</span></span><span class="bf-ar" aria-hidden="true">▾</span></summary><div class="bf-body">${body}</div></details>`;
+  // ---- 체크인 미입력 (맨 끝): 오늘 수업 있는 학생 먼저 ----
+  const missing=by.NONE.map(s=>{ const inf=studentDayInfo(s,today,sch); return { s, cls: inf.sched.length>0 || (inf.came && daysOf(s).length>0) }; })
+    .sort((a,b)=>(b.cls-a.cls) || String(a.s.name).localeCompare(String(b.s.name)));
   const fetched=state.ckFetchedAt?new Date(state.ckFetchedAt).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):'-';
+  const first=todaySch.map(x=>x.startTime).sort()[0];
+  const tabs=[['','전체'],...BRANCHES.map(b=>[b,b.replace(/점$/,'')])];
   return `
-    <main>
+    <main class="brief2">
       <div class="topbar">
         <div class="heading"><div><h2>오늘 브리핑</h2>
           <div class="tagline">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})} · 체크인 ${done}/${list.length}명 · ${fetched} 기준</div></div></div>
-        <div class="brief-ctrl" style="display:flex; gap:8px; flex-wrap:wrap;">
-          <select class="student-search" style="margin:0; min-height:40px; width:auto; flex:1 1 140px;" aria-label="지점 고르기" onchange="state.briefBranch=this.value; rerender();">
-            <option value="">전체 지점</option>${BRANCHES.map(b=>`<option ${branch===b?'selected':''}>${b}</option>`).join('')}
-          </select>
-          <button class="ghost-btn" style="flex:0 0 auto; padding:8px 14px; min-height:40px;" onclick="refreshCheckins()">↻ 새로 불러오기</button>
-        </div>
+        <button class="ghost-btn" style="flex:0 0 auto; padding:8px 14px; min-height:44px;" onclick="refreshCheckins()">↻ 새로고침</button>
       </div>
-      ${branch?`<div style="margin-bottom:12px;"><button class="ghost-btn" style="padding:7px 12px;" onclick="state.briefBranch=''; rerender();">← 전체 지점 보기</button> <b style="margin-left:6px;">${esc(branch)}</b></div>`:''}
+      <div class="bt-tabs" role="tablist" aria-label="지점">${tabs.map(([v,l])=>`<button type="button" role="tab" aria-selected="${branch===v}" class="${branch===v?'on':''}" onclick="state.briefBranch='${v}'; state.briefMore={}; state.briefFilter=''; rerender();">${l}</button>`).join('')}</div>
       ${meBarHTML('brief')}
-      <div class="brief-grid">${tile('RED','빨강 · 즉시 확인')}${tile('AMBER','주황 · 볼륨 조정')}${tile('YELLOW','노랑 · 주의')}${tile('GREEN','초록 · 정상')}</div>
-      <div class="stat-note" style="margin-top:8px;">색 칸을 누르면 그 학생만 보여요.${by.BASE.length?` 기준 수립 중(최근 28일 체크인 6회 미만) ${by.BASE.length}명은 초록에 포함했어요.`:''}</div>
-
-      ${filt?`
-      <div class="lane-divider"></div>
-      <div class="section-title" style="color:${STATUS_COLOR[filt]};">${{RED:'빨강 · 즉시 확인',AMBER:'주황 · 볼륨 조정',YELLOW:'노랑 · 주의',GREEN:'초록 · 정상'}[filt]} (${cnt(filt)}명) · 위험한 순서</div>
-      ${listBlock(filt,sorted(filt),rowSev)}
-      <button class="ghost-btn" style="margin-top:10px;" onclick="setBriefFilter('${filt}')">← 전체 브리핑 보기</button>
-      `:`
-      ${pinned.length?`<div class="lane-divider"></div>
-      <div class="section-title" style="color:#ff9f1c;">📌 같은 부위 통증 반복 · 최근 7일 3번 이상</div>
-      <div class="card" style="padding:0;">${pinned.map(x=>row(x.s,`<div class="stat-note" style="margin-top:3px; color:#ff9f1c;">${esc(x.rp.area)} 통증 7일 중 ${x.rp.n}번 · 부하를 줄이고 보호자 연락 고려</div>`+painNote(x.s))).join('')}</div>
-      <div class="stat-note" style="margin-top:6px;">일시적인 근육통보다 과사용·부상 신호일 수 있어요. 진단이 아니라 확인이 필요하다는 표시예요.</div>`:''}
-
-      <div class="lane-divider"></div>
-      <div class="section-title" style="color:${STATUS_COLOR.RED};">즉시 확인 · 훈련 전 대면 확인</div>
-      ${listBlock('RED',sorted('RED').filter(x=>!pinnedIds.has(x.id)),rowSev,by.RED.filter(x=>pinnedIds.has(x.id)).length)}
-      <div class="stat-note" style="margin-top:6px;">위험한 순서(통증 강도 → 움직임 영향 → 준비도)로 5명까지. 점프·스프린트·착지 세션 제외, 충격 없는 대체 훈련.</div>
-
-      <div class="lane-divider"></div>
-      <div class="section-title" style="color:${STATUS_COLOR.AMBER};">볼륨 조정 · 강도 유지, 볼륨 40~50% 축소</div>
-      ${listBlock('AMBER',sorted('AMBER').filter(x=>!pinnedIds.has(x.id)),rowSev,by.AMBER.filter(x=>pinnedIds.has(x.id)).length)}
-
-      <div class="lane-divider"></div>
-      <div class="section-title" style="color:${STATUS_COLOR.YELLOW};">주의 · 반응 관찰</div>
-      ${listBlock('YELLOW',sorted('YELLOW'),s=>row(s))}
-
-      ${!branch&&branchCards?`<div class="lane-divider"></div><div class="section-title">지점별 현황</div><div class="stat-note section-hint">카드를 누르면 그 지점만 보여요</div><div class="branch-grid">${branchCards}</div>`:''}
-      <div class="lane-divider"></div>
-      <div class="section-title">오늘 그룹 편성 (추천)</div>
-      <div class="grid grid-3">
-        <div class="card"><h3>A · 정상 부하</h3><div class="stat">${by.GREEN.length+by.BASE.length}명</div><div class="stat-note">${[...by.GREEN,...by.BASE].map(s=>esc(s.name)).join(', ')||'-'}</div></div>
-        <div class="card"><h3>B · 볼륨 축소</h3><div class="stat">${by.YELLOW.length+by.AMBER.length}명</div><div class="stat-note">${[...by.AMBER,...by.YELLOW].map(s=>esc(s.name)).join(', ')||'-'}</div></div>
-        <div class="card"><h3>C · 저충격 대체</h3><div class="stat">${by.RED.length}명</div><div class="stat-note">${by.RED.map(s=>esc(s.name)).join(', ')||'-'}</div></div>
+      <div class="bsum">
+        <div class="bsum-t"><span>체크인</span><b>${done}<small> / ${list.length}명</small></b><span class="bsum-bar"><i style="width:${list.length?Math.round(done/list.length*100):0}%;"></i></span></div>
+        <div class="bsum-t ${by.RED.length+by.AMBER.length+by.YELLOW.length?'hot':''}"><span>먼저 확인</span><b style="color:${by.RED.length+by.AMBER.length+by.YELLOW.length?'#ff7a66':'var(--text)'};">${by.RED.length+by.AMBER.length+by.YELLOW.length}<small>명</small></b><span class="stat-note">위험 ${by.RED.length} · 경고 ${by.AMBER.length} · 주의 ${by.YELLOW.length}</span></div>
+        <button type="button" class="bsum-t" onclick="openSchedule()"><span>오늘 수업</span><b>${todaySch.length}<small>개</small></b><span class="stat-note">${first?esc(first)+' 시작':'오늘 일정 없음'} ›</span></button>
+        <div class="bsum-t"><span>실기 7일 안</span><b style="color:#9fb4e0;">${exCnt}<small>명</small></b><span class="stat-note">${exMin!=null?'가장 가까운 '+exDLabel(exMin):'없어요'}</span></div>
       </div>
+      ${branchRows?`<div class="card bs-card"><b class="bs-title">지점별 현황</b>${branchRows}<div class="stat-note">막대: 위험 · 경고 · 주의 · 좋음 · 회색 = 미입력 · 누르면 그 지점만</div></div>`:''}
 
+      <div class="b2-cols"><div class="b2-a">
       <div class="lane-divider"></div>
-      <div class="section-title">식사 기록 · 실제로 기록한 것만 <span class="info-tag">참고</span></div>
-      <div class="card" id="mealBrief">${mealBriefHTML(list)}</div>
+      <div class="bi-head"><div class="section-title" style="margin:0;">먼저 확인할 학생</div><span class="stat-note">확인 ${all.filter(i=>doneIds.has(i.s.id)).length} / ${all.length}</span></div>
+      <div class="bi-chips">${fchip('','전체',all.length)}${fchip('R','위험',nR)}${fchip('AY','경고·주의',nAY)}${fchip('I','참고',nI)}</div>
+      ${listHTML}
+      <div class="stat-note" style="margin-top:6px;">이름을 누르면 그 학생 화면으로 가요. "확인"은 이 기기에서 오늘만 기억해요. 진단이 아니라 직접 확인이 필요하다는 표시예요.</div>
 
+      </div><div class="b2-b">
       <div class="lane-divider"></div>
-      <div class="section-title">다가오는 실기 · 7일 안 <span class="info-tag">일정 안내</span></div>
-      <div class="stat-note section-hint">위험 신호가 아니라 일정 안내예요. 누르면 그 학생 화면으로 가요.</div>
-      <div class="card ex-soon-box" id="exSoon">${examSoonHTML(list)}</div>
-
-      <div class="lane-divider"></div>
-      <div class="section-title">지점별 수업 특이사항 · 수업일지 요약</div>
+      <div class="section-title">수업일지 특이사항</div>
       <div id="briefNotes">${briefNotesHTML()}</div>
 
       <div class="lane-divider"></div>
-      <div class="section-title">오늘 불편 부위</div>
-      <div class="card">${areaRows.length?areaRows.map(([a,n])=>`<div style="display:grid; grid-template-columns:72px minmax(0,1fr) 36px; gap:10px; align-items:center; margin:6px 0; font-size:13px;"><span>${esc(a)}</span><div style="height:8px; background:var(--surface-2); border-radius:4px;"><div style="width:${n/maxA*100}%; height:8px; background:#ff9f1c; border-radius:4px;"></div></div><span class="stat-note">${n}명</span></div>`).join(''):'<div class="empty-mini">오늘 근육통·통증을 기록한 학생이 없어요.</div>'}</div>
-
-      <div class="lane-divider"></div>
-      <div class="section-title">오늘 학생이 입력한 실기 기록</div>
-      <div class="card" style="padding:0;">${todayPerfRows(list) || '<div class="empty-mini" style="padding:14px;">오늘 학생이 입력한 실기 기록이 없어요.</div>'}</div>
-      ${state.perfDenied?'<div class="stat-note" style="margin-top:6px;">학생 실기 기록을 읽을 권한이 아직 없어요 (Firebase 규칙에 perfRecords 추가 필요).</div>':''}
+      <div class="bf-list">
+        ${fold('area','오늘 불편 부위',areaRows.length?areaRows.length+'곳':'없음', areaRows.length?areaRows.map(([a,n])=>`<div class="bf-area"><span>${esc(a)}</span><div class="bf-track"><div style="width:${n/maxA*100}%;"></div></div><span style="text-align:right;">${n}명</span></div>`).join(''):'<div class="empty-mini">오늘 기록된 불편 부위가 없어요.</div>')}
+        ${fold('perf','오늘 학생이 적은 실기 기록','', `<div style="margin:0 -4px;">${perfRows||'<div class="empty-mini" style="padding:6px 4px;">오늘 학생이 입력한 실기 기록이 없어요.</div>'}</div>${state.perfDenied?'<div class="stat-note" style="margin-top:6px;">학생 실기 기록을 읽을 권한이 아직 없어요 (Firebase 규칙에 perfRecords 추가 필요).</div>':''}`)}
+        ${fold('meal','식사 기록 · 실제로 기록한 것만','참고', `<div id="mealBrief">${mealBriefHTML(list)}</div>`)}
+        ${fold('exam','다가오는 실기 · 7일 안','일정 안내', `<div id="exSoon" class="ex-soon-box" style="padding:0;">${examSoonHTML(list)}</div>`)}
+        ${fold('base','체크인 완료율 기준선','코치만', `<div id="baseBox">${baselineHTML()}</div>`)}
+      </div>
 
       <div class="lane-divider"></div>
       <div class="section-title">체크인 미입력 (${by.NONE.length}명)</div>
       <div class="card">
-        <div id="missingListPreview" class="stat-note" style="margin-bottom:12px; color:var(--text); font-size:13px; line-height:1.6;"></div>
-        <button class="ghost-btn" style="padding:9px 16px;" onclick="copyMissingList()">📋 미입력 학생 명단 복사하기</button>
+        ${missing.length?`<div class="miss-list">${missing.map(m=>`<button type="button" class="miss-n" onclick="selectStudent('${m.s.id}')">${esc(m.s.name)}${m.cls?' <small>오늘 수업</small>':''}</button>`).join('')}</div>`:'<div class="empty-mini">오늘은 모두 체크인했어요! 🎉</div>'}
+        <div id="missingListPreview" class="stat-note" style="margin:10px 0; color:var(--text); font-size:13px; line-height:1.6;"></div>
+        ${missing.length?`<button class="ghost-btn" style="padding:9px 16px; min-height:44px; width:100%;" onclick="copyMissingList()">📋 미입력 명단 복사하기 (단톡방용)</button>`:''}
       </div>
-
-      <div class="lane-divider"></div>
-      <div class="section-title">체크인 완료율 기준선 <span class="info-tag">코치만</span></div>
-      <div class="card" id="baseBox">${baselineHTML()}</div>
-
-      `}
+      </div></div>
     </main>`;
+}
+state.briefFold={};
+function briefDoneIds(){ try{ const o=JSON.parse(localStorage.getItem('heroBriefDone')||'{}'); return new Set(o.d===HC.todayStr()&&Array.isArray(o.ids)?o.ids:[]); }catch(e){ return new Set(); } }
+function briefToggleDone(id){
+  const s=briefDoneIds(); if(s.has(id)) s.delete(id); else s.add(id);
+  try{ localStorage.setItem('heroBriefDone', JSON.stringify({ d:HC.todayStr(), ids:[...s] })); }catch(e){}
+  rerender();
 }
 state.briefFilter=''; state.briefMore={}; state.histReq={}; state.perfFullReq={};
 function setBriefFilter(k){ state.briefFilter = state.briefFilter===k ? '' : k; state.briefMore={}; rerender(); window.scrollTo(0,0); }
@@ -2699,7 +2742,7 @@ function rerenderInner(){
 function renderBottomNav(){
   const tab = state.schedOpen ? 'sched' : state.mgmtOpen ? 'student' : state.joinOpen ? 'join' : state.teamViewOpen ? 'team' : state.classLogOpen ? 'log' : 'student';
   const pend = pendingJoins().length;
-  const danger = state.students.filter(s=>computeFatigueMetrics(s).riskLevel==='danger').length;   // 옆 메뉴의 '위험 N' 표시를 휴대폰 아래 메뉴에도
+  const danger = state.students.filter(s=>statusOf(s)==='RED').length;   // 옆 메뉴 '위험 N'과 같은 기준 (브리핑의 위험 수)
   return `
     <nav class="bottom-nav">
       <button class="bn-item ${tab==='student'?'active':''}" onclick="bottomNavGo('student')">
@@ -5327,43 +5370,67 @@ async function submitPayCancel(sid, ym){
 /* ---- 브리핑: 지점별 수업 특이사항 요약 (수업일지 '특이사항'에서 핵심만) ---- */
 state.briefNoteDays = 3; state.briefNoteMore = {};
 function loadBriefLogs(force){ const to=HC.todayStr(), from=HC.addDays(to,-6); fetchLogsRange(from,to,force).then(()=>{ const el=document.getElementById('briefNotes'); if(el) el.innerHTML=briefNotesHTML(); }); }
+/* 수업일지 특이사항 요약 — 정확하게 고친 점
+   1) '부상 없음 · 결석 없음'처럼 없다고 적은 부분은 문제로 세지 않는다 (그 부분만 빼고, 문장 전체가 그런 내용이면 문장을 뺀다)
+   2) 한 문장에 여러 내용이 있으면 분류를 모두 붙인다 (예: 통증 + 출결)
+   3) 낱말이 우연히 겹쳐 잘못 분류되던 것 수정 ('열심히'→컨디션, '빠짐없이'→출결, '좋아하는'→좋은 소식 등)
+   4) 문장을 자르지 않고 그대로 보여 주고, 적힌 학생 이름은 눌러서 그 학생 화면으로 갈 수 있게 */
 const NOTE_TAGS=[
-  {k:'부상·통증', c:'#ff4b33', re:/부상|통증|아프|아파|아픔|다쳤|다침|삐|염좌|병원|재활|붓|부었|저림|찌릿/},
-  {k:'출결', c:'#ff9f1c', re:/결석|지각|조퇴|빠짐|빠졌|불참|안 ?옴|안 ?왔/},
-  {k:'컨디션', c:'#ffd23f', re:/컨디션|피곤|피로|감기|몸살|열|두통|잠|수면|힘들/},
-  {k:'좋은 소식', c:'#c6ff3d', re:/향상|신기록|최고|PB|좋아|좋음|잘함|잘했|칭찬|늘었/i}
+  {k:'부상·통증', c:'#ff4b33', re:/부상|통증|아프|아파|아픔|다쳤|다침|다쳐|삐었|삐끗|접질|염좌|병원|재활|부었|붓기|부종|저림|저려|찌릿|쥐가|쥐 ?났|경련|타박|골절|인대|탈구|근육 ?(손상|파열)|당김|결림/},
+  {k:'출결', c:'#ff9f1c', re:/결석|지각|조퇴|불참|빠졌|빠짐(?!없)|안 ?나옴|안 ?나왔|안 ?옴|안 ?왔|못 ?옴|못 ?왔|늦게 ?(옴|왔)|일찍 ?(감|갔)|먼저 ?(감|갔)/},
+  {k:'컨디션', c:'#ffd23f', re:/컨디션|피곤|피로|감기|몸살|발열|미열|고열|열이|열 ?나|열남|두통|어지러|구토|배탈|장염|수면 ?부족|잠을? ?(못|설)|잠 ?부족|힘들어|힘들다|힘듦|지쳐|무기력|스트레스|생리통/},
+  {k:'좋은 소식', c:'#c6ff3d', re:/향상|신기록|최고 ?기록|개인 ?최고|PB|기록이? ?(올|좋|늘|단축)|좋아졌|좋아짐|잘함|잘했|잘 ?따라|칭찬|늘었|성장|합격/i}
 ];
-const NOTE_EMPTY=/^(-|x|없음|특이사항 ?없음|특이 ?사항 ?없음|없습니다|특이 ?없음|\.)$/i;
+const NOTE_EMPTY=/^(-+|x|ㅇ|무|없음|없다|없습니다|없어요|특이 ?사항 ?(없음|없습니다|없어요|무)?|특이 ?없음|이상 ?(무|없음)|해당 ?없음|\.)$/i;
+const NOTE_NEG=/(없음|없다|없었다|없었음|없습니다|없었습니다|없어요|없었어요|이상 ?무|이상 ?없|문제 ?없|무사|양호)\s*[.!~]*$/;
+// 한 문장 → { text(없다고 적은 부분 뺀 글), tags[] } 또는 null(뺄 문장)
+function noteParse(raw){
+  const t=String(raw||'').replace(/^[-•·*\d.)\s]+/,'').trim();
+  if(!t || NOTE_EMPTY.test(t)) return null;
+  const parts=t.split(/\s*[,;]\s*|\s*\/\s*/).map(x=>x.trim()).filter(Boolean);
+  const kept=parts.filter(p=>!NOTE_NEG.test(p) && !NOTE_EMPTY.test(p));
+  if(!kept.length) return null;
+  const text=kept.length===parts.length ? t : kept.join(', ');
+  const tags=NOTE_TAGS.filter(x=>x.re.test(text));
+  return { text, tags: tags.length?tags:[{k:'기타',c:'#8b94a9'}] };
+}
+function noteSentences(notes){
+  return String(notes||'').split(/\n+/).flatMap(line=>line.replace(/([.!?])\s+/g,'$1\u0000').split('\u0000')).map(x=>x.trim()).filter(Boolean);
+}
 function briefNotesHTML(){
   const to=HC.todayStr(), from=HC.addDays(to,-6), all=cachedLogs(from,to);
   if(!all){ if(!state.logCache[from+'|'+to]) setTimeout(()=>loadBriefLogs(),0); return '<div class="card"><div class="stat-note">수업일지 불러오는 중…</div></div>'; }
   const since=HC.addDays(to, -(state.briefNoteDays-1));
   const branchSel=state.briefBranch||'';
-  const groups={};
-  const seen=new Set();
-  all.filter(l=>l.date>=since && l.date<=to).forEach(l=>{
+  const groups={}, seen=new Set();
+  const named=state.students.filter(s=>String(s.name||'').length>=2);
+  all.filter(l=>l.date>=since && l.date<=to).sort((a,b)=>b.date.localeCompare(a.date)).forEach(l=>{
     const b=logBranch(l)||'공통·기타 반';
     if(branchSel && b!==branchSel) return;
-    String(l.notes||'').split(/\n+/).flatMap(line=>line.replace(/([.!?])\s+/g,'$1\u0000').split('\u0000')).map(x=>x.replace(/^[-•·*\d.)\s]+/,'').trim()).filter(x=>x && !NOTE_EMPTY.test(x)).forEach(text=>{
-      const dk=b+'|'+text; if(seen.has(dk)) return; seen.add(dk);
-      const tag=NOTE_TAGS.find(t=>t.re.test(text))||{k:'기타',c:'#8b94a9'};
-      (groups[b]=groups[b]||[]).push({ text, tag, date:l.date, type:logTypeOf(l) });
+    noteSentences(l.notes).forEach(sent=>{
+      const p=noteParse(sent); if(!p) return;
+      const dk=b+'|'+p.text.replace(/\s+/g,''); if(seen.has(dk)) return; seen.add(dk);
+      const who=named.filter(s=>p.text.includes(s.name) && (!s.branch || b==='공통·기타 반' || s.branch===b));
+      (groups[b]=groups[b]||[]).push({ text:p.text, tags:p.tags, tag:p.tags[0], date:l.date, type:logTypeOf(l), who });
     });
   });
-  const order=t=>{ const i=NOTE_TAGS.findIndex(x=>x.k===t.tag.k); return i<0?9:i; };
+  const order=x=>{ const i=NOTE_TAGS.findIndex(t=>t.k===x.tag.k); return i<0?9:i; };
   const names=[...BRANCHES,'공통·기타 반'].filter(b=>groups[b]);
   const chips=`<div class="cal-chips" style="margin-bottom:10px;">${[[1,'오늘'],[3,'최근 3일'],[7,'최근 7일']].map(([n,l])=>`<button type="button" class="cal-chip${state.briefNoteDays===n?' on':''}" onclick="state.briefNoteDays=${n}; document.getElementById('briefNotes').innerHTML=briefNotesHTML();">${l}</button>`).join('')}</div>`;
   if(!names.length) return chips+`<div class="card"><div class="empty-mini">${state.briefNoteDays===1?'오늘':'이 기간'} 수업일지에 적힌 특이사항이 없어요.</div></div>`;
+  const hl=(text,who)=>{ let h=esc(text); who.forEach(s=>{ h=h.split(esc(s.name)).join(`<b>${esc(s.name)}</b>`); }); return h; };
   return chips+`<div class="note-grid">${names.map(b=>{
     const items=groups[b].sort((a,c)=>order(a)-order(c) || c.date.localeCompare(a.date));
-    const cnt={}; items.forEach(x=>cnt[x.tag.k]=(cnt[x.tag.k]||0)+1);
+    const cnt={}; items.forEach(x=>x.tags.forEach(t=>cnt[t.k]=(cnt[t.k]||0)+1));
     const more=state.briefNoteMore[b], shown=more?items:items.slice(0,5);
     return `<div class="card note-card">
       <div class="note-head"><b>${esc(b)}</b><span>${NOTE_TAGS.filter(t=>cnt[t.k]).map(t=>`<em style="color:${t.c};">${t.k} ${cnt[t.k]}</em>`).join(' ')}</span></div>
-      ${shown.map(x=>`<div class="note-item"><span class="note-tag" style="color:${x.tag.c}; border-color:${x.tag.c}66; background:${x.tag.c}1a;">${x.tag.k}</span><div><div class="note-text">${esc(x.text.length>90?x.text.slice(0,90)+'…':x.text)}</div><div class="note-meta">${Number(x.date.slice(5,7))}/${Number(x.date.slice(8))} · ${esc(x.type||'')}</div></div></div>`).join('')}
+      ${shown.map(x=>`<div class="note-item"><span class="note-tag" style="color:${x.tag.c}; border-color:${x.tag.c}66; background:${x.tag.c}1a;">${x.tag.k}</span><div>
+        <div class="note-text">${hl(x.text,x.who)}</div>
+        <div class="note-meta">${Number(x.date.slice(5,7))}/${Number(x.date.slice(8))} · ${esc(x.type||'')}${x.tags.length>1?' · '+x.tags.slice(1).map(t=>`<span style="color:${t.c};">${t.k}</span>`).join(' · '):''}${x.who.length?' · '+x.who.map(s=>`<button type="button" class="link-btn note-who" onclick="selectStudent('${s.id}')">${esc(s.name)} ›</button>`).join(' '):''}</div></div></div>`).join('')}
       ${items.length>5?`<button type="button" class="ghost-btn" style="margin-top:6px; padding:8px 12px;" onclick="state.briefNoteMore['${b}']=!state.briefNoteMore['${b}']; document.getElementById('briefNotes').innerHTML=briefNotesHTML();">${more?'접기':`+${items.length-5}개 더 보기`}</button>`:''}
     </div>`; }).join('')}</div>
-    <div class="stat-note" style="margin-top:6px;">수업 종류 이름에 지점 이름(해운대·사직·주례)이 있으면 그 지점으로 묶어요. 부상·통증 → 출결 → 컨디션 → 좋은 소식 순서예요.</div>`;
+    <div class="stat-note" style="margin-top:6px;">일지 문장을 그대로 보여 줘요. '없음'이라고 적은 부분은 빼고, 한 문장에 여러 내용이 있으면 분류를 모두 붙여요. 수업 종류 이름의 지점(해운대·사직·주례)으로 묶어요.</div>`;
 }
 
 /* ---- 학생 컨디션 캘린더: 그 달 체크인을 신호등 색 칸으로 (수업일지와는 연결하지 않음) ---- */
