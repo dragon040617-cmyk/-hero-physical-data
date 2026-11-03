@@ -772,6 +772,25 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .ckc-tp{ position:absolute; left:3px; right:3px; bottom:2px; height:4px; border-radius:2px; background:repeating-linear-gradient(45deg,#9fb4e0 0 3px,transparent 3px 6px); }
   .ckc-ex-l{ font-size:10px; padding:1px 3px; border-radius:4px; background:#12151c; color:#fff; outline:1px solid #fff; margin-right:4px; }
   .ckc-tp-l{ display:inline-block; width:18px; height:6px; border-radius:2px; background:repeating-linear-gradient(45deg,#9fb4e0 0 3px,transparent 3px 6px); margin-right:4px; vertical-align:1px; }
+  .sq, #sqBody{ display:flex; flex-direction:column; gap:12px; } .sq-go, .sq-more, .sq-stu{ width:100%; }
+  .sq-head{ display:flex; justify-content:space-between; align-items:center; }
+  .sq-x{ width:44px; height:44px; border-radius:12px; border:1px solid var(--line); background:transparent; color:var(--text); font-size:20px; cursor:pointer; }
+  .sq-sec{ display:flex; flex-direction:column; gap:6px; } .sq-l{ font-size:12.5px; color:var(--text-muted); }
+  .sq-row{ display:flex; gap:6px; flex-wrap:wrap; }
+  .sq-chip{ min-height:44px; padding:0 14px; border-radius:22px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); font:inherit; font-size:14px; font-weight:800; cursor:pointer; }
+  .sq-chip.on{ background:var(--lime); color:#0d1a03; border-color:var(--lime); }
+  .sq-rep .sq-chip{ font-size:13px; padding:0 12px; }
+  .sq-week{ display:grid; grid-template-columns:36px repeat(7,minmax(0,1fr)) 36px; gap:4px; align-items:stretch; }
+  .sq-arrow{ border-radius:10px; border:1px solid var(--line); background:transparent; color:var(--text); font-size:18px; cursor:pointer; min-height:56px; padding:0; }
+  .sq-day{ min-height:56px; border-radius:12px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); font:inherit; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer; padding:0; min-width:0; }
+  .sq-day span{ font-size:11.5px; color:var(--text-muted); } .sq-day b{ font-size:16px; } .sq-day.past{ opacity:.5; }
+  .sq-day.on{ background:var(--lime); border-color:var(--lime); color:#0d1a03; } .sq-day.on span{ color:#0d1a03; }
+  .sq-fixed{ min-height:44px; display:flex; align-items:center; gap:10px; padding:0 14px; border-radius:12px; background:var(--surface-2); flex-wrap:wrap; }
+  .sq-stu{ display:flex; justify-content:space-between; align-items:center; gap:10px; min-height:50px; padding:0 14px; border-radius:12px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); font:inherit; font-size:14px; text-align:left; cursor:pointer; }
+  .sq-names{ display:flex; gap:6px; flex-wrap:wrap; } .sq-names span{ font-size:13px; padding:5px 10px; border-radius:14px; background:var(--lime-soft, rgba(198,255,61,.14)); color:var(--lime); }
+  .sq-go{ min-height:54px; border-radius:16px; border:0; background:var(--lime); color:#0d1a03; font:inherit; font-size:15.5px; font-weight:800; cursor:pointer; padding:8px 12px; }
+  .sq-go:disabled{ opacity:.6; }
+  .sq-more{ min-height:44px; }
   .rf-prev{ background:var(--surface-2); border-radius:12px; padding:12px; margin-top:4px; }
   .rf-row{ display:flex; justify-content:space-between; gap:10px; padding:4px 0; font-size:14px; }
   .pay-chip:disabled{ opacity:.5; }
@@ -4103,6 +4122,74 @@ async function submitExamEdit(){
     exEdit=null; closeModal(); refreshExCard(); refreshCkCal(); showToast(cancel?'일정을 취소로 바꿨어요':'실기 일정을 저장했어요');
   }catch(e){ err.textContent='저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'권한이 없어요 (Firebase 규칙에 examSchedules 추가 필요)':(e&&e.message||'인터넷을 확인해 주세요')); btn.disabled=false; btn.textContent='저장'; }
 }
+/* 실기 일정 일괄 추가: 한 지점(또는 전체) 학생 모두에게 같은 시험·모의시험 날짜를 넣는다
+   · 문서 이름 = bk_날짜_종류_학생_학교이름해시 → 다시 눌러도 같은 문서에 저장 (중복 생성 없음)
+   · 그 날짜에 같은 종류·같은 이름 일정이 이미 있는 학생은 건너뛴다
+   · 종목은 고른 것 중 그 학생 실기 종목에 있는 것만 넣는다 (없는 종목을 새로 만들지 않음) */
+function exHash(t){ let h=5381; for(const c of String(t)) h=((h*33)^c.charCodeAt(0))>>>0; return h.toString(36); }
+let bx=null;
+function openExamBulk(){
+  bx={ br:sqLastBranch(), type:'mock' };
+  const evs=[...new Set(state.students.flatMap(s=>s.events||[]))];
+  openModal(`<div class="modal sched-modal" role="dialog" aria-labelledby="bxT"><h3 id="bxT">실기 일정 일괄 추가</h3>
+    <div class="stat-note" style="margin-bottom:10px;">고른 지점 학생 모두에게 같은 일정을 넣어요. 학생 화면 D-day와 코치 캘린더에 바로 보여요.</div>
+    <div class="field"><label>대상</label><select id="bxBr" style="font-size:16px;" onchange="bxPreview()">${BRANCHES.map(b=>`<option ${b===bx.br?'selected':''}>${b}</option>`).join('')}<option value="">전체 지점</option></select></div>
+    <div class="field"><label>종류</label><div class="ex-pick">${Object.entries(EXAM_TYPE).map(([k,l])=>`<label class="chk-pill"><input type="radio" name="bxType" value="${k}" ${k==='mock'?'checked':''} onchange="bxPreview()"> ${l}</label>`).join('')}</div></div>
+    <div class="field"><label for="bxName">이름 (필수)</label><input id="bxName" maxlength="40" value="학원 모의 테스트" style="font-size:16px;" oninput="bxPreview()"></div>
+    <div class="field"><label for="bxRoute">전형 (선택)</label><input id="bxRoute" maxlength="30" style="font-size:16px;"></div>
+    <div class="field"><label for="bxDate">날짜 (필수)</label><input type="date" id="bxDate" min="2025-01-01" max="2030-12-31" style="font-size:16px;" onchange="bxPreview()"></div>
+    <div class="field"><label>종목 (선택 · 학생마다 가진 종목만 들어가요)</label><div class="ex-pick">${evs.map(e=>`<label class="chk-pill"><input type="checkbox" name="bxEv" value="${esc(e)}"> ${esc(e)}</label>`).join('')||'<span class="stat-note">종목 없음</span>'}</div></div>
+    <div class="field"><label for="bxMemo">메모 (선택)</label><input id="bxMemo" maxlength="100" style="font-size:16px;"></div>
+    <div id="bxPrev" class="rf-prev"><div class="stat-note">날짜를 고르면 몇 명에게 들어가는지 보여 줘요</div></div>
+    <div id="bxErr" class="stat-note" style="color:#ff7a66; min-height:18px;" role="alert"></div>
+    <div class="modal-actions"><button type="button" class="cancel" onclick="closeModal()">닫기</button><button type="button" class="confirm" id="bxOk" disabled onclick="submitExamBulk()">추가하기</button></div></div>`);
+}
+async function bxPlan(){
+  const br=document.getElementById('bxBr').value, type=(document.querySelector('input[name=bxType]:checked')||{}).value||'mock';
+  const name=(document.getElementById('bxName').value||'').trim(), date=document.getElementById('bxDate').value;
+  if(!name || !/^\d{4}-\d{2}-\d{2}$/.test(date) || date<'2025-01-01' || date>'2030-12-31') return null;
+  const targets=state.students.filter(s=>!br || s.branch===br);
+  const snap=await db.collection('examSchedules').where('examDate','==',date).get();
+  const norm=v=>String(v).replace(/\s+/g,'');
+  const has=new Set(snap.docs.map(d=>d.data()||{}).filter(x=>x.status!=='cancelled' && x.scheduleType===type && norm(x.schoolName)===norm(name)).map(x=>x.studentId));
+  return { br, type, name, date, add:targets.filter(s=>!has.has(s.id)), skip:targets.filter(s=>has.has(s.id)), total:targets.length };
+}
+let bxSeq=0;
+async function bxPreview(){
+  const box=document.getElementById('bxPrev'), ok=document.getElementById('bxOk'); if(!box) return;
+  const my=++bxSeq; ok.disabled=true;
+  let p=null; try{ p=await bxPlan(); }catch(e){ if(my===bxSeq) box.innerHTML=`<div class="stat-note" style="color:#ff7a66;">확인하지 못했어요 — ${esc(e&&e.code==='permission-denied'?'권한이 없어요':(e&&e.message||''))}</div>`; return; }
+  if(my!==bxSeq) return;
+  if(!p){ box.innerHTML='<div class="stat-note">이름과 날짜를 넣으면 몇 명에게 들어가는지 보여 줘요</div>'; return; }
+  box.innerHTML=`<div class="rf-row"><span>${esc(p.br||'전체 지점')} 학생</span><b>${p.total}명</b></div>
+    <div class="rf-row"><span>새로 넣을 학생</span><b style="color:var(--lime);">${p.add.length}명</b></div>
+    ${p.skip.length?`<div class="rf-row"><span>이미 같은 일정이 있어 건너뜀</span><b>${p.skip.length}명</b></div>`:''}
+    <div class="stat-note" style="margin-top:6px;">${md(p.date)} (${WD_KO[wdOf(p.date)]}) · ${EXAM_TYPE[p.type]} · ${esc(p.name)}</div>`;
+  ok.disabled=!p.add.length; ok.textContent=p.add.length?`${p.add.length}명에게 추가하기`:'추가할 학생이 없어요';
+}
+async function submitExamBulk(){
+  const err=document.getElementById('bxErr'), btn=document.getElementById('bxOk');
+  if(navigator.onLine===false){ err.textContent='인터넷이 끊겨 있어요'; return; }
+  btn.disabled=true; btn.textContent='확인 중…';
+  try{
+    const p=await bxPlan(); if(!p || !p.add.length){ err.textContent='추가할 학생이 없어요'; btn.textContent='추가하기'; return; }
+    const route=(document.getElementById('bxRoute').value||'').trim().slice(0,30), memo=(document.getElementById('bxMemo').value||'').trim().slice(0,100);
+    const evs=[...document.querySelectorAll('input[name=bxEv]:checked')].map(i=>i.value);
+    const now=Date.now(), me=currentCoachEmail||'', h=exHash(p.name.replace(/\s+/g,''));
+    markUserWrite(); btn.textContent=`${p.add.length}명 저장 중…`;
+    for(let i=0;i<p.add.length;i+=400){
+      const b=db.batch();
+      p.add.slice(i,i+400).forEach(s=>b.set(db.collection('examSchedules').doc(`bk_${p.date}_${p.type}_${s.id}_${h}`), {
+        studentId:s.id, schoolName:p.name.slice(0,40), admissionRoute:route, examDate:p.date, scheduleType:p.type,
+        events:evs.filter(e=>(s.events||[]).includes(e)).slice(0,10), memo, status:'active', createdBy:'coach',
+        createdAt:now, updatedAt:now, updatedBy:me, editorName:String(state.me||'').slice(0,20) }));
+      await b.commit();
+    }
+    p.add.forEach(s=>{ delete state.exams[s.id]; }); state.exSoon=null; state.exRange={};
+    closeModal(); showToast(`${p.add.length}명에게 실기 일정을 넣었어요${p.skip.length?` (이미 있는 ${p.skip.length}명은 건너뜀)`:''}`);
+    if(state.schedOpen) schedRefresh();
+  }catch(e){ err.textContent='저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'권한이 없어요 (Firebase 규칙에 examSchedules 필요)':(e&&e.message||'다시 시도해 주세요')); btn.disabled=false; btn.textContent='다시 시도'; }
+}
 /* 브리핑: 앞으로 7일 안의 실기 일정 (정보성 — 위험 학생 목록과 따로) */
 state.exSoon=null;
 async function fetchExamSoon(force){
@@ -4407,7 +4494,7 @@ function schedCardHTML(x){
 function renderScheduleView(){
   return `<main class="sched">
     <div class="topbar"><div class="heading"><div><h2>수업 일정</h2><div class="tagline">${state.me?esc(state.me)+'의 수업만 보는 중':'전체 지점 · 코치 통합 시간표'}</div></div></div>
-      <div class="cl-top"><button type="button" class="submit-btn" style="height:40px;" onclick="openSchedEdit('')">+ 일정 만들기</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openCoachRoster()">코치 지정</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openSchedRefill()">학생 다시 맞추기</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openSchedBulkDelete()">일정 지우기</button></div></div>
+      <div class="cl-top"><button type="button" class="submit-btn" style="height:40px;" onclick="openSchedQuick()">+ 일정 만들기</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openCoachRoster()">코치 지정</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openExamBulk()">실기 일정 일괄 추가</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openSchedRefill()">학생 다시 맞추기</button><button type="button" class="ghost-btn" style="flex:0 0 auto; padding:9px 14px;" onclick="openSchedBulkDelete()">일정 지우기</button></div></div>
     <div class="lane-divider"></div>
     ${meBarHTML('sched')}
     <div id="schedBody">${schedBodyHTML()}</div>
@@ -4442,7 +4529,7 @@ function schedBodyHTML(){
       return `<div class="srow ${ds===today?'today':''}">
         <button type="button" class="srow-h" onclick="schedPickDay('${ds}')"><b>${WD_KO[wdOf(ds)]} ${Number(ds.slice(5,7))}/${Number(ds.slice(8))}</b>${ds===today?'<span>오늘</span>':''}</button>
         <div class="srow-items">${(()=>{ const ex=schedExamsOn(ds); return ex.map(schedExamHTML).join('') + (dl.map(schedCardHTML).join('') || '<div class="srow-empty">수업 없음</div>'); })()}
-          ${state.schedView==='day'?`<button type="button" class="cal-write-btn srow-add" onclick="openSchedEdit('', '${ds}')">+ 이 날 일정 추가</button>`:''}</div>
+          ${state.schedView==='day'?`<button type="button" class="cal-write-btn srow-add" onclick="openSchedQuick('${ds}')">+ 이 날 일정 추가</button>`:''}</div>
       </div>`; }).join('')}</div>`;
   }
   return `<div class="sched-sum">
@@ -4477,6 +4564,65 @@ function schedSuggest(branch, date){
   // 지점 + 그 요일을 '수업 요일'로 고른 학생 (코치와는 연결하지 않음 — 담당 학생은 '코치 지정'에서만 정함)
   const wd=WD_KO[wdOf(date)], ym=String(date).slice(0,7);
   return state.students.filter(s=>s.branch===branch && daysOf(s, ym).includes(wd)).map(s=>s.id);
+}
+/* ---- 일정 빠른 추가 (H-3): 누르기만 해서 만드는 짧은 창 ----
+   · 시간은 기본 19:00~21:00 고정 (다른 시간·메모·학생 하나씩 고르기는 '자세히' 또는 만든 뒤 일정을 눌러서)
+   · 학생은 그 날짜 달의 수업 요일로 자동, 코치는 '내 이름' (없으면 코치 미정). 반복이면 코치는 첫 수업에만
+   · 저장·겹침 확인은 일정 만들기 창과 같은 schedCommit 을 쓴다 */
+let sq=null;
+const SQ_START='19:00', SQ_END='21:00';
+function sqLastBranch(){ try{ const b=localStorage.getItem('heroLastBranch'); if(BRANCHES.includes(b)) return b; }catch(e){} return state.schedF.br||BRANCHES[0]; }
+function sqType(br){ const k=String(br).replace(/점$/,''); return CLASS_TYPES.find(t=>t===k+'수업') || CLASS_TYPES[0]; }
+function sqMonthEnd(d){ const [y,m]=d.split('-').map(Number); return `${y}-${String(m).padStart(2,'0')}-${String(new Date(y,m,0).getDate()).padStart(2,'0')}`; }
+function sqDates(){
+  const d=sq.date; if(sq.rep==='once') return [d];
+  const end = sq.rep==='month' ? sqMonthEnd(d) : sqMonthEnd(ymdAdd(sqMonthEnd(d),1));   // 'next' = 다음 달 말까지
+  const out=[]; for(let x=d; x<=end; x=ymdAdd(x,7)) out.push(x); return out;
+}
+function openSchedQuick(date){
+  const d=date||(state.schedView==='day'?state.schedDate:HC.todayStr());
+  sq={ date:d, br:sqLastBranch(), forms:[], rep:'once', showStu:false };
+  seForce=false;
+  openModal(`<div class="modal sched-modal sq" role="dialog" aria-labelledby="sqT"><div id="sqBody">${sqHTML()}</div></div>`);
+}
+function sqSet(k,v){ if(!sq) return; if(k==='form'){ sq.forms = sq.forms.includes(v) ? sq.forms.filter(x=>x!==v) : SCHED_FORMS.filter(f=>sq.forms.includes(f)||f===v); } else sq[k]=v; seForce=false;
+  const b=document.getElementById('sqBody'); if(b) b.innerHTML=sqHTML(); }
+function sqHTML(){
+  const d=sq.date, wd=WD_KO[wdOf(d)], ws=weekStartOf(d), week=Array.from({length:7},(_,i)=>ymdAdd(ws,i)), today=HC.todayStr();
+  const stu=schedSuggest(sq.br, d), dates=sqDates();
+  const nextM=Number(ymdAdd(sqMonthEnd(d),1).slice(5,7));
+  const chip=(on,label,js,extra)=>`<button type="button" class="sq-chip ${on?'on':''}" aria-pressed="${on}" onclick="${js}" ${extra||''}>${on?'✓ ':''}${label}</button>`;
+  const coach=state.me?esc(state.me):'<span style="color:#ffb020;">코치 미정</span> <span class="stat-note">(위에서 내 이름을 고르면 자동)</span>';
+  const label=`${md(d)} (${wd}) 19:00 ${esc(sq.br.replace(/점$/,''))} ${sq.forms.length?esc(sq.forms.join('·')):'수업'}${dates.length>1?' · '+dates.length+'개':''}`;
+  return `<div class="sq-head"><h3 id="sqT" style="margin:0;">수업 빠른 추가</h3><button type="button" class="sq-x" aria-label="닫기" onclick="closeModal()">×</button></div>
+    <div class="sq-sec"><div class="sq-l">날짜</div>
+      <div class="sq-week"><button type="button" class="sq-arrow" aria-label="이전 주" onclick="sqSet('date','${ymdAdd(d,-7)}')">‹</button>
+        ${week.map(x=>`<button type="button" class="sq-day ${x===d?'on':''} ${x<today?'past':''}" aria-pressed="${x===d}" onclick="sqSet('date','${x}')"><span>${WD_KO[wdOf(x)]}</span><b>${Number(x.slice(8))}</b></button>`).join('')}
+        <button type="button" class="sq-arrow" aria-label="다음 주" onclick="sqSet('date','${ymdAdd(d,7)}')">›</button></div></div>
+    <div class="sq-sec"><div class="sq-l">지점 <span class="stat-note">· 지난번 고른 지점이 먼저</span></div>
+      <div class="sq-row">${BRANCHES.map(b=>chip(sq.br===b,esc(b),`sqSet('br','${b}')`)).join('')}</div></div>
+    <div class="sq-sec"><div class="sq-l">시간</div><div class="sq-fixed"><b>19:00 ~ 21:00</b> <span class="stat-note">기본 시간 · 바꾸려면 '자세히'</span></div></div>
+    <div class="sq-sec"><div class="sq-l">수업 형태 <span class="stat-note">· 여러 개</span></div>
+      <div class="sq-row">${SCHED_FORMS.map(f=>chip(sq.forms.includes(f),esc(f),`sqSet('form','${f}')`)).join('')}</div></div>
+    <div class="sq-sec"><div class="sq-l">반복</div>
+      <div class="sq-row sq-rep">${chip(sq.rep==='once','이번 한 번',`sqSet('rep','once')`)}${chip(sq.rep==='month',`이번 달 매주 ${wd}요일`,`sqSet('rep','month')`)}${chip(sq.rep==='next',`${nextM}월 말까지 매주 ${wd}요일`,`sqSet('rep','next')`)}</div>
+      ${dates.length>1?`<div class="stat-note" style="margin-top:6px;">${dates.map(md).join(' · ')} (${dates.length}개) · 코치는 첫 수업에만, 학생은 날마다 그 달 요일로</div>`:''}</div>
+    <button type="button" class="sq-stu" aria-expanded="${sq.showStu}" onclick="sqSet('showStu',${!sq.showStu})"><span>학생 <b style="color:var(--lime);">${stu.length}명</b> 자동 · 코치 ${coach}</span><span class="stat-note">${sq.showStu?'접기 ▴':'보기 ▾'}</span></button>
+    ${sq.showStu?`<div class="sq-names">${stu.length?stu.map(id=>{ const s=getStudent(id); return s?`<span>${esc(s.name)}</span>`:''; }).join(''):`<span class="stat-note">${esc(sq.br)}에서 ${Number(d.slice(5,7))}월 ${wd}요일을 고른 학생이 없어요 (만든 뒤 일정을 눌러서 추가할 수 있어요)</span>`}</div>`:''}
+    <div id="seErr" role="alert"></div>
+    <button type="button" class="sq-go" id="seOk" onclick="submitSchedQuick()">${label} 만들기</button>
+    <button type="button" class="ghost-btn sq-more" onclick="closeModal(); openSchedEdit('', '${d}')">자세히 (시간 · 메모 · 학생 하나씩)</button>`;
+}
+async function submitSchedQuick(){
+  if(!sq || schedSaving) return;
+  if(!BRANCHES.includes(sq.br)) return seErr('<div class="se-e">지점을 골라 주세요</div>');
+  if(!PERF.validDate(sq.date) || sq.date<'2025-01-01' || sq.date>'2030-12-31') return seErr('<div class="se-e">날짜를 다시 골라 주세요</div>');
+  if(navigator.onLine===false) return seErr('<div class="se-e">인터넷이 끊겨 있어요</div>');
+  const dates=sqDates(), coaches=state.me?[state.me]:[], seriesId=dates.length>1?'sr'+uid():null;
+  const base={ branch:sq.br, startTime:SQ_START, endTime:SQ_END, type:sqType(sq.br), memo:'', forms:sq.forms.slice() };
+  const items=dates.map((d,i)=>({ ...base, date:d, coaches:i===0?coaches:[], studentIds:schedSuggest(sq.br,d).slice(0,80), seriesId, _id: seriesId?seriesId+'_'+d:'sc'+uid() }));
+  try{ localStorage.setItem('heroLastBranch', sq.br); }catch(e){}
+  return schedCommit(items, null, 'submitSchedQuick()');
 }
 function openSchedEdit(id, date){
   seForce=false;
@@ -4607,14 +4753,19 @@ async function submitSched(id){
       if(!items.some(i=>i._id===x.id)) items.push({ ...base, seriesId:x.seriesId, _id:x.id, _prev:x });
     }
   }
-  schedSaving=true; const ok=document.getElementById('seOk'); if(ok){ ok.disabled=true; ok.textContent='확인 중…'; }
+  return schedCommit(items, x, `submitSched('${id||''}')`);
+}
+// 일정 저장 공통: 겹침 확인 → 한 번에 저장 (일정 만들기 창과 빠른 추가 창이 같이 씀)
+async function schedCommit(items, x, retry){
+  schedSaving=true; const ok=document.getElementById('seOk'); const okText=ok?ok.textContent:''; if(ok){ ok.disabled=true; ok.textContent='확인 중…'; }
+  const now=Date.now(), me=currentCoachEmail||'';
   try{
     const pool=await fetchSchedsOn([...new Set(items.map(i=>i.date))]);
     const cf=[]; items.forEach(it=>{ findConflicts({ ...it, id:it._id }, pool.filter(p=>!items.some(i=>i._id===p.id))).forEach(c=>cf.push({ it, ...c })); });
     const hard=cf.filter(c=>c.hard);
     if(cf.length && !(seForce && !hard.length)){
       seErr(`<div class="se-cf"><b>${hard.length?'저장할 수 없어요 · ':''}겹치는 일정 ${cf.length}개</b>${cf.slice(0,6).map(c=>`<div>${Number(c.it.date.slice(5,7))}/${Number(c.it.date.slice(8))} ${esc(c.time)} · ${esc(c.o.type||'')} ${esc(c.o.branch||'')} — ${esc(c.reasons.join(', '))} <button type="button" class="link-btn" onclick="closeModal(); openSchedEdit('${c.o.id}')">열기</button></div>`).join('')}
-        ${hard.length?'<div class="stat-note">같은 코치·똑같은 일정은 시간이나 코치를 바꿔야 저장돼요.</div>':'<div class="stat-note">학생만 겹치면 확인 후 저장할 수 있어요.</div><button type="button" class="ghost-btn" style="margin-top:6px;" onclick="seForce=true; submitSched(\''+(id||'')+'\')">그래도 저장</button>'}</div>`);
+        ${hard.length?'<div class="stat-note">같은 코치·똑같은 일정은 시간이나 코치를 바꿔야 저장돼요.</div>':'<div class="stat-note">학생만 겹치면 확인 후 저장할 수 있어요.</div><button type="button" class="ghost-btn" style="margin-top:6px;" onclick="seForce=true; '+retry.replace(/"/g,'&quot;')+'">그래도 저장</button>'}</div>`);
       return;
     }
     const batch=db.batch(); let n=0;
@@ -4638,7 +4789,7 @@ async function submitSched(id){
     if(!x){ state.schedDate=items[0].date; if(state.schedView==='month') state.schedView='week'; subscribeSchedules(); }
   }catch(e){
     seErr(`<div class="se-e">저장하지 못했어요 — ${e&&e.code==='permission-denied'?'저장 권한이 없어요 (Firebase 규칙 확인)':esc(e&&e.message||'다시 시도해 주세요')}</div>`);
-  }finally{ schedSaving=false; const b=document.getElementById('seOk'); if(b){ b.disabled=false; b.textContent=x?'저장':'만들기'; } }
+  }finally{ schedSaving=false; const b=document.getElementById('seOk'); if(b){ b.disabled=false; b.textContent=okText||(x?'저장':'만들기'); } }
 }
 function schedDiff(a,b){
   const parts=[];
