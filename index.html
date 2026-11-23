@@ -1032,6 +1032,27 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .dd-mini{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px;padding:10px 14px;margin-bottom:14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit;font-size:14px;text-align:left;cursor:pointer}
   .dd-mini .dd-n{font-size:20px;color:var(--lime);flex:0 0 auto}
   .why-h{color:var(--text)}
+  .qs-item.wide{grid-column:1/-1;min-height:72px;flex-direction:row;align-items:center;justify-content:flex-start;gap:12px}
+  .dd-mini>span{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .rp-wrap .ss-in{gap:14px}
+  .rp-chips{display:flex;gap:6px;flex-wrap:wrap}
+  .rp-chips button{min-height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+  .rp-chips button.on{background:var(--lime);color:#0d1a03;border-color:var(--lime)}
+  .rp-bar{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden}.rp-bar i{display:block;height:100%;background:var(--lime)}
+  .rp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .rp-grid>div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+  .rp-grid>div.wide{grid-column:1/-1}
+  .rp-grid span{font-size:12.5px;color:var(--text-muted)}.rp-grid span i{font-style:normal;font-size:12px;color:#ff9f1c;margin-left:4px}
+  .rp-grid b{font-size:16px;line-height:1.45}.rp-grid small{font-size:12px;color:var(--lime)}
+  .rp-perf{font-size:14px!important;font-weight:600}.rp-perf i{font-style:normal;font-weight:800;color:var(--text-muted)}.rp-perf i.up{color:var(--lime)}.rp-perf i.down{color:#ff9f1c}
+  .rp-text{width:100%;box-sizing:border-box;min-height:110px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit;font-size:16px;line-height:1.55;padding:12px;resize:vertical}
+  .rp-hints{display:flex;gap:6px;flex-wrap:wrap}
+  .rp-hints button{min-height:40px;padding:0 12px;border-radius:12px;border:0;background:var(--surface-2);color:#d6dbe6;font:inherit;font-size:13px;cursor:pointer}
+  .rp-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .rp-btns button{min-height:52px;margin:0}
+  .goal-line{display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 12px;margin-bottom:14px;border-radius:12px;background:var(--surface);border:1px dashed #5d6578;color:var(--text-muted);font-size:13.5px}
+  .goal-line b{color:var(--text)}
+  .goal-line svg{color:var(--lime)}
   .join-band{width:100%;display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 14px;margin:0 0 14px;border-radius:14px;border:1px solid var(--lime);background:var(--lime-soft);color:var(--lime);font:inherit;text-align:left;cursor:pointer}
   .join-band>span{flex:1;display:flex;flex-direction:column;gap:2px}
   .join-band b{font-size:15px;color:var(--text)}.join-band span span{font-size:12.5px;color:var(--text-muted)}
@@ -1271,7 +1292,8 @@ const IC={
   perf:'M4 17l6-6 4 4 6-8',
   me:'M12 11a3 3 0 100-6 3 3 0 000 6M6 20v-1a6 6 0 0112 0v1',
   check:'M5 12l5 5L20 7',
-  chev:'M9 6l6 6-6 6'
+  chev:'M9 6l6 6-6 6',
+  report:'M6 3h12v18H6zM9 8h6M9 12h6M9 16h3'
 };
 function ic(k, size, sw){ return '<svg class="ic-svg" width="'+(size||22)+'" height="'+(size||22)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="'+(sw||2)+'" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="'+(IC[k]||'')+'"/></svg>'; }
 /* 불러오는 동안 보이는 회색 뼈대 (빙글빙글 대신 — 어디에 무엇이 나올지 미리 보여 준다) */
@@ -2310,6 +2332,8 @@ function renderOverview(s){
   return `
     ${tipHTML('c-detail','처음 안내 · 학생 화면','요약에서 오늘 상태와 이유, 4주 추이를 보고 · 캘린더에서 날짜별 기록 · 일정에서 실기 D-day를 관리해요. 마지막에 본 탭은 기억해 둬요.')}
     ${memoCardHTML(s)}
+    ${goalLineHTML(s)}
+    <button type="button" class="dd-mini rp-open" onclick="openReport('${s.id}'); rpGo('${s.id}');"><span>${ic('report',18)} <b>${ymLabel(ymAdd(HC.todayStr().slice(0,7),-1))} 월간 리포트</b> · 한마디 쓰기 · 그림 저장</span>${ic('chev',18)}</button>
     ${ddayMiniHTML(s)}
     ${renderCheckinCard(s)}
     <div class="lane-divider"></div>
@@ -5530,12 +5554,13 @@ function openQuick(){
     ['copy','미입력 명단 복사',`오늘 ${miss}명`,"quickGo('copy')"],
     ['exam','실기 일정 일괄 추가','지점 전체에 한 번에',"quickGo('exam')"],
     ['memo','학생 한 줄 메모','학생 골라서 쓰기',"quickGo('memo')"],
+    ['report','월간 리포트',ymLabel(ymAdd(ym,-1))+' 선생님 한마디 쓰기',"quickGo('report')",'wide'],
   ];
   const el=document.createElement('div');
   el.id='quickSheet'; el.className='qs-bg';
   el.innerHTML=`<div class="qs" role="dialog" aria-modal="true" aria-labelledby="qsT"><div class="ask-grip"></div>
     <div class="qs-head"><h3 id="qsT">빠른 메뉴</h3><button type="button" class="qs-x" aria-label="닫기" onclick="closeQuick()">${ic('close',20)}</button></div>
-    <div class="qs-grid">${A.map(a=>`<button type="button" class="qs-item" onclick="${a[3]}">${ic(a[0],26)}<span><b>${a[1]}</b><span>${a[2]}</span></span></button>`).join('')}</div>
+    <div class="qs-grid">${A.map(a=>`<button type="button" class="qs-item ${a[4]||''}" onclick="${a[3]}">${ic(a[0],26)}<span><b>${a[1]}</b><span>${a[2]}</span></span></button>`).join('')}</div>
     <button type="button" class="qs-tip" onclick="closeQuick(); resetTips();">처음 안내 다시 보기</button></div>`;
   document.body.appendChild(el);
   requestAnimationFrame(()=>el.classList.add('show'));
@@ -5552,6 +5577,7 @@ function quickGo(k){
   else if(k==='copy'){ copyMissingList(); }
   else if(k==='exam'){ openExamBulk(); }
   else if(k==='memo'){ openStuSearch('memo'); }
+  else if(k==='report'){ openReport(); }
 }
 
 /* ============ 처음 안내 (한 번 보고 '알겠어요' 누르면 다시 안 보임 · 빠른 메뉴/내 정보에서 다시 보기) ============ */
@@ -5692,10 +5718,184 @@ function qualityHTML(s){
       :`<div class="stat-note">${timed.length?'특별히 볼 것 없어요.':'이 표시는 새 체크인부터 쌓여요.'}</div>`}</div>`;
 }
 
+
+/* ============ J-4 월간 리포트 · 선생님 한마디 (코치만 · 상담·학부모 공유용 그림 저장) ============
+   monthlyNotes/{학생ID}_{YYYY-MM} = { sid, ym, text(200자), by, at } — 코치만 읽고 씀. 숫자는 체크인·기록에서 자동 계산 */
+const RP_HINTS=['꾸준히 체크인해 줘서 고마워.','기록이 좋아지고 있어.','잠을 조금만 더 챙기자.','실기 전까지 지금처럼만 하자.','수업 태도가 정말 좋아졌어.'];
+let rp=null;   // { ym, br, sid, notes:{sid:{...}}|'loading'|'error', draft, saving, msg }
+function ymAdd(ym,k){ let [y,m]=ym.split('-').map(Number); m+=k; while(m<1){m+=12;y--;} while(m>12){m-=12;y++;} return `${y}-${String(m).padStart(2,'0')}`; }
+function ymLabel(ym){ return Number(ym.slice(5))+'월'; }
+function openReport(sid){
+  closeQuick(); closeStuSearch();
+  const cur=HC.todayStr().slice(0,7);
+  rp={ ym:ymAdd(cur,-1), br:'', sid:sid||null, notes:'loading', draft:null, saving:false, msg:'' };
+  document.getElementById('rpWrap')?.remove();
+  const el=document.createElement('div'); el.id='rpWrap'; el.className='ss-wrap rp-wrap'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','월간 리포트');
+  document.body.appendChild(el);
+  el.addEventListener('keydown',e=>{ if(e.key==='Escape'){ e.preventDefault(); if(rp && rp.sid) rpGo(null); else closeReport(); } });
+  loadMonthNotes(); renderReport();
+}
+function closeReport(){ document.getElementById('rpWrap')?.remove(); rp=null; }
+async function loadMonthNotes(){
+  if(!rp || !db) return; const ym=rp.ym; rp.notes='loading';
+  try{ const snap=await db.collection('monthlyNotes').where('ym','==',ym).get();
+    if(!rp || rp.ym!==ym) return;
+    const o={}; snap.docs.forEach(d=>{ const v=d.data()||{}; if(typeof v.sid==='string' && typeof v.text==='string') o[v.sid]={ text:v.text.slice(0,200), by:String(v.by||'').slice(0,20), at:Number(v.at)||0 }; });
+    rp.notes=o;
+    if(rp.sid && !rp.dirty){ const n=o[rp.sid]; rp.draft=n?n.text:''; }   // 학생 화면에서 바로 열었을 때 저장된 한마디 채우기
+  }catch(e){ if(rp) rp.notes = e&&e.code==='permission-denied' ? 'rules' : 'error'; }
+  renderReport();
+}
+function rpStats(s, ym){
+  const key=s.id+'|'+ym, list=state.ckMonth[key];
+  if(!list){ loadCkMonth(s.id, ym).then(rpRefresh); return null; }
+  if(list==='loading') return null;
+  if(list==='error') return { err:true };
+  const t=HC.todayStr(), [y,m]=ym.split('-').map(Number), last=new Date(y,m,0).getDate();
+  const days=[...Array(last)].map((_,i)=>`${ym}-${String(i+1).padStart(2,'0')}`).filter(d=>d<=t);
+  const wd=d=>WD_KO[new Date(d+'T00:00:00').getDay()], cls=new Set(daysOf(s,ym));
+  const clsDays=days.filter(d=>cls.has(wd(d))), by={}; list.forEach(c=>by[c.date]=c);
+  const ck=Object.values(by), avg=k=>ck.length?ck.reduce((a,c)=>a+(Number(c[k])||0),0)/ck.length:null;
+  const st={GREEN:0,YELLOW:0,AMBER:0,RED:0}; ck.forEach(c=>{ if(st[c.status]!==undefined) st[c.status]++; });
+  const pains=ck.filter(c=>c.pain), areas={}; pains.forEach(c=>(c.painAreas||[]).forEach(a=>{ areas[a]=(areas[a]||0)+1; }));
+  const perf=evList(s).map(ev=>{ const r=(s.records[ev]||[]).filter(x=>x.date&&x.date.startsWith(ym)).sort((a,b)=>a.date.localeCompare(b.date));
+    if(!r.length) return null; const a=Number(r[0].value), b=Number(r[r.length-1].value), lower=LOWER_IS_BETTER.includes(ev);
+    const diff=Math.round((b-a)*100)/100, good=r.length>1 && (lower?diff<0:diff>0), bad=r.length>1 && (lower?diff>0:diff<0);
+    return { ev, from:a, to:b, n:r.length, good, bad, diff, unit:unitText(ev) }; }).filter(Boolean);
+  const prevKey=s.id+'|'+ymAdd(ym,-1), prev=state.ckMonth[prevKey];
+  if(!prev) loadCkMonth(s.id, ymAdd(ym,-1)).then(rpRefresh);
+  const prevSleep=Array.isArray(prev)&&prev.length ? prev.reduce((a,c)=>a+c.sleepMin,0)/prev.length : null;
+  return { clsDays:clsDays.length, clsDone:clsDays.filter(d=>by[d]).length, ckN:ck.length, st, sleep:avg('sleepMin'), ready:avg('readiness'), prevSleep,
+    pain:pains.length, areas:Object.entries(areas).sort((a,b)=>b[1]-a[1]).map(([a,n])=>a+' '+n).join(' · '), perf };
+}
+function rpList(){ return state.students.filter(s=>!rp.br||s.branch===rp.br).slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'ko')); }
+function rpGo(sid){
+  if(!rp) return;
+  rp.sid=sid; rp.msg=''; rp.dirty=false;
+  if(sid) loadPerf(sid).then(rpRefresh);   // 지난 달 실기 기록까지 (학생 기록 전체)
+  const n=sid&&rp.notes&&typeof rp.notes==='object'?rp.notes[sid]:null; rp.draft=n?n.text:'';
+  renderReport(); const w=document.getElementById('rpWrap'); if(w) w.scrollTop=0;
+}
+function rpRefresh(){ if(!rp) return; const b=document.getElementById('rpStat'), s=getStudent(rp.sid); if(b && s) b.innerHTML=rpStatHTML(s); else if(!rp.sid) renderReport(); }
+function rpSleepTxt(v){ return v==null?'-':HC.fmtSleep(Math.round(v/10)*10); }
+function renderReport(){
+  const el=document.getElementById('rpWrap'); if(!el || !rp) return;
+  const cur=HC.todayStr().slice(0,7), months=[ymAdd(cur,-1), cur, ymAdd(cur,-2)];
+  const notes=typeof rp.notes==='object'?rp.notes:null;
+  const top=`<div class="ss-top"><button type="button" class="ss-close" style="padding-left:0" onclick="${rp.sid?'rpGo(null)':'closeReport()'}">${rp.sid?'‹ 목록':'닫기'}</button><b style="flex:1;text-align:center;font-size:16px">월간 리포트</b><span style="width:52px"></span></div>`;
+  if(!rp.sid){
+    const L=rpList(), done=notes?L.filter(s=>notes[s.id]).length:0;
+    el.innerHTML=`<div class="ss-in">${top}
+      <div class="rp-chips" role="group" aria-label="달">${months.map(m=>`<button type="button" class="${rp.ym===m?'on':''}" aria-pressed="${rp.ym===m}" onclick="rp.ym='${m}'; loadMonthNotes(); renderReport();">${ymLabel(m)}${m===cur?' (진행 중)':''}</button>`).join('')}</div>
+      <div class="memo-card" style="border-left-color:var(--lime)"><div class="memo-h"><b>${ymLabel(rp.ym)} 선생님 한마디 쓴 학생</b><b style="margin-left:auto;color:var(--lime);font-size:18px">${notes?done+' / '+L.length+'명':'…'}</b></div>
+        <div class="rp-bar"><i style="width:${notes&&L.length?Math.round(done/L.length*100):0}%"></i></div>
+        <div class="stat-note">숫자와 기록은 자동으로 채워져요. 코치는 한마디만 쓰면 돼요. 학생 앱에는 보이지 않고, 상담이나 부모님께 보낼 그림으로 저장해요.</div></div>
+      ${rp.notes==='rules'?'<div class="memo-card"><b>Firebase 규칙에 monthlyNotes 를 추가해야 한마디를 저장할 수 있어요.</b></div>':rp.notes==='error'?'<div class="memo-card"><b>불러오지 못했어요. 인터넷을 확인해 주세요.</b></div>':''}
+      <div class="rp-chips" role="group" aria-label="지점">${[['','전체'],...BRANCHES.map(b=>[b,b.replace(/점$/,'')])].map(([v,l])=>`<button type="button" class="${rp.br===v?'on':''}" aria-pressed="${rp.br===v}" onclick="rp.br='${v}'; renderReport();">${l} ${state.students.filter(s=>!v||s.branch===v).length}</button>`).join('')}</div>
+      <div class="ss-list">${L.map(s=>{ const w=notes&&notes[s.id]; return `<button type="button" class="ss-row" onclick="rpGo('${s.id}')"><span class="ss-av">${esc((s.name||'?')[0])}</span><span class="ss-txt"><b>${esc(s.name)}</b><span>${esc([s.branch||'지점 없음',s.grade].filter(Boolean).join(' · '))}</span>${w?`<span class="ss-memo">${esc(w.text)}</span>`:''}</span><span class="ss-st" style="color:${w?'var(--lime)':'#8b94a9'};border-color:${w?'var(--lime)':'#3a4152'}">${notes?(w?'씀':'안 씀'):'…'}</span></button>`; }).join('') || '<div class="ss-empty">학생이 없어요</div>'}</div></div>`;
+    return;
+  }
+  const s=getStudent(rp.sid); if(!s){ rpGo(null); return; }
+  const n=notes&&notes[s.id];
+  el.innerHTML=`<div class="ss-in">${top}
+    <div><b style="font-size:22px">${esc(s.name)} · ${ymLabel(rp.ym)}</b><div class="stat-note">${esc([s.branch,s.grade,s.target].filter(Boolean).join(' · '))}</div></div>
+    <div id="rpStat">${rpStatHTML(s)}</div>
+    <div class="memo-card" style="border-left-color:var(--lime)">
+      <div class="memo-h"><b>선생님 한마디</b><span class="stat-note">200자 · 아픈 곳·몸 상태 내용은 적지 않기</span></div>
+      <textarea id="rpText" maxlength="200" rows="4" class="rp-text" aria-label="선생님 한마디" oninput="rp.draft=this.value; rp.dirty=true; document.getElementById('rpCnt').textContent=this.value.length+' / 200';">${esc(rp.draft||'')}</textarea>
+      <div class="rp-hints">${RP_HINTS.map((h,i)=>`<button type="button" onclick="rpHint(${i})">${esc(h)}</button>`).join('')}</div>
+      <div class="stat-note"><span id="rpCnt">${(rp.draft||'').length} / 200</span>${n?` · 저장됨 ${esc(n.by||'')} ${noteAgo(n.at)}`:''}</div>
+      ${rp.msg?`<div class="stat-note" role="alert" style="color:#ff7a66">${esc(rp.msg)}</div>`:''}
+    </div>
+    <div class="rp-btns"><button type="button" class="ghost-btn" onclick="rpImage()">이미지로 저장</button><button type="button" class="submit-btn" ${rp.saving?'disabled':''} onclick="rpSave(true)">${rp.saving?'저장하는 중…':'저장 · 다음 학생 ›'}</button></div>
+  </div>`;
+}
+function rpStatHTML(s){
+  const S=rpStats(s, rp.ym);
+  return !S ? skel(2,'이 달 기록 불러오는 중') : S.err ? '<div class="stat-note">이 달 기록을 불러오지 못했어요.</div>' : `
+    <div class="rp-grid">
+      <div><span>수업 날 체크인</span><b>${S.clsDays?S.clsDone+' / '+S.clsDays+'일':S.ckN+'번'}</b></div>
+      <div><span>컨디션</span><b>${[['GREEN','좋음'],['YELLOW','주의'],['AMBER','경고'],['RED','위험']].filter(([k])=>S.st[k]).map(([k,l])=>l+' '+S.st[k]).join(' · ')||'-'}</b></div>
+      <div><span>평균 잠</span><b>${rpSleepTxt(S.sleep)}</b>${S.sleep!=null&&S.prevSleep!=null&&Math.abs(S.sleep-S.prevSleep)>=10?`<small>${ymLabel(ymAdd(rp.ym,-1))}보다 ${Math.round(Math.abs(S.sleep-S.prevSleep))}분 ${S.sleep>S.prevSleep?'늘었어요':'줄었어요'}</small>`:''}</div>
+      <div><span>평균 준비도</span><b>${S.ready==null?'-':S.ready.toFixed(1)+' / 10'}</b></div>
+      <div class="wide"><span>통증 기록 <i>코치만</i></span><b>${S.pain?S.pain+'번'+(S.areas?' ('+esc(S.areas)+')':''):'없음'}</b></div>
+      <div class="wide"><span>실기 기록 (이 달 처음 → 마지막)</span><b class="rp-perf">${S.perf.length?S.perf.map(p=>`${esc(p.ev)} ${p.from}→${p.to}${esc(p.unit)}${p.n>1?` <i class="${p.good?'up':p.bad?'down':''}">${p.diff>0?'+':''}${p.diff}</i>`:''}`).join('<br>'):'이 달 기록 없음'}</b></div>
+    </div>`;
+}
+function rpHint(i){ const ta=document.getElementById('rpText'); if(!ta) return; const add=RP_HINTS[i]; const v=(ta.value.trim()?ta.value.trim()+' ':'')+add; ta.value=v.slice(0,200); rp.draft=ta.value; rp.dirty=true; document.getElementById('rpCnt').textContent=ta.value.length+' / 200'; ta.focus(); }
+async function rpSave(next){
+  if(!rp || !rp.sid || rp.saving || !db) return;
+  const sid=rp.sid, ym=rp.ym, text=String(rp.draft||'').trim().slice(0,200), id=sid+'_'+ym;
+  rp.saving=true; rp.msg=''; renderReport(); markUserWrite();
+  try{
+    const ref=db.collection('monthlyNotes').doc(id);
+    if(text) await ref.set({ sid, ym, text, by:String(state.me||'').slice(0,20), at:Date.now() }); else await ref.delete();
+    if(rp && typeof rp.notes==='object'){ if(text) rp.notes[sid]={ text, by:String(state.me||''), at:Date.now() }; else delete rp.notes[sid]; }
+    rp.saving=false; showToast(text?'한마디를 저장했어요':'한마디를 지웠어요');
+    if(next){ const L=rpList(), i=L.findIndex(s=>s.id===sid); const nx=L.slice(i+1).find(s=>!(rp.notes&&typeof rp.notes==='object'&&rp.notes[s.id])); rpGo(nx?nx.id:null); }
+    else renderReport();
+  }catch(e){ if(!rp) return; rp.saving=false; rp.msg = e&&e.code==='permission-denied' ? '저장 실패: Firebase 규칙에 monthlyNotes 추가가 필요해요' : '저장 실패: '+errKo(e); renderReport(); }
+}
+// 상담·학부모용 그림: 통증 기록은 넣지 않는다 (코치 화면에만)
+function rpImage(){
+  const s=getStudent(rp&&rp.sid); if(!s) return; const S=rpStats(s, rp.ym); if(!S || S.err){ showToast('기록을 불러온 뒤 다시 눌러 주세요'); return; }
+  const W=1080, c=document.createElement('canvas'), g=c.getContext('2d'), F="'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif";
+  const text=String(rp.draft||'').trim();
+  const wrap=(str,maxW)=>{ const out=[]; let line=''; for(const ch of Array.from(str)){ if(g.measureText(line+ch).width>maxW){ out.push(line); line=ch; } else line+=ch; } if(line) out.push(line); return out; };
+  g.font='500 40px '+F; const lines=text?wrap(text,W-200):['(한마디 없음)'];
+  const H=1300+lines.length*58+S.perf.length*60; c.width=W; c.height=H;
+  g.fillStyle='#12151c'; g.fillRect(0,0,W,H); g.textBaseline='top';
+  g.fillStyle='#c6ff3d'; g.font='800 32px '+F; g.fillText('HERO PHYSICAL DATA · '+ymLabel(rp.ym)+' 리포트',72,72);
+  g.fillStyle='#ffffff'; g.font='800 76px '+F; g.fillText(s.name,72,130);
+  g.fillStyle='#aab2c5'; g.font='500 34px '+F; g.fillText([s.branch,s.grade,s.target].filter(Boolean).join(' · '),72,230);
+  let y=320;
+  const box=(h,title)=>{ g.fillStyle='#1a1f29'; g.fillRect(56,y,W-112,h); g.fillStyle='#ffffff'; g.font='800 38px '+F; g.fillText(title,88,y+30); };
+  box(110+lines.length*58,'선생님 한마디'); g.fillStyle='#e6ebf2'; g.font='500 40px '+F; lines.forEach((l,i)=>g.fillText(l,88,y+90+i*58)); y+=140+lines.length*58;
+  box(300,'꾸준함 · 컨디션');
+  const cells=[['수업 날 체크인',S.clsDays?S.clsDone+' / '+S.clsDays+'일':S.ckN+'번'],['평균 잠',rpSleepTxt(S.sleep)],['평균 준비도',S.ready==null?'-':S.ready.toFixed(1)+' / 10']];
+  cells.forEach(([k,v],i)=>{ const x=88+i*310; g.fillStyle='#aab2c5'; g.font='500 30px '+F; g.fillText(k,x,y+100); g.fillStyle='#ffffff'; g.font='800 44px '+F; g.fillText(v,x,y+145); });
+  const tot=['GREEN','YELLOW','AMBER','RED'].reduce((a,k)=>a+S.st[k],0);
+  if(tot){ let x=88; const cw=W-176; [['GREEN','#c6ff3d'],['YELLOW','#ffd23f'],['AMBER','#ff9f1c'],['RED','#ff4b33']].forEach(([k,col])=>{ const w=cw*S.st[k]/tot; if(w>0){ g.fillStyle=col; g.fillRect(x,y+230,w,30); x+=w; } }); }
+  y+=330;
+  box(110+Math.max(1,S.perf.length)*60,'실기 기록 (내 지난 기록과 비교)');
+  g.font='600 36px '+F;
+  (S.perf.length?S.perf:[{ev:'이 달 기록 없음',from:'',to:'',unit:'',n:1}]).forEach((p,i)=>{ g.fillStyle='#e6ebf2'; g.fillText(p.from===''?p.ev:`${p.ev}  ${p.from} → ${p.to}${p.unit}`,88,y+90+i*60);
+    if(p.n>1){ g.fillStyle=p.good?'#c6ff3d':p.bad?'#ff9f1c':'#aab2c5'; g.textAlign='right'; g.fillText((p.diff>0?'+':'')+p.diff,W-88,y+90+i*60); g.textAlign='left'; } });
+  y+=140+Math.max(1,S.perf.length)*60;
+  g.fillStyle='#8b94a9'; g.font='500 28px '+F; g.fillText('다른 학생과 비교하거나 순위를 매기지 않아요.',72,Math.min(y+10,H-60)); y+=40;
+  const endY=Math.min(H, y+80), out=document.createElement('canvas'); out.width=W; out.height=endY; out.getContext('2d').drawImage(c,0,0);   // 아래 빈 공간 자르기
+  let url=''; try{ url=out.toDataURL('image/png'); }catch(e){}
+  if(!url){ showToast('이 기기에서는 그림을 만들 수 없어요'); return; }
+  const ov=document.createElement('div'); ov.className='ask-bg show'; ov.innerHTML=`<div class="ask" role="dialog" aria-modal="true" aria-label="리포트 그림"><div class="ask-grip"></div><h3>${esc(s.name)} ${ymLabel(rp.ym)} 리포트</h3>
+    <img src="${url}" alt="${esc(s.name)} ${ymLabel(rp.ym)} 리포트 그림" style="width:100%;border-radius:12px">
+    <p>아이폰·아이패드: 그림을 길게 눌러 '사진에 저장' · 컴퓨터: 아래 버튼</p>
+    <div class="ask-row"><a class="ask-ok" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="${url}" download="${esc(s.name)}-${rp.ym}-리포트.png">그림 저장</a><button type="button" class="ask-no">닫기</button></div></div>`;
+  ov.addEventListener('click',e=>{ if(e.target===ov||e.target.closest('.ask-no')) ov.remove(); });
+  document.body.appendChild(ov); ov.querySelector('.ask-no').focus();
+}
+
+/* ============ J-2 학생이 고른 이번 주 목표 (코치는 보기만) ============ */
+const GOAL_T={ sleep:'잠 7시간 이상 자기', ready:'준비도 7 이상으로 수업 오기', checkin:'수업 날 체크인 하기', breakfast:'아침 먹고 오기' };
+function goalLineHTML(s){
+  const g=s.weekGoal; if(!g || typeof g!=='object' || !GOAL_T[g.type]) return '';
+  const t=HC.todayStr(), wk=HC.addDays(t,-((new Date(t+'T00:00:00').getDay()+6)%7));
+  if(g.wk!==wk) return '';
+  const n=Math.max(1,Math.min(7,Math.round(Number(g.n)||0)));
+  const days=[...Array(7)].map((_,i)=>HC.addDays(wk,i)).filter(d=>d<=t);
+  const by={}; (state.hist[s.id]||[]).forEach(c=>by[c.date]=c); const tc=todayCkOf(s.id); if(tc) by[tc.date]=tc;
+  let done=null;
+  if(g.type==='sleep') done=days.filter(d=>by[d]&&by[d].sleepMin>=420).length;
+  else if(g.type==='ready') done=days.filter(d=>by[d]&&by[d].readiness>=7).length;
+  else if(g.type==='checkin'){ const cls=d=>daysOf(s,d.slice(0,7)).includes(WD_KO[new Date(d+'T00:00:00').getDay()]); const any=days.some(cls); done=days.filter(d=>by[d]&&(!any||cls(d))).length; }
+  else if(g.type==='breakfast'){ const m=state.meals7&&state.meals7.map&&typeof state.meals7.map==='object'?state.meals7.map[s.id]:null; if(m) done=days.filter(d=>m[d]&&m[d].breakfast&&['ate','little'].includes(m[d].breakfast.status)).length; }
+  const prog=done===null?'':` · ${Math.min(done,n)}/${n}${done>=n?' 달성':''}`;
+  return `<div class="goal-line">${ic('check',16)}<span>학생이 고른 이번 주 목표: <b>${esc(GOAL_T[g.type])} ${n}번</b>${prog}</span></div>`;
+}
+
 /* ============ I-1: D-day 한 줄 (요약 탭) ============ */
 function ddayMiniHTML(s){
   const l=studentExams(s.id);
-  if(!l){ if(!state.exams[s.id]) fetchStudentExams(s.id).then(()=>{ const s2=getStudent(state.selectedId); if(s2 && s2.id===s.id && state.activeTab==='overview' && !document.querySelector('.dd-mini') && !document.querySelector('.modal-overlay,.ask-bg')) rerender(); }); return ''; }
+  if(!l){ if(!state.exams[s.id]) fetchStudentExams(s.id).then(()=>{ const s2=getStudent(state.selectedId); if(s2 && s2.id===s.id && state.activeTab==='overview' && !document.querySelector('.dd-mini:not(.rp-open)') && !document.querySelector('.modal-overlay,.ask-bg')) rerender(); }); return ''; }
   const t=HC.todayStr(), next=l.filter(x=>x.status==='active' && x.examDate>=t).sort((a,b)=>a.examDate.localeCompare(b.examDate))[0];
   if(!next) return '';
   const n=exDiff(next.examDate,t);

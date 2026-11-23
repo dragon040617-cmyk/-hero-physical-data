@@ -325,6 +325,11 @@
   .cele{ position:fixed; inset:0; z-index:100; background:rgba(8,10,14,.82); display:flex; align-items:center; justify-content:center; padding:24px; overflow:hidden; }
   .cele-card{ position:relative; z-index:2; width:min(360px,100%); background:var(--surface); border:2px solid var(--lime); border-radius:20px; padding:26px 22px 20px; text-align:center; animation:pop .35s ease-out; }
   .cele-burst{ font-size:52px; line-height:1; }
+  .cele-btns{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:16px; }
+  .cele-btns .btn{ margin:0; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:15px; }
+  .cele-left{ color:var(--muted); font-size:13px; }
+  .rc-card{ width:min(380px,100%); padding:16px; }
+  .rc-img{ display:block; width:100%; height:auto; border-radius:14px; }
   .cele-t{ font-size:22px; font-weight:800; margin-top:10px; color:var(--lime); }
   .cele-v{ font-size:40px; font-weight:800; margin-top:4px; font-variant-numeric:tabular-nums; }
   .cele-s{ font-size:15px; color:var(--muted); margin:6px 0 18px; line-height:1.55; }
@@ -386,6 +391,26 @@
   .tip-card b{font-size:14px;color:#12151c}.tip-card span{font-size:13px;line-height:1.5}
   .tip-card button{align-self:flex-end;min-height:36px;padding:0 14px;border-radius:10px;border:0;background:#12151c;color:#fff;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
   .bnav button .ic{display:flex}
+  /* J-2 이번 주 내 목표 */
+  .goal-wrap{ margin:0 0 16px; }
+  .goal-box{ display:flex; flex-direction:column; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:16px; }
+  .goal-box.empty{ border-style:dashed; border-color:#5d6578; }
+  .goal-box.full{ border-color:var(--lime); }
+  .goal-top{ display:flex; justify-content:space-between; align-items:center; }
+  .goal-h{ font-size:16px; }
+  .goal-t{ font-size:15px; }
+  .goal-opt{ min-height:60px; padding:10px 14px; border-radius:14px; background:var(--bg); border:1px solid var(--line); color:var(--text); font:inherit; text-align:left; cursor:pointer; }
+  .goal-opt>span{ display:flex; flex-direction:column; gap:2px; }
+  .goal-opt b{ font-size:15px; } .goal-opt span span{ font-size:12.5px; color:var(--muted); }
+  .goal-opt.on{ background:var(--lime-soft); border:2px solid var(--lime); }
+  .goal-sug{ font-style:normal; font-size:12px; color:#0d1a03; background:var(--lime); border-radius:8px; padding:1px 7px; margin-left:4px; vertical-align:middle; }
+  .goal-ns{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+  .goal-ns button{ min-height:46px; border-radius:12px; background:var(--bg); color:var(--text); border:1px solid var(--line); font:inherit; font-size:15px; font-weight:800; cursor:pointer; }
+  .goal-ns button.on{ background:var(--lime); color:#0d1a03; border-color:var(--lime); }
+  .goal-slots{ display:flex; gap:8px; flex-wrap:wrap; }
+  .goal-slots i{ width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-style:normal; font-weight:800; border:2px dashed #5d6578; color:#5d6578; box-sizing:border-box; }
+  .goal-slots i.on{ background:var(--lime); color:#0d1a03; border:0; }
+  .goal-msg{ font-size:13.5px; color:var(--lime); font-weight:800; }
 </style>
 </head>
 <body>
@@ -1259,7 +1284,7 @@ async function openMe(fromPop){
 auth.onAuthStateChanged(async user=>{
   stopListening();
   // 로그인 안 됨 → 첫 화면(코치·학생 공용 로그인)으로. 코치 계정이면 코치 화면으로.
-  if(!user){ myStudent=null; myCheckins=[]; ttList=null; ttAll=false; exList=null; exErr=''; exForm=null; exEnabled=true; ttSeg='class'; mealToday=null; mealLoaded=false; mealMonth={}; mealEnabled=true; mealDraft=null; goHome(); return; }
+  if(!user){ myStudent=null; myCheckins=[]; ttList=null; ttAll=false; myGoal=null; goalPick=null; exList=null; exErr=''; exForm=null; exEnabled=true; ttSeg='class'; mealToday=null; mealLoaded=false; mealMonth={}; mealEnabled=true; mealDraft=null; goHome(); return; }
   if(((user.providerData||[])[0]||{}).providerId!=='google.com'){ goHome(); return; }
   lsSet('heroRole','student');
   $('user-email').textContent=user.email;
@@ -1518,6 +1543,7 @@ function showResult(){
       <div class="chips"><button class="chip" data-a="copy">복사하기</button></div></div>`:''}
 
     <div class="sec" id="wk-box">${weekHTML()}</div>
+    <div class="goal-wrap">${goalHTML()}</div>
 
     ${weekCompareHTML()}
     <div class="sec"><div class="sec-t">${an.ready?'평소(최근 '+BASELINE_WINDOW_DAYS+'일)와 비교':'오늘 기록 · 평소 비교는 최근 '+BASELINE_WINDOW_DAYS+'일 중 '+BASELINE_MIN_DAYS+'번 기록하면 시작 ('+hist.length+'/'+BASELINE_MIN_DAYS+')'}</div>
@@ -2232,9 +2258,106 @@ function homeHTML(){
     <div id="do-big">${doBigHTML(false)}</div>
     <div id="days-hint">${daysHintHTML()}</div>
     <div class="sec" id="wk-box">${weekHTML()}</div>
+    <div class="goal-wrap">${goalHTML()}</div>
     <div id="tt-today">${ttTodayHTML()}</div>`;
 }
 
+
+/* ============ J-2 이번 주 내 목표 (학생이 고르는 1개 · 체크인/식사 기록으로 저절로 채움 · 못 채워도 벌점·끊김 없음) ============
+   students/{id}.weekGoal = { wk:'그 주 월요일', type:'sleep'|'ready'|'checkin'|'breakfast', n:2~5, at:시각 } */
+const GOALS={
+  sleep:{ t:'잠 7시간 이상 자기', s:'체크인의 수면 시간으로 자동 체크', unit:'번' },
+  ready:{ t:'준비도 7 이상으로 수업 오기', s:'전날 일찍 자고 미리 몸 풀기', unit:'번' },
+  checkin:{ t:'수업 날 체크인 하기', s:'수업 있는 날 기준', unit:'번' },
+  breakfast:{ t:'아침 먹고 오기', s:'식사 기록에서 아침 먹음·조금 먹음 = 체크', unit:'번' }
+};
+let myGoal=null, goalPick=null, goalSaving=false, goalMsg='';
+function goalMonday(d){ const dow=(new Date(d+'T00:00:00').getDay()+6)%7; return addDays(d,-dow); }
+function parseGoal(g){
+  if(!g || typeof g!=='object' || !GOALS[g.type] || !/^\d{4}-\d{2}-\d{2}$/.test(String(g.wk||''))) return null;
+  const n=Math.round(Number(g.n)); if(!(n>=1 && n<=7)) return null;
+  return { wk:g.wk, type:g.type, n, at:Number(g.at)||0 };
+}
+function goalOptions(){ return Object.keys(GOALS).filter(k=>k!=='breakfast' || mealEnabled); }
+// 학생에 맞게: 최근 4주 기록에서 가장 도움이 될 목표를 '추천'으로 보여 준다
+function goalSuggest(){
+  const t=todayStr(), from=addDays(t,-28), h=myCheckins.filter(c=>c.date>=from && c.date<=t);
+  if(h.length<3) return 'checkin';
+  const avg=k=>h.reduce((a,c)=>a+(Number(c[k])||0),0)/h.length;
+  const cls=d=>daysFor(d.slice(0,7)).includes(WEEK[(new Date(d+'T00:00:00').getDay()+6)%7]);
+  let clsDays=0, clsDone=0; for(let i=0;i<28;i++){ const d=addDays(t,-i); if(cls(d)){ clsDays++; if(h.some(c=>c.date===d)) clsDone++; } }
+  if(clsDays>=4 && clsDone/clsDays<0.6) return 'checkin';
+  if(avg('sleepMin')<420) return 'sleep';
+  if(avg('readiness')<6.5) return 'ready';
+  return mealEnabled ? 'breakfast' : 'sleep';
+}
+function goalWeekDays(wk){ const t=todayStr(); return [...Array(7)].map((_,i)=>addDays(wk,i)).filter(d=>d<=t); }
+function goalDoneDays(g){
+  const days=goalWeekDays(g.wk), by={}; myCheckins.forEach(c=>{ by[c.date]=c; });
+  if(g.type==='sleep') return days.filter(d=>by[d] && by[d].sleepMin>=420);
+  if(g.type==='ready') return days.filter(d=>by[d] && by[d].readiness>=7);
+  if(g.type==='checkin'){ const isCls=d=>daysFor(d.slice(0,7)).includes(WEEK[(new Date(d+'T00:00:00').getDay()+6)%7]); const any=days.some(isCls); return days.filter(d=>by[d] && (!any || isCls(d))); }
+  if(g.type==='breakfast'){
+    const yms=[...new Set(days.map(d=>d.slice(0,7)))]; let ready=true;
+    yms.forEach(ym=>{ if(!mealMonth[ym] || mealMonth[ym]==='loading'){ ready=false; if(!mealMonth[ym]) loadMealMonth(ym).then(refreshGoal); } });
+    if(!ready) return null;
+    return days.filter(d=>{ const m=mealMonth[d.slice(0,7)]; const s=m&&m!=='error'&&m[d]&&m[d].breakfast; return s && (s.status==='ate'||s.status==='little'); });
+  }
+  return [];
+}
+function goalHTML(){
+  const t=todayStr(), wk=goalMonday(t), g=myGoal && myGoal.wk===wk ? myGoal : null, opts=goalOptions();
+  if(goalPick){
+    const sug=goalSuggest();
+    return `<div class="goal-box"><b class="goal-h">이번 주 무엇을 해 볼까요?</b>
+      ${opts.map(k=>`<button type="button" class="goal-opt ${goalPick.type===k?'on':''}" aria-pressed="${goalPick.type===k}" data-g="type" data-k="${k}"><span><b>${GOALS[k].t}${k===sug?' <i class="goal-sug">추천</i>':''}</b><span>${GOALS[k].s}</span></span></button>`).join('')}
+      ${mealEnabled?'':'<p class="note" style="margin:0">내 정보에서 식사 기록을 켜면 \'아침 먹고 오기\'도 고를 수 있어요.</p>'}
+      <span class="note">몇 번?</span>
+      <div class="goal-ns">${[2,3,4,5].map(n=>`<button type="button" class="${goalPick.n===n?'on':''}" aria-pressed="${goalPick.n===n}" data-g="n" data-n="${n}">${n}번</button>`).join('')}</div>
+      <button type="button" class="btn" data-g="save" ${goalSaving?'disabled':''}>${goalSaving?'저장하는 중…':'이번 주 목표로 정하기'}</button>
+      ${g?'<button type="button" class="link" data-g="cancel">그대로 두기</button>':''}
+      <p class="note" style="margin:0">월요일마다 새로 골라요. 주 중간에 바꿔도 돼요.</p>
+      ${goalMsg?`<p class="err" role="alert" style="margin:0">${esc(goalMsg)}</p>`:''}</div>`;
+  }
+  if(!g){
+    const last=myGoal && myGoal.wk===addDays(wk,-7) ? myGoal : null;
+    let lastLine='';
+    if(last){ const dd=goalDoneDaysFor(last); if(dd) lastLine=`<p class="note" style="margin:0">지난주 '${GOALS[last.type].t}' ${Math.min(dd.length,last.n)}/${last.n}번${dd.length>=last.n?' — 해냈어요!':''}</p>`; }
+    return `<div class="goal-box empty"><b class="goal-h">이번 주 내 목표</b>${lastLine}
+      <span class="note">하나만 골라 보세요. 체크인하면 저절로 채워져요. 못 채워도 괜찮아요.</span>
+      <button type="button" class="btn" data-g="open">목표 고르기</button></div>`;
+  }
+  const dd=goalDoneDays(g);
+  if(!dd) return `<div class="goal-box"><b class="goal-h">이번 주 내 목표</b><span class="note">불러오는 중…</span></div>`;
+  const done=Math.min(dd.length,g.n), full=dd.length>=g.n, sunday=new Date(t+'T00:00:00').getDay()===0;
+  const slots=[...Array(g.n)].map((_,i)=>`<i class="${i<done?'on':''}" aria-hidden="true">${i<done?'✓':''}</i>`).join('');
+  const msg = full ? '이번 주 목표 해냈어요! 🎉' : sunday ? `${done}/${g.n}번 했어요. 다음 주에 다시 해 봐요` : `${done} / ${g.n}번 · ${g.n-done===1?'한 번만 더 하면 돼요':'천천히 채워 봐요'}`;
+  return `<div class="goal-box ${full?'full':''}"><div class="goal-top"><b class="goal-h">이번 주 내 목표</b><button type="button" class="link" data-g="open">바꾸기</button></div>
+    <b class="goal-t">${GOALS[g.type].t} ${g.n}번</b>
+    <div class="goal-slots" role="img" aria-label="${g.n}번 중 ${done}번 했어요">${slots}</div>
+    <span class="goal-msg">${msg}</span></div>`;
+}
+function goalDoneDaysFor(g){ return goalDoneDays(g); }
+function refreshGoal(){ document.querySelectorAll('.goal-wrap').forEach(el=>{ el.innerHTML=goalHTML(); }); }
+async function saveGoal(){
+  if(goalSaving || !goalPick) return;
+  if(!goalOptions().includes(goalPick.type)){ goalMsg='목표를 골라 주세요'; refreshGoal(); return; }
+  goalSaving=true; goalMsg=''; refreshGoal();
+  const g={ wk:goalMonday(todayStr()), type:goalPick.type, n:goalPick.n, at:Date.now() };
+  try{ await db.collection('students').doc(myStudent.id).update({ weekGoal:g }); myGoal=g; goalPick=null; }
+  catch(e){ goalMsg = e&&e.code==='permission-denied' ? '아직 목표를 저장할 수 없어요. 선생님께 "목표 저장이 안 돼요"라고 말씀해 주세요.' : '저장 실패: '+errKo(e); }
+  goalSaving=false; refreshGoal();
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-g]'); if(!b || !b.closest('.goal-wrap')) return;
+  const a=b.dataset.g, t=todayStr(), wk=goalMonday(t), cur=myGoal&&myGoal.wk===wk?myGoal:null;
+  if(a==='open'){ goalPick={ type:cur?cur.type:goalSuggest(), n:cur?cur.n:3 }; if(!goalOptions().includes(goalPick.type)) goalPick.type=goalOptions()[0]; goalMsg=''; refreshGoal(); }
+  else if(a==='type'){ goalPick.type=b.dataset.k; refreshGoal(); }
+  else if(a==='n'){ goalPick.n=Number(b.dataset.n); refreshGoal(); }
+  else if(a==='cancel'){ goalPick=null; goalMsg=''; refreshGoal(); }
+  else if(a==='save'){ saveGoal(); }
+  const f=document.querySelector(`.goal-wrap [data-g="${a}"]${b.dataset.k?`[data-k="${b.dataset.k}"]`:''}${b.dataset.n?`[data-n="${b.dataset.n}"]`:''}`); if(f && a!=='save') f.focus({preventScroll:true});
+});
 
 /* ============ 아래 메뉴 ============ */
 $('bnav').addEventListener('click',e=>{
@@ -2320,6 +2443,7 @@ async function loadPerfData(){
     myDaysLoaded=true; refreshDaysUI();
     exEnabled = x.examScheduleEnabled!==false;   // 없으면 켜짐
     mealEnabled = x.mealLogEnabled!==false;      // 없으면 켜짐 (기록은 언제나 선택)
+    myGoal = parseGoal(x.weekGoal); refreshGoal();
     refreshMealRow();
     renderFeatBox(); refreshTodayCard();
     myInfo={ name:String(x.name||myStudent.name||''), grade:String(x.grade||''), branch:String(x.branch||''), target:String(x.target||'') };
@@ -2486,6 +2610,48 @@ async function savePerf(){
     e2.textContent=e.code==='permission-denied'?'기록 저장 권한이 아직 없어요. 선생님께 "실기 기록 저장이 안 돼요"라고 말씀해 주세요.':'저장 실패: '+errKo(e);
   }
 }
+/* ---- J-1 기록 카드: 내 기록만 담은 그림 (이름·학교·지점·다른 학생·컨디션은 넣지 않음) ---- */
+function recordCardCanvas(ev,v,prev,goal){
+  const W=1080,H=1350,c=document.createElement('canvas'); c.width=W; c.height=H;
+  const g=c.getContext('2d'), F="'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif";
+  const bg=g.createLinearGradient(0,0,W*0.6,H); bg.addColorStop(0,'#1f2a12'); bg.addColorStop(0.6,'#12151c'); bg.addColorStop(1,'#12151c');
+  g.fillStyle=bg; g.fillRect(0,0,W,H);
+  g.strokeStyle='#3b4d1a'; g.lineWidth=4; g.strokeRect(2,2,W-4,H-4);
+  g.fillStyle='#c6ff3d'; g.font='800 34px '+F; g.textBaseline='top'; g.fillText('HERO PHYSICAL',72,72);
+  const d=todayStr().replace(/-/g,'.'); g.fillStyle='#8b94a9'; g.font='500 32px '+F; g.textAlign='right'; g.fillText(d,W-72,72); g.textAlign='left';
+  g.fillStyle='#d6dbe6'; g.font='600 46px '+F; g.fillText(ev,72,330);
+  const num=String(v), unit=PERF.unitOf(ev)||'';
+  g.fillStyle='#ffffff'; g.font='800 200px '+F; g.fillText(num,64,400);
+  const nw=g.measureText(num).width; g.fillStyle='#aab2c5'; g.font='700 70px '+F; g.fillText(unit,64+nw+18,520);
+  const badge=prev?('내 최고 기록 · '+(PERF.isLower(ev)?'−':'+')+PERF.withUnit(ev,Math.round(Math.abs(v-prev.value)*100)/100)):(goal?'목표 달성!':'내 기록');
+  g.font='800 40px '+F; const bw=g.measureText(badge).width+56;
+  g.fillStyle='#c6ff3d'; if(g.roundRect){ g.beginPath(); g.roundRect(72,650,bw,76,22); g.fill(); } else g.fillRect(72,650,bw,76);
+  g.fillStyle='#0d1a03'; g.fillText(badge,100,668);
+  const recs=perfRecs(ev).slice(-6);
+  if(recs.length>=2){
+    g.fillStyle='#8b94a9'; g.font='600 32px '+F; g.fillText('내 최근 기록',72,880);
+    const xs=72, xe=W-72, yt=950, yb=1170, vals=recs.map(r=>Number(r.value)), lo=Math.min(...vals), hi=Math.max(...vals), span=(hi-lo)||1;
+    const up=PERF.isLower(ev)?(x=>yb-(hi-x)/span*(yb-yt)):(x=>yb-(x-lo)/span*(yb-yt));
+    const px=i=>xs+(xe-xs)*i/(recs.length-1);
+    g.strokeStyle='#c6ff3d'; g.lineWidth=8; g.lineJoin='round'; g.lineCap='round'; g.beginPath();
+    vals.forEach((x,i)=>{ i?g.lineTo(px(i),up(x)):g.moveTo(px(i),up(x)); }); g.stroke();
+    vals.forEach((x,i)=>{ g.beginPath(); g.fillStyle=i===vals.length-1?'#c6ff3d':'#aab2c5'; g.arc(px(i),up(x),i===vals.length-1?16:11,0,Math.PI*2); g.fill(); });
+    g.fillStyle='#8b94a9'; g.font='500 30px '+F;
+    g.fillText(PERF.md(recs[0].date)+' '+recs[0].value,xs,1200); g.textAlign='right'; g.fillText('오늘 '+num,xe,1200); g.textAlign='left';
+  }
+  return c;
+}
+function showRecordCard(ev,v,prev,goal){
+  let url=''; try{ url=recordCardCanvas(ev,v,prev,goal).toDataURL('image/png'); }catch(e){ url=''; }
+  const box=document.createElement('div');
+  box.className='cele'; box.setAttribute('role','dialog'); box.setAttribute('aria-modal','true'); box.setAttribute('aria-label','기록 카드');
+  box.innerHTML=`<div class="cele-card rc-card">${url?`<img class="rc-img" src="${url}" alt="${esc(ev)} ${esc(PERF.withUnit(ev,v))} 기록 카드">`:'<p class="note">이 기기에서는 카드를 만들 수 없어요.</p>'}
+    <p class="note" style="margin:10px 0 0">아이폰: 그림을 길게 눌러 '사진에 저장'<br>안드로이드·컴퓨터: 아래 버튼으로 저장</p>
+    <div class="cele-btns">${url?`<a class="btn" href="${url}" download="HERO-${esc(ev)}-${todayStr()}.png">그림 저장</a>`:''}<button class="btn btn-2" type="button" data-cele="ok">닫기</button></div></div>`;
+  box.addEventListener('click',e=>{ if(e.target===box||e.target.closest('[data-cele]')) box.remove(); });
+  box.addEventListener('keydown',e=>{ if(e.key==='Escape') box.remove(); });
+  document.body.appendChild(box); box.querySelector('[data-cele]').focus();
+}
 /* ---- 개인 최고·목표 달성 축하 (나와 선생님만 보는 기록. 순위는 없음) ---- */
 function celebrateIfBest(ev,v,rid){
   if(!PERF.isKnown(ev)||PERF.rangeWarn(ev,v)) return;   // 범위 밖 값(단위 실수일 수 있음)은 축하하지 않는다
@@ -2493,17 +2659,20 @@ function celebrateIfBest(ev,v,rid){
   const pb=others.length>0&&others.every(r=>PERF.better(ev,v,r.value));
   const tg=perfTarget(ev), t=tg===null?NaN:Number(tg), reach=x=>Number.isFinite(t)&&(PERF.isLower(ev)?x<=t:x>=t);
   const goal=reach(v)&&!others.some(r=>reach(r.value));
+  if(!others.length){ perf.savedNote=(perf.savedNote?perf.savedNote+' ':'')+'첫 기록 저장! 다음 기록부터 내 최고와 비교해 줘요.'; renderPerf(); return; }
   if(!pb&&!goal) return;
   const prev=pb?others.reduce((b,r)=>PERF.better(ev,r.value,b.value)?r:b,others[0]):null;
-  const sub=(pb?'이전 최고 '+PERF.withUnit(ev,prev.value)+' → '+(PERF.isLower(ev)?'−':'+')+PERF.withUnit(ev,Math.round(Math.abs(v-prev.value)*100)/100):'')+(goal?(pb?'<br>':'')+'목표 '+esc(PERF.withUnit(ev,t))+' 달성!':'');
+  const sub=(pb?'이전 최고 '+PERF.withUnit(ev,prev.value)+' → '+(PERF.isLower(ev)?'−':'+')+PERF.withUnit(ev,Math.round(Math.abs(v-prev.value)*100)/100):'')+(goal?(pb?'<br>':'')+'목표 '+esc(PERF.withUnit(ev,t))+' 달성!':'')
+    +(pb&&!goal&&Number.isFinite(t)&&!reach(v)?'<br><span class="cele-left">목표 '+esc(PERF.withUnit(ev,t))+'까지 '+esc(PERF.withUnit(ev,Math.round(Math.abs(t-v)*100)/100))+' 남았어요</span>':'');
   const colors=['#c6ff3d','#ff9f1c','#4fc3ff','#ff4b33','#ffd23f'];
   const bits=[...Array(24)].map((_,i)=>`<i style="left:${(i*37)%100}%;background:${colors[i%5]};animation-duration:${1.6+(i%5)*0.35}s;animation-delay:${(i%6)*0.08}s"></i>`).join('');
   const box=document.createElement('div');
   box.className='cele'; box.setAttribute('role','dialog'); box.setAttribute('aria-modal','true'); box.setAttribute('aria-label',pb?'개인 최고 기록':'목표 달성');
   box.innerHTML=bits+`<div class="cele-card"><div class="cele-burst" aria-hidden="true">${pb?'🏅':'🎯'}</div><div class="cele-t">${pb?'개인 최고 기록!':'목표 달성!'}</div>
-    <div class="cele-v">${esc(PERF.withUnit(ev,v))}</div><div class="cele-s">${esc(ev)}<br>${sub}</div><button class="btn" type="button">좋아요</button></div>`;
+    <div class="cele-v">${esc(PERF.withUnit(ev,v))}</div><div class="cele-s">${esc(ev)}<br>${sub}</div>
+    <div class="cele-btns"><button class="btn" type="button" data-cele="card">기록 카드 만들기</button><button class="btn btn-2" type="button" data-cele="ok">좋아요</button></div></div>`;
   const close=()=>{ box.remove(); const fb=$('pf-fb'); if(fb) fb.scrollIntoView({block:'start'}); };
-  box.addEventListener('click',e=>{ if(e.target===box||e.target.closest('.btn')) close(); });
+  box.addEventListener('click',e=>{ const b=e.target.closest('[data-cele]'); if(b&&b.dataset.cele==='card'){ box.remove(); showRecordCard(ev,v,pb?prev:null,goal); return; } if(e.target===box||b) close(); });
   box.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
   document.body.appendChild(box); box.querySelector('.btn').focus();
 }
