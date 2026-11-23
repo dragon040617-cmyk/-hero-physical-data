@@ -405,6 +405,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
     }
     .bn-item .bn-icon{ position:relative; line-height:1; display:flex; }
     .bn-item.active{ color:var(--lime); }
+    .bn-plus{ flex:0 0 auto; align-self:center; width:56px; height:52px; margin:0 4px; border-radius:18px; border:0; background:var(--lime); color:#0d1a03; display:flex; align-items:center; justify-content:center; cursor:pointer; }
     .toast{ bottom:calc(76px + env(safe-area-inset-bottom)); }
 
     /* ---- 여유 있고 보기 편한 모바일 레이아웃 ---- */
@@ -1119,6 +1120,11 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .dd-mini{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px;padding:10px 14px;margin-bottom:14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit;font-size:14px;text-align:left;cursor:pointer}
   .dd-mini .dd-n{font-size:20px;color:var(--lime);flex:0 0 auto}
   .why-h{color:var(--text)}
+  .join-band{width:100%;display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 14px;margin:0 0 14px;border-radius:14px;border:1px solid var(--lime);background:var(--lime-soft);color:var(--lime);font:inherit;text-align:left;cursor:pointer}
+  .join-band>span{flex:1;display:flex;flex-direction:column;gap:2px}
+  .join-band b{font-size:15px;color:var(--text)}.join-band span span{font-size:12.5px;color:var(--text-muted)}
+  .join-back{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 10px 0 4px;margin-bottom:8px;border:0;background:transparent;color:var(--lime);font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+  .join-back svg{transform:rotate(180deg)}
 </style>
 </head>
 <body>
@@ -1907,6 +1913,7 @@ function renderTeamOverview(){
           <div class="tagline">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})} · 체크인 ${done}/${list.length}명 · ${fetched} 기준</div></div></div>
         <button class="ghost-btn" style="flex:0 0 auto; padding:8px 14px; min-height:44px;" onclick="refreshCheckins()">↻ 새로고침</button>
       </div>
+      ${joinBandHTML()}
       ${tipHTML('c-brief','처음 안내 · 브리핑','빨간 줄 학생부터 보고, 직접 확인했으면 오른쪽 \'확인\'을 눌러요 (이 기기에만 기억). 학생 이름을 누르면 그 학생 화면으로 가요. 오른쪽 위 + 로 일지·수업·메모를 바로 열 수 있어요.')}
       <div class="bt-tabs" role="tablist" aria-label="지점">${tabs.map(([v,l])=>`<button type="button" role="tab" aria-selected="${branch===v}" class="${branch===v?'on':''}" onclick="state.briefBranch='${v}'; state.briefMore={}; state.briefFilter=''; rerender();">${l}</button>`).join('')}</div>
       ${meBarHTML('brief')}
@@ -2573,7 +2580,7 @@ function renderFatigueTab(s){
       <td><span class="ck-dot" style="background:${STATUS_COLOR[st]};"></span>${esc((STATUS_KO[st]||st).split(' · ')[0])}</td>
       <td class="mono">${HC.fmtSleep(c.sleepMin)}</td><td class="mono">${c.sleepQuality}</td><td class="mono">${c.fatigue}</td>
       <td class="mono">${c.soreness}${c.soreness>0&&(c.sorenessAreas||[]).length?' · '+esc(c.sorenessAreas.join('·')):''}</td>
-      <td class="mono">${c.stress}</td><td class="mono">${c.readiness}${c.entrySame?' <span class="stat-note" title="어제랑 같아요로 기록">같음</span>':''}</td>
+      <td class="mono">${c.stress}</td><td class="mono">${c.readiness}</td>
       <td>${c.pain?`<span style="color:#ff4b33;">${esc((c.painAreas||[]).join('·'))} ${c.painLevel}/10</span>`:'-'}</td>
     </tr>`;
   }).join('');
@@ -2888,7 +2895,6 @@ function rerenderInner(){
       <button class="hamburger" onclick="toggleSidebar()" aria-label="학생 목록 열기">☰</button>
       <span class="mobile-brand">HERO PHYSICAL DATA</span>
       <button class="mt-ic" onclick="openStuSearch()" aria-label="학생 검색">${ic('search',20)}</button>
-      <button class="mt-ic plus" onclick="openQuick()" aria-label="빠른 메뉴 (일지·수업·결제·메모)">${ic('plus',22,2.4)}</button>
     </div>` + renderSidebar() + (state.schedOpen ? renderScheduleView() : state.mgmtOpen ? renderMgmtView() : state.joinOpen ? renderJoinView() : state.teamViewOpen ? renderTeamOverview() : state.classLogOpen ? renderClassLogView() : renderMain())
     + renderBottomNav();
   destroyCharts();
@@ -2898,13 +2904,14 @@ function rerenderInner(){
   document.getElementById('sidebarBackdrop')?.classList.toggle('show', state.mobileSidebarOpen);
 }
 function renderBottomNav(){
-  const tab = state.schedOpen ? 'sched' : state.mgmtOpen ? 'student' : state.joinOpen ? 'join' : state.teamViewOpen ? 'team' : state.classLogOpen ? 'log' : 'student';
+  const tab = state.schedOpen ? 'sched' : state.mgmtOpen ? 'student' : state.joinOpen ? 'student' : state.teamViewOpen ? 'team' : state.classLogOpen ? 'log' : 'student';
   const pend = pendingJoins().length;
   const danger = state.students.filter(s=>statusOf(s)==='RED').length;   // 옆 메뉴 '위험 N'과 같은 기준 (브리핑의 위험 수)
   return `
     <nav class="bottom-nav" aria-label="코치 메뉴">
-      ${[['team','brief','브리핑',danger],['student','stu','학생',0],['sched','sched','일정',0],['log','log','수업일지',0],['join','join','가입 승인',pend]].map(([k,icn,l,b])=>
-        `<button class="bn-item ${tab===k?'active':''}" ${tab===k?'aria-current="page"':''} onclick="bottomNavGo('${k}')"><span class="bn-icon">${ic(icn,24)}${b?`<span class="bn-badge">${b}</span>`:''}</span><span>${l}</span></button>`).join('')}
+      ${[['team','brief','브리핑',danger],['student','stu','학생',pend],['+'],['sched','sched','일정',0],['log','log','수업일지',0]].map(([k,icn,l,b])=> k==='+'
+        ? `<button class="bn-plus" onclick="openQuick()" aria-label="빠른 메뉴 (일지·수업·결제·메모)">${ic('plus',26,2.4)}</button>`
+        : `<button class="bn-item ${tab===k?'active':''}" ${tab===k?'aria-current="page"':''} onclick="bottomNavGo('${k}')" ${k==='student'&&b?`aria-label="학생 · 가입 승인 대기 ${b}명"`:''}><span class="bn-icon">${ic(icn,24)}${b?`<span class="bn-badge">${b}</span>`:''}</span><span>${l}</span></button>`).join('')}
     </nav>`;
 }
 function bottomNavGo(tab){
@@ -3952,7 +3959,7 @@ function cleanCk(raw,id){
     pain:c.pain===true, painAreas:strs(c.painAreas,20), painLevel:opt(c.painLevel,0,10),
     painNote:typeof c.painNote==='string'?c.painNote.slice(0,200):'', painFollowUp:opt(c.painFollowUp,0,2),
     status:CK_STATUSES.includes(c.status)?c.status:null, reasons:strs(c.reasons,60).slice(0,3),
-    entrySame:!!(c.entry&&c.entry.same===true), entrySec:c.entry&&Number.isFinite(Number(c.entry.sec))?Math.max(0,Math.round(Number(c.entry.sec))):null   // 기록 품질 (코치만 봄)
+    entrySec:c.entry&&Number.isFinite(Number(c.entry.sec))?Math.max(0,Math.round(Number(c.entry.sec))):null   // 기록 품질 (코치만 봄)
   };
 }
 function ckToFatigue(c){   // 기존 분석 기능(회복 패턴·통증 반복·그래프)이 그대로 쓰도록 예전 기록 형식으로 바꿔 준다
@@ -5284,10 +5291,15 @@ function openMgmt(tab){
   rerender(); window.scrollTo(0,0);
 }
 function mgmtSetTab(t){ state.mgmtTab=t; rerender(); }
+function joinBandHTML(){   // 가입 승인 대기 띠: 학생 탭·브리핑 맨 위 (대기 있을 때만)
+  const n=pendingJoins().length; if(!n) return '';
+  return `<button type="button" class="join-band" onclick="openJoinView()">${ic('join',20)}<span><b>가입 승인 대기 ${n}명</b><span>눌러서 확인하고 승인해요</span></span>${ic('chev',20)}</button>`;
+}
 function renderMgmtView(){
   const tabs=[['list','학생 목록'],['pay','학원비']];
   return `<main class="mgmt">
     <div class="topbar"><div class="heading"><div><h2>학생관리</h2><div class="tagline">학생별 수업 일정과 월별 결제 현황을 관리합니다</div></div></div></div>
+    ${joinBandHTML()}
     <div class="mgmt-tabs" role="tablist">${tabs.map(([k,l])=>`<button type="button" role="tab" aria-selected="${state.mgmtTab===k}" class="${state.mgmtTab===k?'on':''}" onclick="mgmtSetTab('${k}')">${l}</button>`).join('')}</div>
     ${state.mgmtTab==='pay' ? renderPayTab() : renderListTab()}
   </main>`;
@@ -5978,16 +5990,13 @@ function patternHTML(s){
 }
 function refreshPatternCard(){ const el=document.getElementById('ptBox'); const s=getStudent(state.selectedId); if(el && s) el.innerHTML=patternHTML(s); }
 
-/* ============ I-1: 기록 품질 (코치만 · '어제랑 같아요'로 저장한 날, 10초 안에 끝낸 체크인) ============ */
+/* ============ I-1: 기록 품질 (코치만 · 10초 안에 끝낸 체크인 = 대충 눌렀을 수 있음) ============ */
 function qualityHTML(s){
   const hist=state.hist[s.id]; if(!hist || !hist.length) return '';
-  const same=hist.filter(c=>c.entrySame).length, fast=hist.filter(c=>c.entrySec!=null && c.entrySec<10).length;
-  const lastSame=hist.slice(-3).length===3 && hist.slice(-3).every(c=>c.entrySame);
-  const items=[];
-  if(same) items.push(`'어제랑 같아요'로 저장 ${same}번${lastSame?' · 최근 3번 연속 (다음 체크인은 처음부터 물어봐요)':''}`);
-  if(fast) items.push(`10초 안에 끝낸 체크인 ${fast}번 — 대충 눌렀을 수 있어요`);
-  return `<div class="card qa-card"><h3>기록 품질 <span class="stat-note">코치만 보여요 · 최근 4주 ${hist.length}번 중</span></h3>
-    ${items.length?`<ul class="ck-list">${items.map(x=>`<li>${x}</li>`).join('')}</ul><div class="stat-note">숫자가 비슷하게 반복되면 수업 전에 직접 한 번 물어봐 주세요.</div>`:'<div class="stat-note">특별히 볼 것 없어요. (이 표시는 새 체크인부터 쌓여요)</div>'}</div>`;
+  const timed=hist.filter(c=>c.entrySec!=null), fast=timed.filter(c=>c.entrySec<10).length;
+  return `<div class="card qa-card"><h3>기록 품질 <span class="stat-note">코치만 보여요 · 최근 4주</span></h3>
+    ${fast?`<ul class="ck-list"><li>10초 안에 끝낸 체크인 ${fast}번 (시간이 기록된 ${timed.length}번 중) — 대충 눌렀을 수 있어요</li></ul><div class="stat-note">수업 전에 직접 한 번 물어봐 주세요.</div>`
+      :`<div class="stat-note">${timed.length?'특별히 볼 것 없어요.':'이 표시는 새 체크인부터 쌓여요.'}</div>`}</div>`;
 }
 
 /* ============ I-1: D-day 한 줄 (요약 탭) ============ */
@@ -6040,6 +6049,7 @@ function renderJoinView(){
     </div>`;
   }).join('');
   return `<main><div>
+    <button type="button" class="join-back" onclick="bottomNavGo('student')">${ic('chev',18)}<span>학생관리로</span></button>
     <div class="topbar"><div class="heading"><div><h2>가입 승인</h2><div class="tagline">학생이 입력한 정보로 자동 등록돼요</div></div></div></div>
     ${cards ? `<div class="join-grid">${cards}</div>` : '<div class="empty-state"><div>승인을 기다리는 학생이 없어요.</div></div>'}
   </div></main>`;
