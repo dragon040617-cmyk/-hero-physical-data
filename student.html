@@ -8,10 +8,10 @@
 <!-- 속도: 서버와 미리 연결해 두고, 글꼴은 화면을 막지 않게 나중에 입힌다 (글꼴이 늦으면 기본 글꼴로 먼저 보임) -->
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="student.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<meta name="apple-mobile-web-app-title" content="HERO">
+<meta name="apple-mobile-web-app-title" content="HERO 체크인">
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media='all'">
@@ -67,7 +67,7 @@
   .tt-top{ display:flex; justify-content:space-between; align-items:center; gap:8px; } .tt-top b{ font-size:17px; }
   .tt-st{ font-size:12px; font-weight:800; padding:3px 10px; border-radius:12px; border:1px solid; }
   .tt-ty{ font-size:16px; font-weight:800; overflow-wrap:anywhere; }
-  .tt-chg{ font-style:normal; font-size:11.5px; font-weight:800; color:#ff9f1c; border:1px solid #ff9f1c66; padding:1px 7px; border-radius:10px; margin-left:4px; }
+  .tt-chg{ font-style:normal; font-size:12px; font-weight:800; color:#ff9f1c; border:1px solid #ff9f1c66; padding:1px 7px; border-radius:10px; margin-left:4px; }
   .tt-forms{ display:flex; gap:5px; flex-wrap:wrap; } .tt-forms span{ font-size:12px; font-weight:800; padding:3px 9px; border-radius:10px; background:var(--lime-soft); color:var(--lime); }
   .tt-m{ font-size:13px; color:var(--muted); overflow-wrap:anywhere; }
   .tt-cancel{ font-size:13px; color:#ff9f1c; font-weight:700; }
@@ -119,10 +119,10 @@
   .feat-row{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:10px; }
   .feat-sw{ flex:0 0 auto; min-width:72px; min-height:44px; border-radius:22px; border:1px solid var(--line); background:var(--surface); color:var(--muted); font:inherit; font-weight:800; cursor:pointer; }
   .feat-sw.on{ border-color:var(--lime); color:#0d1a03; background:var(--lime); }
-  .mc-ex{ position:absolute; top:1px; left:2px; font-size:9px; font-weight:800; line-height:1; padding:1px 3px; border-radius:4px; background:#12151c; color:#fff; }
+  .mc-ex{ position:absolute; top:1px; left:2px; font-size:12px; font-weight:800; line-height:1; padding:1px 3px; border-radius:4px; background:#12151c; color:#fff; }
   .mc-day.exday{ outline:2px solid #fff; outline-offset:-2px; }
   .mc-tp{ position:absolute; left:4px; right:4px; bottom:3px; height:4px; border-radius:2px; background:repeating-linear-gradient(45deg,#9fb4e0 0 3px,transparent 3px 6px); }
-  .mc-ex-l{ font-size:10px; font-weight:800; padding:1px 3px; border-radius:4px; background:#12151c; color:#fff; outline:1px solid #fff; }
+  .mc-ex-l{ font-size:12px; font-weight:800; padding:1px 3px; border-radius:4px; background:#12151c; color:#fff; outline:1px solid #fff; }
   .mc-tp-l{ display:inline-block; width:18px; height:6px; border-radius:2px; background:repeating-linear-gradient(45deg,#9fb4e0 0 3px,transparent 3px 6px); vertical-align:1px; }
   .m-top{ display:flex; align-items:center; gap:10px; margin-bottom:14px; } .m-top h1{ margin:0; }
   .m-back{ width:44px; height:44px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:22px; cursor:pointer; }
@@ -280,7 +280,7 @@
   .bnav.hidden{ display:none; }
   .bnav button{ background:none; border:0; border-radius:12px; color:var(--dim); font:inherit; font-size:12px; white-space:nowrap; min-width:0; font-weight:600; min-height:54px;
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; }
-  .bnav button .ic{ font-size:20px; line-height:1; filter:grayscale(.5); opacity:.9; }
+  .bnav button .ic{ line-height:1; opacity:.95; }
   .bnav button[aria-current="page"]{ color:var(--lime); background:var(--lime-soft); }
   .bnav button[aria-current="page"] .ic{ filter:none; opacity:1; }
   @media (min-width:768px){ .bnav{ max-width:560px; margin:0 auto; border:1px solid var(--line); border-bottom:0; border-radius:18px 18px 0 0; } }   /* 아이패드: 내용 칸과 같은 폭, 가운데 */
@@ -349,6 +349,68 @@
 
   /* 홈 화면에 추가 안내 */
   .install ol{ margin:6px 0 0; padding-left:20px; } .install li{ font-size:15px; line-height:1.6; padding:2px 0; }
+
+  /* 앱 확인 창 (브라우저 기본 confirm/prompt 대신) */
+  .ask-bg{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .15s}
+  .ask-bg.show{opacity:1}
+  .ask{width:100%;max-width:480px;background:#1a1f29;color:#fff;border:1px solid #2b3242;border-bottom:0;border-radius:22px 22px 0 0;padding:10px 18px calc(18px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;transform:translateY(16px);transition:transform .15s;max-height:88vh;overflow:auto}
+  .ask-bg.show .ask{transform:none}
+  .ask-grip{align-self:center;width:40px;height:5px;border-radius:3px;background:#3a4152}
+  .ask h3{margin:0;font-size:18px;line-height:1.35}
+  .ask p{margin:0;font-size:14.5px;line-height:1.55;color:#d6dbe6;white-space:pre-line}
+  .ask textarea,.ask input{width:100%;box-sizing:border-box;font:inherit;font-size:16px;color:#fff;background:#12151c;border:1px solid #2b3242;border-radius:12px;padding:12px}
+  .ask textarea{min-height:120px;resize:vertical}
+  .ask-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+  .ask-row.one{grid-template-columns:1fr}
+  .ask-row button{min-height:52px;border-radius:14px;font:inherit;font-size:16px;font-weight:800;cursor:pointer}
+  .ask-no{background:transparent;color:#d6dbe6;border:1px solid #2b3242}
+  .ask-ok{background:#c6ff3d;color:#0d1a03;border:0}
+  .ask-ok.danger{background:#ff4b33;color:#1a0805}
+  @media (min-width:700px){ .ask-bg{align-items:center} .ask{border-radius:20px;border-bottom:1px solid #2b3242;padding-bottom:18px} .ask-grip{display:none} }
+
+  /* 불러오는 중 뼈대 */
+  .skel-wrap{display:flex;flex-direction:column;gap:10px;padding:4px 0}
+  .skel-card{display:flex;flex-direction:column;gap:9px;padding:14px;border-radius:14px;background:#1a1f29;border:1px solid #2b3242}
+  .skel-line{display:block;height:12px;border-radius:6px;background:linear-gradient(90deg,#222836 0%,#2d3446 50%,#222836 100%);background-size:200% 100%;animation:skelMove 1.2s ease-in-out infinite}
+  @keyframes skelMove{from{background-position:100% 0}to{background-position:-100% 0}}
+  @media (prefers-reduced-motion: reduce){ .skel-line{animation:none} }
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .ic-svg{display:block;flex:0 0 auto}
+
+  /* I-4 오늘 할 일 */
+  .do-big{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:88px;padding:14px 18px;margin:0 0 14px;border-radius:20px;border:0;font:inherit;text-align:left;cursor:pointer}
+  .do-big.pre{background:var(--lime);color:#0d1a03}
+  .do-big.post{background:var(--surface);color:var(--text);border:1px solid var(--lime)}
+  .do-t{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .do-t b{font-size:19px}
+  .do-k{font-size:12.5px;color:var(--muted)}
+  .do-big.pre .do-k{color:#2a3a0a;font-weight:700}
+  .why{display:flex;flex-direction:column;gap:4px;margin-top:12px;padding:12px;border-radius:12px;background:var(--bg)}
+  .why b{font-size:13.5px}.why span{font-size:13.5px;line-height:1.55;color:#d6dbe6}
+  .wk-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:8px 0}
+  .wk-grid div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--dim)}
+  .wk-grid i{width:38px;max-width:100%;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:12px;font-weight:800;box-sizing:border-box}
+  .wk-grid .done i{background:var(--lime);color:#0d1a03}
+  .wk-grid .cls i{border:2px dashed #5d6578;color:var(--muted)}
+  .wk-grid .miss i{background:var(--surface2);color:var(--dim)}
+  .wk-grid .today i{border:2px solid var(--lime);color:var(--lime)}
+  .wk-grid .off i{color:#3a4152}
+  /* 처음 안내 */
+  .tip-card{display:flex;flex-direction:column;gap:6px;background:#fff;color:#12151c;border-radius:14px;padding:12px 14px;margin:0 0 14px}
+  .tip-card b{font-size:14px;color:#12151c}.tip-card span{font-size:13px;line-height:1.5}
+  .tip-card button{align-self:flex-end;min-height:36px;padding:0 14px;border-radius:10px;border:0;background:#12151c;color:#fff;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+  /* I-5 어제랑 같아요 */
+  .same-box{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--lime);border-radius:18px;padding:16px;margin:0 0 16px}
+  .same-box>b{font-size:16px}
+  .same-box.done{border-color:var(--line)}
+  .same-h{display:flex;justify-content:space-between;align-items:center}
+  .same-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .same-grid button{min-height:52px;border-radius:12px;background:var(--bg);border:1px solid var(--line);padding:8px 10px;display:flex;flex-direction:column;gap:2px;align-items:flex-start;color:var(--text);font:inherit;cursor:pointer;text-align:left}
+  .same-grid span{font-size:12px;color:var(--dim)}.same-grid b{font-size:15px}
+  .q[hidden]{display:none}
+  .q.must{border:2px solid #ffd23f;border-radius:16px;padding:14px}
+  .q.must .q-title::after{content:'꼭 답하기';display:inline-block;margin-left:6px;font-size:12px;color:#ffd23f;font-weight:800;white-space:nowrap}
+  .bnav button .ic{display:flex}
 </style>
 </head>
 <body>
@@ -425,7 +487,9 @@
   <div class="box" id="me-days" style="margin-top:20px"></div>
   <div class="box" id="me-feat" style="margin-top:20px"></div>
   <div class="box install" id="me-install" style="margin-top:20px"></div>
-  <button class="btn btn-2" style="margin-top:20px" onclick="if(confirm('로그아웃할까요? 다시 들어올 때 구글 로그인이 필요해요.')) logout()">로그아웃</button>
+  <button class="btn btn-2" style="margin-top:20px" onclick="resetTips()">처음 안내 다시 보기</button>
+  <p class="note" id="me-tips-msg" role="status" style="margin:6px 0 0"></p>
+  <button class="btn btn-2" style="margin-top:20px" onclick="askLogout()">로그아웃</button>
 </section>
 
 <section id="screen-form" class="screen hidden"></section>
@@ -438,11 +502,11 @@
 
 <!-- 아래 메뉴: 승인된 학생에게만 보인다 -->
 <nav id="bnav" class="bnav hidden" aria-label="학생 메뉴">
-  <button type="button" data-nav="today"><span class="ic" aria-hidden="true">🏠</span>오늘</button>
-  <button type="button" data-nav="tt"><span class="ic" aria-hidden="true">📅</span>일정</button>
-  <button type="button" data-nav="care"><span class="ic" aria-hidden="true">🥗</span>몸관리</button>
-  <button type="button" data-nav="perf"><span class="ic" aria-hidden="true">📈</span>실기 기록</button>
-  <button type="button" data-nav="me"><span class="ic" aria-hidden="true">👤</span>내 정보</button>
+  <button type="button" data-nav="today"><span class="ic" aria-hidden="true" data-ic="home"></span>오늘</button>
+  <button type="button" data-nav="tt"><span class="ic" aria-hidden="true" data-ic="sched"></span>일정</button>
+  <button type="button" data-nav="care"><span class="ic" aria-hidden="true" data-ic="care"></span>몸관리</button>
+  <button type="button" data-nav="perf"><span class="ic" aria-hidden="true" data-ic="perf"></span>실기 기록</button>
+  <button type="button" data-nav="me"><span class="ic" aria-hidden="true" data-ic="me"></span>내 정보</button>
 </nav>
 
 <!-- 속도: 무거운 파일은 화면 글자를 먼저 보여 준 다음에 받는다 (예전엔 <head>에 있어서 다 받을 때까지 빈 화면) -->
@@ -920,6 +984,7 @@ const $=id=>document.getElementById(id);
 const NAV_OF={'screen-result':'today','screen-form':'today','screen-month':'today','screen-meal':'today','screen-tt':'tt','screen-care':'care','screen-perf':'perf','screen-me':'me'};
 let navPopping=false;   // 뒤로 가기(옆으로 밀기)로 화면을 바꾸는 중이면 기록을 또 쌓지 않는다
 function show(id,fromPop){
+  try{ document.querySelectorAll('#bnav [data-ic]:empty').forEach(s=>{ s.innerHTML=ic(s.dataset.ic,24); }); }catch(e){}   // 아래 메뉴 아이콘 (한 번만 · 시작 직후엔 건너뜀)
   document.querySelectorAll('.screen').forEach(el=>el.classList.add('hidden'));
   $(id).classList.remove('hidden');
   // 아래 메뉴: 승인된 학생 화면에서만 보이고, 지금 화면 버튼에 불이 들어온다
@@ -1132,6 +1197,7 @@ function daysBoxHTML(){
 function refreshDaysUI(){
   const b=$('me-days'); if(b) b.innerHTML=daysBoxHTML();
   const h=$('days-hint'); if(h) h.innerHTML=daysHintHTML();
+  const w=$('wk-box'); if(w) w.innerHTML=weekHTML();   // 수업 요일이 늦게 오면 '이번 주 n번'도 다시
 }
 async function saveDays(){
   if(daysSaving) return;
@@ -1284,7 +1350,7 @@ function formFromDoc(c){
 let formDate=null;   // 쓰다 만 체크인: 다른 메뉴에 다녀와도 오늘 적던 답은 그대로 둔다
 function openForm(keepDraft){
   const t=myCheckins.find(c=>c.date===todayStr());
-  if(!(keepDraft&&!t&&form&&formDate===todayStr())){ form=t?formFromDoc(t):emptyForm(); formDate=todayStr(); }
+  if(!(keepDraft&&!t&&form&&formDate===todayStr())){ form=t?formFromDoc(t):emptyForm(); formDate=todayStr(); form._start=Date.now(); }
   renderForm(); show('screen-form');
 }
 
@@ -1331,26 +1397,27 @@ function renderForm(){
     <div class="head"><div><h1>${esc(myStudent.name||'학생')}님, 오늘 체크인</h1>
       <div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})} · 1분이면 끝나요</div></div>
       ${myCheckins.some(c=>c.date===todayStr())?'<div class="head-actions"><button class="link" data-a="back">취소</button></div>':''}</div>
+    ${sameBoxHTML()}
 
     ${yesterdayPain()?`<div class="q" id="q-fu"><div class="q-title">어제 아팠던 ${esc((yesterdayPain().painAreas||[]).join('·')||'곳')}, 오늘 아침 일어났을 때 어땠나요?</div>
       <div class="chips">${['괜찮아졌어요','비슷해요','더 아파요'].map((x,i)=>`<button class="chip ${i===2?'pain':''} ${form.painFollowUp===i?'on':''}" aria-pressed="${form.painFollowUp===i}" data-a="set" data-k="painFollowUp" data-v="${i}">${x}</button>`).join('')}</div></div>`:''}
-    <div class="q" id="q-sleep"><div class="q-title">어젯밤 실제로 얼마나 잤나요?</div><div class="q-hint">침대에 누운 시간이 아니라 잠든 시간</div>
+    <div class="q${form._same?' must':''}" id="q-sleep"><div class="q-title">어젯밤 실제로 얼마나 잤나요?</div><div class="q-hint">침대에 누운 시간이 아니라 잠든 시간</div>
       <div class="sleep-row"><select data-a="sleep" data-k="sleepH" aria-label="수면 시간(시간)">${hOpts}</select><select data-a="sleep" data-k="sleepM" aria-label="수면 시간(분)">${mOpts}</select></div></div>
 
-    <div class="q" id="q-sq"><div class="q-title">일어난 뒤 수면의 질을 어떻게 평가하나요?</div>${scale('sleepQuality','최악','최고','','수면의 질')}</div>
+    <div class="q${form._same?' must':''}" id="q-sq"><div class="q-title">일어난 뒤 수면의 질을 어떻게 평가하나요?</div>${scale('sleepQuality','최악','최고','','수면의 질')}</div>
 
-    <div class="q" id="q-fa"><div class="q-title">지금 전반적으로 느끼는 신체 피로는?</div>${scale('fatigue','전혀 피곤하지 않음','극심','','피로')}</div>
+    <div class="q" id="q-fa"${form._same&&!form._expand?' hidden':''}><div class="q-title">지금 전반적으로 느끼는 신체 피로는?</div>${scale('fatigue','전혀 피곤하지 않음','극심','','피로')}</div>
 
-    <div class="q" id="q-so"><div class="q-title">오늘 근육의 뻐근함/통증은?</div><div class="q-hint">훈련 후 근육이 당기고 뻐근한 정도</div>${scale('soreness','없음','매우 심함','','근육통')}
+    <div class="q" id="q-so"${form._same&&!form._expand?' hidden':''}><div class="q-title">오늘 근육의 뻐근함/통증은?</div><div class="q-hint">훈련 후 근육이 당기고 뻐근한 정도</div>${scale('soreness','없음','매우 심함','','근육통')}
       ${form.soreness>0?`<div class="sub-q">어느 부위인가요? <b style="color:var(--lime);font-weight:600;">필수</b> · 여러 개 선택 가능</div>${chips('sorenessAreas',BODY_PARTS)}
       <div class="sub-q">움직임에 얼마나 영향을 주나요?</div><div class="chips">${IMPACTS.map((x,i)=>`<button class="chip ${form.sorenessImpact===i?'on':''}" aria-pressed="${form.sorenessImpact===i}" data-a="set" data-k="sorenessImpact" data-v="${i}">${x}</button>`).join('')}</div>`:''}</div>
 
-    <div class="q" id="q-st"><div class="q-title">오늘 심리적 스트레스는?</div>${scale('stress','없음','매우 심함','','스트레스')}
+    <div class="q" id="q-st"${form._same&&!form._expand?' hidden':''}><div class="q-title">오늘 심리적 스트레스는?</div>${scale('stress','없음','매우 심함','','스트레스')}
       ${form.stress>0?`<div class="sub-q">원인이 있다면 골라 주세요 (선택)</div>${chips('stressCauses',STRESS_CAUSES)}`:''}</div>
 
-    <div class="q" id="q-re"><div class="q-title">훈련을 시작한다고 생각하면 몸이 얼마나 준비된 느낌인가요?</div>${scale('readiness','전혀 준비 안 됨','완벽히 준비됨','','준비도')}</div>
+    <div class="q" id="q-re"${form._same&&!form._expand?' hidden':''}><div class="q-title">훈련을 시작한다고 생각하면 몸이 얼마나 준비된 느낌인가요?</div>${scale('readiness','전혀 준비 안 됨','완벽히 준비됨','','준비도')}</div>
 
-    <div class="q" id="q-pa"><div class="q-title">아픈 곳이 있나요?</div><div class="q-hint">근육 뻐근함과 별개로, 관절·뼈 등 평소와 다른 아픔</div>
+    <div class="q${form._same?' must':''}" id="q-pa"><div class="q-title">아픈 곳이 있나요?</div><div class="q-hint">근육 뻐근함과 별개로, 관절·뼈 등 평소와 다른 아픔</div>
       <div class="chips" style="margin-top:0"><button class="chip ${form.pain===false?'on':''}" aria-pressed="${form.pain===false}" data-a="pain" data-v="0">없음</button><button class="chip pain ${form.pain===true?'on':''}" aria-pressed="${form.pain===true}" data-a="pain" data-v="1">있음</button></div>
       ${form.pain?`<div class="sub-q">어느 부위인가요?</div>${chips('painAreas',BODY_PARTS,'pain')}
       <div class="sub-q">아픈 정도는?</div>${scale('painLevel','약함','매우 심함','pain','통증 정도')}
@@ -1376,6 +1443,8 @@ $('screen-form').addEventListener('click',e=>{
   else if(a==='pain'){ form.pain=v==='1'; if(!form.pain){ form.painAreas=[]; form.painLevel=null; form.painNote=''; } renderForm(); }
   else if(a==='back'){ showResult(); }
   else if(a==='submit'){ submitCheckin(); }
+  else if(a==='same'){ applySame(); }
+  else if(a==='same-edit'){ form._expand=true; renderForm(); const q=$('q-fa'); if(q) q.scrollIntoView({block:'center'}); }
 });
 $('screen-form').addEventListener('change',e=>{
   const el=e.target; if(el.dataset.a!=='sleep'||saving) return;
@@ -1387,6 +1456,7 @@ async function submitCheckin(){
   const miss=missing(), err=$('form-err');
   if(miss.length){
     err.textContent='아직 답하지 않은 항목이 있어요: '+miss.map(x=>x[1]).join(', ');
+    if(form._same && ['q-fa','q-so','q-st','q-re'].includes(miss[0][0]) && !form._expand){ form._expand=true; renderForm(); }
     $(miss[0][0]).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'}); return;
   }
   const date=todayStr(), s=form.soreness>0, st=form.stress>0, p=form.pain;
@@ -1399,14 +1469,22 @@ async function submitCheckin(){
   };
   const j=judge(data,analyze(data,historyFor(date)));
   data.status=j.status; data.reasons=j.reasons; data.studentId=myStudent.id;   // 코치 화면에서 바로 쓰도록 판정 결과도 저장
+  const prevT=myCheckins.find(c=>c.date===date);
+  // 기록 품질(코치만 봄): '어제랑 같아요'를 썼는지, 처음 체크인에 몇 초 걸렸는지. 고칠 때는 처음 값을 그대로 둔다
+  if(prevT && prevT.entry) data.entry=prevT.entry;
+  else if(!prevT) data.entry={ same:!!form._same, sec:Math.max(0,Math.min(3600,Math.round((Date.now()-(form._start||Date.now()))/1000))) };
   // 인터넷이 끊긴 상태면 저장 버튼이 영원히 '기다리는 중'으로 멈춘 것처럼 보이므로 먼저 알려 준다
   if(navigator.onLine===false){ err.textContent='인터넷이 끊겨 있어요. 와이파이나 데이터를 켠 뒤 다시 눌러 주세요.'; return; }
   const btn=document.querySelector('[data-a="submit"]'); btn.disabled=true; btn.textContent='저장하는 중...'; err.textContent='';
   saving=true;
   const slow=setTimeout(()=>{ err.textContent='인터넷이 느려서 저장이 늦어지고 있어요. 이 화면을 닫지 말고 잠시 기다려 주세요.'; },8000);
   try{
-    await db.collection('students').doc(myStudent.id).collection('checkins').doc(date)
-      .set({...data,checkedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    const ref=db.collection('students').doc(myStudent.id).collection('checkins').doc(date);
+    try{ await ref.set({...data,checkedAt:firebase.firestore.FieldValue.serverTimestamp()}); }
+    catch(e1){   // Firebase 규칙이 아직 'entry' 칸을 모르면 그 칸만 빼고 다시 저장 (체크인은 꼭 저장되게)
+      if(e1 && e1.code==='permission-denied' && data.entry){ delete data.entry; await ref.set({...data,checkedAt:firebase.firestore.FieldValue.serverTimestamp()}); }
+      else throw e1;
+    }
     clearTimeout(slow); saving=false;
     myCheckins=myCheckins.filter(c=>c.date!==date).concat([data]).sort((a,b)=>a.date.localeCompare(b.date));
     showResult();
@@ -1441,7 +1519,7 @@ function rowHTML(r,today,ready){
 }
 function showResult(){
   const date=todayStr(), today=myCheckins.find(c=>c.date===date);
-  if(!today){ openForm(true); return; }
+  if(!today){ $('screen-result').innerHTML=homeHTML(); show('screen-result'); return; }   // 체크인 전: '오늘 할 일' 화면
   const hist=historyFor(date), an=analyze(today,hist), j=judge(today,an), ui=STATUS_UI[j.status];
 
   $('screen-result').innerHTML=`
@@ -1452,7 +1530,9 @@ function showResult(){
       <div class="badge" style="color:${ui.color}">${ui.label}</div>
       <div class="headline">${esc(j.headline)}</div>
       ${j.reasons.length?`<div class="reasons">${j.reasons.map(r=>`<span>${esc(r)}</span>`).join('')}</div>`:''}
+      ${whyHTML(j,an,today)}
     </div>
+    <div id="do-big">${doBigHTML(true)}</div>
     <button class="btn btn-2 edit-big" data-a="edit">✏️ 검사 고치기</button>
     <div id="meal-row">${mealRowHTML()}</div>
     ${today.pain?'<p class="pain-note">관절이나 뼈 통증은 참지 말고 선생님께 직접 보여 주세요. 이 앱은 진단하지 않아요.</p>':''}
@@ -1465,7 +1545,7 @@ function showResult(){
     ${j.coachTalk?`<div class="sec"><h2 class="sec-t">선생님께 드릴 말</h2><div class="talk" id="talk">${esc(j.coachTalk)}</div>
       <div class="chips"><button class="chip" data-a="copy">복사하기</button></div></div>`:''}
 
-    <div class="sec">${weekHTML()}</div>
+    <div class="sec" id="wk-box">${weekHTML()}</div>
 
     ${weekCompareHTML()}
     <div class="sec"><div class="sec-t">${an.ready?'평소(최근 '+BASELINE_WINDOW_DAYS+'일)와 비교':'오늘 기록 · 평소 비교는 최근 '+BASELINE_WINDOW_DAYS+'일 중 '+BASELINE_MIN_DAYS+'번 기록하면 시작 ('+hist.length+'/'+BASELINE_MIN_DAYS+')'}</div>
@@ -1519,16 +1599,25 @@ function weekStats(mon){
   const avg=k=>list.length?list.reduce((a,c)=>a+c[k],0)/list.length:null;
   return {days,n:list.length,sleep:avg('sleepMin'),ready:avg('readiness')};
 }
-function weekHTML(){
+function weekHTML(){   // 이번 주 체크인: 수업 있는 날만 센다 (연속 기록·다른 학생 비교 없음)
   const today=todayStr(), dow=(new Date(today+'T00:00:00').getDay()+6)%7, mon=addDays(today,-dow);
-  const has=new Set(myCheckins.map(c=>c.date)), w=weekStats(mon), lw=weekStats(addDays(mon,-7));
-  let streak=w.n>=2?1:0;   // 주 2번 이상 체크인한 주가 몇 주 이어졌나 (불러온 28일 안에서)
-  for(let k=1;k<=3;k++){ if(weekStats(addDays(mon,-7*k)).n>=2) streak++; else break; }
-  const label=['월','화','수','목','금','토','일'];
-  const dots=w.days.map((d,i)=>`<div class="${has.has(d)?'on':''} ${d===today?'today':''}">${label[i]}<i>${has.has(d)?'✓':''}</i></div>`).join('');
-  const lines=[];
-  lines.push(`이번 주 <b>${w.n}/3번</b>${w.n>=3?' 달성 ✓':''}${streak>=2?` · 주 2번 이상 <b>${streak}주 연속</b> 🔥`:''}`);
-  return `<div class="sec-t">이번 주 체크인</div><div class="week" role="img" aria-label="이번 주 체크인 ${w.n}번">${dots}</div><div class="week-s">${lines.join('<br>')}</div><button type="button" class="btn btn-2 month-open" data-a="month">📅 내 한 달 보기 ›</button>`;
+  const has=new Set(myCheckins.map(c=>c.date)), days=[...Array(7)].map((_,i)=>addDays(mon,i));
+  const isCls=d=>daysFor(d.slice(0,7)).includes(WEEK[(new Date(d+'T00:00:00').getDay()+6)%7]);
+  const anyCls=days.some(isCls);
+  const cls=days.filter(isCls), done=cls.filter(d=>has.has(d)).length;
+  const cells=days.map((d,i)=>{ const c=isCls(d), h=has.has(d), fut=d>today;
+    let k, m;
+    if(h){ k='done'; m='✓'; }
+    else if(d===today){ k='today'; m='오늘'; }
+    else if(c && fut){ k='cls'; m='수업'; }
+    else if(c){ k='miss'; m='–'; }
+    else { k='off'; m=''; }
+    return `<div class="${k}">${WEEK[i]}<i>${m}</i></div>`; }).join('');
+  const head = anyCls ? `<b style="color:var(--lime)">${done} / ${cls.length}번</b> <span class="note">(수업일 기준)</span>` : `<b style="color:var(--lime)">${days.filter(d=>has.has(d)).length}번</b>`;
+  const note = anyCls ? '수업 있는 날만 세요 · 빠진 날이 있어도 괜찮아요, 다음 수업에 하면 돼요' : '수업 요일을 고르면 수업 있는 날 기준으로 세요';
+  return `<div class="sec-t" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span>이번 주 체크인</span><span>${head}</span></div>
+    <div class="wk-grid" role="img" aria-label="이번 주 체크인 ${anyCls?'수업일 '+cls.length+'번 중 '+done+'번':days.filter(d=>has.has(d)).length+'번'}">${cells}</div>
+    <p class="note" style="margin:0 0 10px">${note}</p><button type="button" class="btn btn-2 month-open" data-a="month">📅 내 한 달 보기 ›</button>`;
 }
 function weekCompareHTML(){   // 지난주와 비교 (자세히 안에)
   const today=todayStr(), dow=(new Date(today+'T00:00:00').getDay()+6)%7, mon=addDays(today,-dow);
@@ -1598,7 +1687,7 @@ function renderTT(){
   let body;
   if(ttErr==='denied' && !ttList) body='<div class="box">아직 시간표를 볼 수 없어요. 선생님께 "시간표 설정"을 부탁해 주세요.</div>';
   else if(ttErr && !ttList) body='<div class="box">시간표를 불러오지 못했어요. <button type="button" class="link" data-t="retry">다시 시도</button></div>';
-  else if(!ttList) body='<p class="note">불러오는 중…</p>';
+  else if(!ttList) body=skel(3,'시간표 불러오는 중');
   else{
     const week=days.map(d=>{ const dl=ttList.filter(x=>x.date===d), ex=exOnDay(d);
       return `<div class="tt-day ${d===t?'today':''}"><div class="tt-dh"><b>${TT_WD[ttWd(d)]} ${Number(d.slice(5,7))}/${Number(d.slice(8))}</b>${d===t?'<span>오늘</span>':''}</div>
@@ -1664,7 +1753,7 @@ async function loadExams(force){
 function exUpcoming(today){ return (exList||[]).filter(x=>x.status==='active' && x.examDate>=today).sort(exSort); }
 // 대표 일정: 가장 가까운 '실기시험' → 없으면 가장 가까운 아무 일정
 function exRep(today){ const up=exUpcoming(today); return up.find(x=>x.scheduleType==='exam') || up[0] || null; }
-function refreshTodayCard(){ const t=$('tt-today'); if(t) t.innerHTML=ttTodayHTML(); }
+function refreshTodayCard(){ const t=$('tt-today'); if(t) t.innerHTML=ttTodayHTML(); refreshDoBig(); }
 function exDdayHTML(today){
   if(!exEnabled || !exList) return '';
   const rep=exRep(today); if(!rep) return '';
@@ -1894,7 +1983,7 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('[data-ml]'); if(!b || !myStudent) return;
   const a=b.dataset.ml;
   if(a==='open') openMeal();
-  else if(a==='back'){ if(myCheckins.some(c=>c.date===todayStr())) showResult(); else openForm(true); }
+  else if(a==='back'){ showResult(); }
   else if(a==='save') saveMeal();
   else if(a==='st'){ const k=b.dataset.k, v=b.dataset.v, cur=mealDraft[k];
     if(cur && cur.status===v) delete mealDraft[k];                 // 한 번 더 누르면 '기록 안 함'으로
@@ -1998,7 +2087,7 @@ $('screen-month').addEventListener('click',e=>{
   else if(a==='prev'||a==='next'){ let [y,m]=monthYM.split('-').map(Number); m+=a==='prev'?-1:1; if(m<1){m=12;y--;} if(m>12){m=1;y++;} monthYM=`${y}-${String(m).padStart(2,'0')}`; monthSel=todayStr().startsWith(monthYM)?todayStr():monthYM+'-01'; renderMonth(); }
   else if(a==='retry'){ delete monthCache[monthYM]; renderMonth(); }
   else if(a==='care'){ openCare(b.dataset.to); }
-  else if(a==='back'){ if(myCheckins.some(c=>c.date===todayStr())) showResult(); else openForm(true); }
+  else if(a==='back'){ showResult(); }
 });
 document.addEventListener('click',e=>{ const b=e.target.closest('[data-a="month"]'); if(b) openMonth(); });
 
@@ -2032,7 +2121,7 @@ window.addEventListener('popstate',e=>{
   const cel=document.querySelector('.cele'); if(cel) cel.remove();
   navPopping=true;
   try{
-    if(st.scr==='screen-result'){ if(myCheckins.some(c=>c.date===todayStr())) showResult(); else openForm(true); }
+    if(st.scr==='screen-result'){ showResult(); }
     else if(st.scr==='screen-care') openCare();
     else if(st.scr==='screen-month') openMonth();
     else if(st.scr==='screen-tt') openTT();
@@ -2043,11 +2132,146 @@ window.addEventListener('popstate',e=>{
   }finally{ navPopping=false; }
 });
 
+/* ============ 아이콘 (그림 글자 대신 선 아이콘 — 기기마다 모양이 달라지지 않게) ============ */
+const IC={
+  brief:'M4 5h16M4 12h16M4 19h10',
+  stu:'M16 19v-1a4 4 0 00-8 0v1M12 11a3 3 0 100-6 3 3 0 000 6M19 19v-1a3 3 0 00-2-2.8M17 5.2a3 3 0 010 5.6',
+  plus:'M12 5v14M5 12h14',
+  sched:'M7 3v4M17 3v4M4 9h16M5 5h14v15H5z',
+  log:'M6 3h9l3 3v15H6zM9 11h6M9 15h6',
+  join:'M15 19v-1a4 4 0 00-8 0v1M11 11a3 3 0 100-6 3 3 0 000 6M17 11l2 2 4-4',
+  search:'M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-3.5-3.5',
+  close:'M6 6l12 12M18 6L6 18',
+  pay:'M3 7h18v10H3zM3 11h18',
+  copy:'M8 8h11v13H8zM5 16V3h11',
+  exam:'M12 3l8 4-8 4-8-4zM6 9v5c0 2 3 4 6 4s6-2 6-4V9',
+  memo:'M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z',
+  home:'M3 12l9-8 9 8M5 10v10h14V10',
+  care:'M12 21s-7-4.5-7-10a4 4 0 017-2.6A4 4 0 0119 11c0 5.5-7 10-7 10z',
+  perf:'M4 17l6-6 4 4 6-8',
+  me:'M12 11a3 3 0 100-6 3 3 0 000 6M6 20v-1a6 6 0 0112 0v1',
+  check:'M5 12l5 5L20 7',
+  chev:'M9 6l6 6-6 6'
+};
+function ic(k, size, sw){ return '<svg class="ic-svg" width="'+(size||22)+'" height="'+(size||22)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="'+(sw||2)+'" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="'+(IC[k]||'')+'"/></svg>'; }
+/* 불러오는 동안 보이는 회색 뼈대 (빙글빙글 대신 — 어디에 무엇이 나올지 미리 보여 준다) */
+function skel(rows, label){ rows=rows||3; let h=''; for(let i=0;i<rows;i++) h+='<div class="skel-card"><span class="skel-line" style="width:'+(40+((i*23)%35))+'%"></span><span class="skel-line" style="width:'+(70+((i*17)%25))+'%"></span></div>'; return '<div class="skel-wrap" role="status" aria-live="polite"><span class="sr-only">'+(label||'불러오는 중')+'</span>'+h+'</div>'; }
+
+/* ============ 앱 확인 창 — confirm()/prompt() 대신. 휴대폰에서 '이 사이트의 대화상자 막기'에 걸리지 않고 글자도 크게 보인다 ============
+   askSheet({title, msg, ok, cancel, danger, input:{value,max}, copy:'복사할 글'}) → Promise
+   확인: true (input 이 있으면 적은 글), 취소: false (input 이 있으면 null) */
+function askSheet(o){
+  o=o||{};
+  return new Promise(resolve=>{
+    const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const prevFocus=document.activeElement;
+    const bg=document.createElement('div'); bg.className='ask-bg';
+    const hasField=!!(o.input||o.copy!=null);
+    bg.innerHTML='<div class="ask" role="dialog" aria-modal="true" aria-labelledby="askT">'
+      +'<div class="ask-grip"></div><h3 id="askT">'+esc(o.title||'확인')+'</h3>'
+      +(o.msg?'<p>'+esc(o.msg)+'</p>':'')
+      +(o.input?'<input id="askIn" maxlength="'+(o.input.max||100)+'" value="'+esc(o.input.value||'')+'" aria-label="'+esc(o.title||'내용')+'">':'')
+      +(o.copy!=null?'<textarea id="askIn" readonly aria-label="복사할 내용">'+esc(o.copy)+'</textarea>':'')
+      +'<div class="ask-row'+(o.copy!=null?' one':'')+'">'
+      +(o.copy!=null?'':'<button type="button" class="ask-no">'+esc(o.cancel||'취소')+'</button>')
+      +'<button type="button" class="ask-ok'+(o.danger?' danger':'')+'">'+esc(o.ok||(o.copy!=null?'닫기':'확인'))+'</button></div></div>';
+    document.body.appendChild(bg);
+    requestAnimationFrame(()=>bg.classList.add('show'));
+    const inp=bg.querySelector('#askIn');
+    let done=false;
+    const close=val=>{ if(done) return; done=true; document.removeEventListener('keydown',key,true); bg.classList.remove('show'); setTimeout(()=>bg.remove(),160); try{ prevFocus&&prevFocus.focus&&prevFocus.focus({preventScroll:true}); }catch(e){} resolve(val); };
+    const yes=()=>close(o.input?inp.value:true), no=()=>close(o.input?null:false);
+    const key=e=>{ if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); no(); } else if(e.key==='Enter' && o.input && document.activeElement===inp){ e.preventDefault(); yes(); } else if(e.key==='Tab'){ const f=[...bg.querySelectorAll('button,input,textarea')]; const i=f.indexOf(document.activeElement); if(e.shiftKey&&i<=0){ e.preventDefault(); f[f.length-1].focus(); } else if(!e.shiftKey&&i===f.length-1){ e.preventDefault(); f[0].focus(); } } };
+    document.addEventListener('keydown',key,true);
+    bg.addEventListener('click',e=>{ if(e.target===bg) no(); });
+    bg.querySelector('.ask-ok').onclick=yes;
+    const nb=bg.querySelector('.ask-no'); if(nb) nb.onclick=no;
+    setTimeout(()=>{ if(inp){ inp.focus(); if(o.copy!=null) inp.select(); } else (o.danger?(nb||bg.querySelector('.ask-ok')):bg.querySelector('.ask-ok')).focus(); },30);
+  });
+}
+/* 복사가 안 되는 기기(오래된 iOS 등)에선 글을 보여 주고 길게 눌러 복사하게 한다 */
+function copyText(text, okMsg, toast){
+  const fallback=()=>askSheet({title:'길게 눌러 복사하세요', copy:text});
+  try{ (navigator.clipboard&&navigator.clipboard.writeText ? navigator.clipboard.writeText(text) : Promise.reject()).then(()=>{ if(okMsg) toast(okMsg); }, fallback); }catch(e){ fallback(); }
+}
+function askLogout(){ askSheet({title:'로그아웃할까요?', msg:'다시 들어올 때 구글 로그인이 필요해요.', ok:'로그아웃'}).then(ok=>{ if(ok) logout(); }); }
+
+/* ============ I-4: 오늘 화면 — 체크인 전 '오늘 할 일' 큰 버튼 · 체크인 후 '왜 이 상태인지' ============ */
+function tipSeen(k){ try{ return (JSON.parse(lsGet('heroTips')||'{}'))[k]===1; }catch(e){ return false; } }
+function tipDone(k){ try{ const o=JSON.parse(lsGet('heroTips')||'{}'); o[k]=1; lsSet('heroTips',JSON.stringify(o)); }catch(e){} document.querySelectorAll('[data-tip="'+k+'"]').forEach(x=>x.remove()); }
+function resetTips(){ try{ localStorage.removeItem('heroTips'); }catch(e){} const m=$('me-tips-msg'); if(m) m.textContent='오늘 화면에서 처음 안내를 다시 보여 줘요'; }
+function tipHTML(k,title,body){ if(tipSeen(k)) return ''; return `<div class="tip-card" data-tip="${k}" role="note"><b>${title}</b><span>${body}</span><button type="button" onclick="tipDone('${k}')">알겠어요</button></div>`; }
+function todayClass(){ if(!ttList) return undefined; const t=todayStr(); return ttList.find(x=>x.date===t && x.status!=='cancelled')||null; }
+function doBigHTML(done){
+  if(!done){
+    const fast=sameOfferOK();
+    return `<button type="button" class="do-big pre" data-a="do-checkin"><span class="do-t"><span class="do-k">오늘 할 일</span><b>체크인하기</b><span class="do-k">약 40초${fast?' · 어제랑 같으면 더 빨라요':''}</span></span>${ic('chev',28,2.4)}</button>`;
+  }
+  const c=todayClass();
+  if(c===undefined) return '';
+  if(!c){
+    const t=todayStr(), next=(ttList||[]).find(x=>x.date>t && x.status!=='cancelled');
+    return `<button type="button" class="do-big post" data-a="do-tt"><span class="do-t"><span class="do-k">오늘 할 일</span><b>오늘은 수업 없는 날</b><span class="do-k">${next?`다음 수업 ${Number(next.date.slice(5,7))}/${Number(next.date.slice(8))} (${TT_WD[ttWd(next.date)]}) ${esc(next.startTime)}`:'일정 보기'}</span></span>${ic('chev',28,2.4)}</button>`;
+  }
+  const meta=[...(c.forms||[]), ...(c.coaches||[])].slice(0,4).join(' · ');
+  return `<button type="button" class="do-big post" data-a="do-tt"><span class="do-t"><span class="do-k">오늘 할 일</span><b>오늘 수업 ${esc(c.startTime)}${c.branch?' · '+esc(c.branch.replace(/점$/,'')):''}</b><span class="do-k">${esc(meta||c.type||'')}</span></span>${ic('chev',28,2.4)}</button>`;
+}
+function refreshDoBig(){ const el=$('do-big'); if(!el) return; const done=myCheckins.some(c=>c.date===todayStr()); el.innerHTML=doBigHTML(done); }
+function whyHTML(j,an,today){
+  if(j.status==='GREEN') return '';
+  const lab={RED:'위험',AMBER:'경고',YELLOW:'주의',BASE:'기록 쌓는 중'}[j.status]||'';
+  const lines=[];
+  if(today.pain) lines.push(`아픈 곳: ${(today.painAreas||[]).join('·')||'있음'}${today.painLevel!=null?' '+today.painLevel+'/10':''}`);
+  if(an.ready) an.rows.filter(r=>r.tone==='worse' && r.st).forEach(r=>{
+    const usual=r.m.key==='sleepMin'?Math.round(r.st.mean):Number(r.st.mean.toFixed(1));
+    const word=r.m.key==='sleepMin'||r.m.key==='sleepQuality'||r.m.key==='readiness'?'낮아요':'높아요';
+    lines.push(`${r.m.label} ${fmtValue(r.m.key,r.value)} · 평소(${fmtValue(r.m.key,usual)})보다 ${r.m.key==='sleepMin'?'적어요':word}`);
+  });
+  if(!lines.length) j.reasons.forEach(r=>lines.push(r));
+  if(!lines.length) return '';
+  return `<div class="why"><b>왜 '${lab}'인지</b>${lines.slice(0,4).map(l=>`<span>· ${esc(l)}</span>`).join('')}</div>`;
+}
+function homeHTML(){
+  const nm=String(myStudent.name||'').trim(), first=nm.length>=3?nm.slice(1):nm;
+  const lastCh=first.charCodeAt(first.length-1), callSfx=lastCh>=0xAC00&&lastCh<=0xD7A3 ? ((lastCh-0xAC00)%28?'아':'야') : '';   // 하늘아 / 민서야
+  return `<div class="head"><div><div class="date">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})}</div><h1>${first?esc(first)+callSfx:'오늘도'}, 안녕!</h1></div></div>
+    ${tipHTML('s-today','처음 안내 · 오늘 할 일','맨 위 큰 버튼만 누르면 돼요. 체크인 전엔 \'체크인하기\', 하고 나면 \'오늘 수업\'으로 바뀌어요. 다시 보려면 내 정보 → 처음 안내 다시 보기.')}
+    <div id="do-big">${doBigHTML(false)}</div>
+    <div id="days-hint">${daysHintHTML()}</div>
+    <div class="sec" id="wk-box">${weekHTML()}</div>
+    <div id="tt-today">${ttTodayHTML()}</div>`;
+}
+
+/* ============ I-5: 어제랑 같아요 (피로·근육통·스트레스·준비도만 채움 · 잠과 통증은 꼭 다시 물어봄 · 3번 연속이면 다음엔 처음부터) ============ */
+function yesterdayCk(){ return myCheckins.find(c=>c.date===addDays(todayStr(),-1))||null; }
+function sameStreak3(){ const prev=myCheckins.filter(c=>c.date<todayStr()).slice(-3); return prev.length===3 && prev.every(c=>c.entry&&c.entry.same===true); }
+function sameOfferOK(){ return !!yesterdayCk() && !sameStreak3() && !myCheckins.some(c=>c.date===todayStr()); }
+function yText(y){ const so=y.soreness>0&&(y.sorenessAreas||[]).length?` (${y.sorenessAreas.join('·')})`:''; return `피로 ${y.fatigue} · 근육통 ${y.soreness}${so} · 스트레스 ${y.stress} · 준비도 ${y.readiness}`; }
+function applySame(){
+  const y=yesterdayCk(); if(!y) return;
+  form.fatigue=y.fatigue; form.soreness=y.soreness; form.sorenessAreas=y.soreness>0?normAreas(y.sorenessAreas):[]; form.sorenessImpact=y.soreness>0?(y.sorenessImpact??null):null;
+  form.stress=y.stress; form.stressCauses=y.stress>0?(y.stressCauses||[]).slice():[]; form.readiness=y.readiness;
+  form._same=true; form._expand=false;
+  renderForm(); window.scrollTo(0,0);
+}
+function sameBoxHTML(){
+  if(form._same && !form._expand){
+    const f=[['피로',form.fatigue+' / 10'],['근육통',form.soreness+(form.soreness>0&&form.sorenessAreas.length?' · '+form.sorenessAreas.join('·'):'')],['스트레스',form.stress+' / 10'],['준비도',form.readiness+' / 10']];
+    return `<div class="same-box done"><div class="same-h"><b>어제 기록으로 채웠어요</b><button type="button" class="link" data-a="same-edit">고치기</button></div>
+      <div class="same-grid">${f.map(x=>`<button type="button" data-a="same-edit"><span>${x[0]}</span><b>${esc(String(x[1]))}</b></button>`).join('')}</div>
+      <p class="note" style="margin:0">아래 <b style="color:#ffd23f">잠</b>과 <b style="color:#ffd23f">통증</b>은 매일 달라서 꼭 다시 답해 주세요.</p></div>`;
+  }
+  if(form._same || !sameOfferOK()) return '';
+  return `<div class="same-box"><b>어제랑 비슷해요?</b><span class="note">어제 기록: ${esc(yText(yesterdayCk()))}</span>
+    <button type="button" class="btn" data-a="same">어제랑 같아요</button>
+    <span class="note">잠과 통증은 매일 달라서 꼭 다시 물어봐요. 3일 연속 쓰면 다음 날은 처음부터 물어봐요.</span></div>`;
+}
+
 /* ============ 아래 메뉴 ============ */
 $('bnav').addEventListener('click',e=>{
   const b=e.target.closest('[data-nav]'); if(!b||!myStudent) return;
   const k=b.dataset.nav;
-  if(k==='today'){ if(myCheckins.some(c=>c.date===todayStr())) showResult(); else openForm(true); }
+  if(k==='today'){ showResult(); }
   else if(k==='care') openCare();
   else if(k==='perf') openPerf();
   else if(k==='me') openMe();
@@ -2056,11 +2280,13 @@ $('bnav').addEventListener('click',e=>{
 $('screen-result').addEventListener('click',e=>{
   const el=e.target.closest('[data-a],[data-trend],[data-range]'); if(!el) return;
   if(el.dataset.a==='edit') openForm();
+  else if(el.dataset.a==='do-checkin') openForm(true);
+  else if(el.dataset.a==='do-tt') openTT();
   else if(el.dataset.a==='todo') toggleTodo(el.dataset.id);
   else if(el.dataset.a==='care') openCare(el.dataset.tab);
   else if(el.dataset.a==='perf') openPerf();
   else if(el.dataset.a==='perf-ev') openPerf(el.dataset.ev);
-  else if(el.dataset.a==='logout'){ if(confirm('로그아웃할까요? 다시 들어올 때 구글 로그인이 필요해요.')) logout(); }
+  else if(el.dataset.a==='logout') askLogout();
   else if(el.dataset.a==='me') openMe();
   else if(el.dataset.a==='copy'){ const t=$('talk').textContent; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{ el.textContent='복사됨 ✓'; setTimeout(()=>{ el.textContent='복사하기'; },2000); }).catch(()=>{ el.textContent='길게 눌러 직접 복사해 주세요'; }); }
   else if(el.dataset.a==='seed') seedData();
@@ -2097,7 +2323,9 @@ function ensureChart(){
   chartLoading=new Promise((res,rej)=>{
     const s=document.createElement('script');
     s.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js';
-    s.onload=()=>res(); s.onerror=()=>{ chartLoading=null; ensureChart.failedAt=Date.now(); s.remove(); rej(new Error('chart')); };
+    const fail=()=>{ chartLoading=null; ensureChart.failedAt=Date.now(); s.remove(); rej(new Error('chart')); };
+    s.onload=()=>{ if(typeof Chart==='undefined') fail(); else res(); };   // 받았는데 내용이 이상하면(차단·변조) 실패로 처리 — 무한 다시 그리기 방지
+    s.onerror=()=>{ chartLoading=null; ensureChart.failedAt=Date.now(); s.remove(); rej(new Error('chart')); };
     document.head.appendChild(s);
   });
   return chartLoading;
@@ -2149,7 +2377,7 @@ function perfId(date,ev){ return date+'_'+String(ev).replace(/\//g,'∕').slice(
 function perfSummaryHTML(){
   let body;
   if(perf.status==='error') body='<p class="note">실기 기록을 불러오지 못했어요. 인터넷을 확인하고 다시 시도해 주세요.</p><button class="btn btn-2" data-a="perf">다시 시도</button>';
-  else if(perf.status!=='ready') body='<p class="note">실기 기록 불러오는 중...</p>';
+  else if(perf.status!=='ready') body=skel(3,'실기 기록 불러오는 중');
   else if(perf.denied.list) body='<p class="note">실기 기록 기능을 준비하고 있어요. 곧 여기서 기록하고 피드백을 받을 수 있어요.</p>';
   else{
     const evs=perfEvents().filter(ev=>perfRecs(ev).length);
@@ -2312,7 +2540,7 @@ function celebrateIfBest(ev,v,rid){
 }
 async function deletePerf(rid){
   const r=perf.mine.find(x=>x.rid===rid); if(!r) return;
-  if(!confirm(PERF.md(r.date)+' '+r.event+' '+PERF.withUnit(r.event,Number(r.value))+' 기록을 지울까요?')) return;
+  if(!(await askSheet({title:'이 기록을 지울까요?', msg:PERF.md(r.date)+' '+r.event+' '+PERF.withUnit(r.event,Number(r.value)), ok:'지우기', danger:true}))) return;
   try{
     await db.collection('students').doc(myStudent.id).collection('perfRecords').doc(rid).delete();
     perf.mine=perf.mine.filter(x=>x.rid!==rid); perf.justSaved=null; renderPerf();
