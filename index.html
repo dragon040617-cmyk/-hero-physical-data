@@ -136,10 +136,6 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .student-card:hover .del-student{opacity:1;}
   .del-student:hover{color:var(--accent);}
 
-  .sidebar-footer{
-    margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);
-    display:flex; gap:8px;
-  }
   .ghost-btn{
     flex:1; background:transparent; border:1px solid var(--line); color:var(--text-muted);
     border-radius:9px; padding:8px 6px; font-size:12px; cursor:pointer; font-weight:600;
@@ -294,33 +290,8 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   }
   .login-card{ background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:32px 28px; width:360px; max-width:100%; }
 
-  .student-self-wrap{ max-width:720px; margin:0 auto; padding:32px 24px calc(24px + env(safe-area-inset-bottom)); padding-top:calc(32px + env(safe-area-inset-top)); }
-  .student-pick-list{ display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; }
-  .student-pick-card{
-    display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px;
-    background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px 14px;
-    color:var(--text); cursor:pointer; font-family:'Manrope',sans-serif;
-  }
-  .student-pick-info{ display:flex; flex-direction:column; align-items:center; gap:2px; }
-  .student-pick-name{ font-weight:800; font-size:15px; }
-  .student-pick-card:active{ border-color:var(--lime); }
-
-
-
-  .student-header{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:20px; }
-  .student-header .who{ display:flex; align-items:center; gap:12px; min-width:0; }
-  .student-header .who-name{ font-family:'Bebas Neue',sans-serif; font-size:26px; margin:0; letter-spacing:0.02em; overflow-wrap:anywhere; }
-  .student-actions{ display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-shrink:0; padding-top:4px; }
-
-  @media (max-width:700px){
-    .student-self-wrap{ max-width:520px; padding:24px 16px calc(24px + env(safe-area-inset-bottom)); padding-top:calc(20px + env(safe-area-inset-top)); }
-    .student-pick-list{ display:flex; flex-direction:column; gap:10px; }
-    .student-pick-card{ flex-direction:row; align-items:center; text-align:left; gap:12px; padding:14px 16px; }
-    .student-pick-info{ align-items:flex-start; }
-  }
-
   .mobile-topbar{ display:none; }
-  .topbar-handle{ display:none; }
+
   .hamburger{ background:var(--surface-2); border:1px solid var(--line); color:var(--text); font-size:18px; width:38px;height:38px;border-radius:8px; cursor:pointer; flex-shrink:0; }
   .mobile-brand{ font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:0.03em; white-space:nowrap; }
   .login-who{ font-size:12px; font-weight:800; color:var(--text-dim); letter-spacing:0.08em; margin-bottom:10px; }
@@ -336,26 +307,15 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .ck-list{ margin:0; padding-left:18px; line-height:1.75; font-size:13.5px; }
   .ck-table td,.ck-table th{ white-space:nowrap; }
   .ck-dot{ display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:middle; }
-  .branch-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:4px; }
-  .branch-card{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px; cursor:pointer; }
-  .branch-card:hover{ border-color:#3a4257; }
-  .branch-bar{ height:6px; background:var(--surface-2); border-radius:3px; margin:10px 0 8px; overflow:hidden; }
-  .branch-bar i{ display:block; height:100%; background:var(--lime); }
-  .branch-chips{ display:flex; flex-wrap:wrap; gap:4px 12px; font-size:13px; }
-  @media (max-width:900px){ .branch-grid{ grid-template-columns:1fr; } }
-  .brief-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
-  .brief-tile{ border-radius:12px; padding:12px 14px; border:1px solid var(--line); background:var(--surface); text-align:left; font:inherit; color:inherit; cursor:pointer; width:100%; min-height:72px; display:flex; flex-direction:column; justify-content:flex-start; }
-  .brief-tile.on{ border-width:2px; background:var(--surface-2); }
-  .tile-names{ margin-top:2px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
   .pb-tag{ display:inline-block; font-size:12px; font-weight:800; color:#0d1a03; background:var(--lime); border-radius:999px; padding:1px 8px; margin-right:4px; }
-  .brief-tile .n{ font-size:26px; font-weight:800; }
+
   .brief-row{ display:flex; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line); cursor:pointer; }
   .brief-row:last-child{ border-bottom:none; }
-  @media (max-width:700px){ .brief-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
   .logout-link{ color:var(--text-dim); cursor:pointer; font-size:12.5px; white-space:nowrap; flex-shrink:0; background:none; border:1px solid var(--line); border-radius:8px; padding:8px 12px; min-height:36px; font-family:inherit; }
-  .mt-btn{ background:var(--surface-2); border:1px solid var(--line); color:var(--text); font-size:13px; font-weight:700; border-radius:8px; padding:0 12px; height:38px; cursor:pointer; flex-shrink:0; font-family:inherit; }
+
   .mobile-topbar .mobile-brand{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
-  .mt-join{ background:var(--lime); color:#0d1a03; border-color:var(--lime); }
+
   .join-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:12px; }
   .join-card .jc-name{ font-size:18px; font-weight:700; }
   .join-card .jc-kv{ display:grid; grid-template-columns:72px minmax(0,1fr); gap:6px 10px; font-size:13.5px; margin:10px 0 12px; }
@@ -376,14 +336,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
       position:fixed; top:0; left:0; right:0; z-index:250;
     }
     .mobile-topbar.show{ transform:translateY(0); }
-    .topbar-handle{
-      display:flex; align-items:center; justify-content:center;
-      position:fixed; top:0; left:0; right:0; z-index:260;
-      height:calc(16px + env(safe-area-inset-top)); cursor:pointer;
-    }
-    .topbar-handle::after{
-      content:''; width:36px; height:4px; border-radius:2px; background:var(--text-dim); opacity:0.7; margin-top:4px;
-    }
+
     .sidebar{ position:fixed; top:0; left:-300px; height:100vh; z-index:400; transition:left .25s ease; box-shadow:10px 0 40px rgba(0,0,0,0.6); padding-top:max(60px, calc(20px + env(safe-area-inset-top))); }
     .sidebar.open{ left:0; }
     main{ padding:calc(80px + env(safe-area-inset-top)) 14px calc(84px + env(safe-area-inset-bottom)); width:100%; }
@@ -410,7 +363,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
 
     /* ---- 여유 있고 보기 편한 모바일 레이아웃 ---- */
     main{ animation: screenFadeIn .22s ease; }
-    .student-self-wrap{ animation: screenFadeIn .22s ease; }
+
     @keyframes screenFadeIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:translateY(0); } }
 
     .card{ padding:18px; border-radius:16px; }
@@ -475,10 +428,6 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   }
   .rubric-hint:hover{ text-decoration:underline; }
   .rubric-card{ border-left:3px solid var(--lime); }
-  .rubric-grid{ display:flex; flex-direction:column; gap:10px; }
-  .rubric-row{ display:flex; align-items:flex-start; gap:12px; padding:8px 0; border-bottom:1px dashed var(--line); }
-  .rubric-row:last-child{ border-bottom:none; }
-  .rubric-row .badge{ flex-shrink:0; min-width:46px; text-align:center; }
 
   /* ---- 수업일지 ---- */
   .log-form-card{ padding:24px; margin-bottom:24px; }
@@ -503,21 +452,6 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .ins-actions button{ flex:0 0 auto; padding:8px 18px; font-size:13px; height:38px; min-width:72px; }
   .ins-hint{ font-size:12px; color:var(--text-dim); margin:2px 0 8px; }
 
-  .record-row{ margin-bottom:16px; }
-  .record-row:last-child{ margin-bottom:0; }
-  .record-row-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
-  .record-ev-name{ font-weight:800; font-size:14.5px; }
-  .record-ev-value{ font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--text); }
-  .record-progress-bar{ height:8px; border-radius:5px; background:var(--surface-2); overflow:hidden; }
-  .record-progress-fill{ height:100%; border-radius:5px; transition:width .3s ease; }
-  .record-rank-badge{
-    display:inline-block; margin-top:6px; font-size:12px; font-weight:700;
-    color:var(--lime); background:var(--lime-soft); padding:2px 10px; border-radius:20px;
-    cursor:pointer;
-  }
-  .record-board{ margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); }
-  .record-board-row{ display:flex; justify-content:space-between; font-size:13px; padding:4px 2px; color:var(--text-muted); }
-  .record-board-row.me{ color:var(--lime); font-weight:800; }
   .pb-badge{
     display:inline-block; font-size:12px; font-weight:800; color:var(--warn);
     background:rgba(255,176,32,0.14); padding:2px 8px; border-radius:20px; vertical-align:middle;
@@ -566,7 +500,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .modal{ max-height:90vh; max-height:90dvh; overflow-y:auto; overscroll-behavior:contain; }
   .modal-actions button{ min-height:44px; }
   .del-student-btn{ width:100%; margin-top:14px; min-height:44px; border-radius:9px; font-weight:700; font-size:13px; cursor:pointer; background:transparent; border:1px solid var(--accent); color:var(--accent); font-family:inherit; }
-  .section-hint{ margin:-8px 0 12px; }
+
   /* 긴 구분선(━━━)·긴 주소처럼 띄어쓰기 없는 글자가 화면 밖으로 밀고 나가지 않게 줄을 바꾼다 (테스트 5 '옆으로 밀림'의 원인) */
   body{ overflow-wrap:break-word; }
   .log-body, .log-section, .log-instructor, .log-title, .insight-box, .brief-row, .join-card{ overflow-wrap:anywhere; }
@@ -633,20 +567,10 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .sched-filters{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-bottom:12px; }
   .sched-filters .student-search{ margin:0; min-height:42px; font-size:16px; }
   @media (max-width:560px){ .sched-filters{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
-  .swk{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px; }
-  @media (max-width:1000px){ .swk{ grid-template-columns:minmax(0,1fr); } }
-  .sday{ display:block; }
-  .swk-col{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:8px; display:flex; flex-direction:column; gap:6px; min-width:0; }
-  .swk-col.today{ border-color:var(--lime); }
-  .swk-h{ background:none; border:none; color:var(--text-muted); font-weight:800; font-size:13px; text-align:left; padding:4px 2px; cursor:pointer; font-family:inherit; min-height:32px; }
-  .swk-col.today .swk-h{ color:var(--lime); }
-  .swk-empty{ font-size:12px; color:var(--text-dim); padding:4px 2px; }
+
   .sb{ display:flex; flex-direction:column; gap:3px; text-align:left; width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:8px 10px; color:var(--text); cursor:pointer; font-family:inherit; min-width:0; }
-  .sb.cancelled{ opacity:.55; } .sb.cancelled .sb-ty{ text-decoration:line-through; }
-  .sb-t{ font-size:12.5px; font-weight:800; display:flex; justify-content:space-between; gap:6px; align-items:center; }
-  .sb-t em{ font-style:normal; font-size:12px; padding:1px 7px; border-radius:9px; border:1px solid; }
-  .sb-ty{ font-size:14px; border-left:3px solid; padding-left:6px; overflow-wrap:anywhere; }
-  .sb-m{ font-size:12px; color:var(--text-muted); overflow-wrap:anywhere; }
+  .sb.cancelled{ opacity:.55; } 
+
   .smc-week, .smc-grid{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
   .smc-week{ text-align:center; font-size:12px; color:var(--text-dim); font-weight:700; margin-bottom:4px; }
   .smc-blank{ height:60px; }
@@ -663,8 +587,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .se-actions{ flex-wrap:wrap; } .se-actions button{ flex:1 1 auto; }
   .se-actions .se-del{ color:#ff7a66; border-color:#ff7a6655; }
   .se-hist{ margin-top:10px; font-size:12px; color:var(--text-muted); } .se-hist div{ padding:3px 0; border-top:1px solid var(--line); }
-  .ca-list{ display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; }
-  .ca-row{ display:flex; justify-content:space-between; gap:10px; align-items:center; border:1px solid var(--line); border-radius:10px; padding:10px; }
+
   .search-wrap{ position:relative; flex:1 1 180px; min-width:0; display:flex; }
   .search-wrap .student-search{ flex:1; padding-right:44px; margin:0; }
   .search-wrap input[type=search]::-webkit-search-cancel-button{ -webkit-appearance:none; display:none; }
@@ -673,9 +596,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .search-x[hidden]{ display:none; }
   .mgmt-rowx{ display:flex; gap:8px; align-items:stretch; }
   .mgmt-rowx .mgmt-row{ flex:1; min-width:0; }
-  .mr-edit{ flex:0 0 auto; width:64px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border-radius:14px; border:1px solid var(--line); background:var(--surface); color:var(--text); cursor:pointer; font-family:inherit; font-size:16px; }
-  .mr-edit span{ font-size:12px; font-weight:800; color:var(--text-muted); }
-  .mr-edit:hover{ border-color:var(--lime); }
+
   .mgmt-row{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px; color:var(--text); cursor:pointer; font-family:inherit; }
   .mr-av{ width:40px; height:40px; flex:0 0 auto; border-radius:10px; background:var(--surface-2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-weight:800; }
   .mr-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
@@ -755,7 +676,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .ex14{ background:var(--surface-2); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:4px; }
   .ex14-row{ display:flex; justify-content:space-between; gap:10px; font-size:13.5px; } .ex14-row small{ font-weight:600; color:var(--text-muted); }
   .ex-pick{ display:flex; gap:6px; flex-wrap:wrap; }
-  .info-tag{ font-size:12px; font-weight:800; color:#9fb4e0; border:1px solid #9fb4e0; border-radius:8px; padding:1px 7px; margin-left:6px; vertical-align:2px; }
+
   .ex-soon-box{ display:flex; flex-direction:column; gap:6px; padding:8px; }
   .ex-soon{ display:grid; grid-template-columns:auto auto minmax(0,1fr) auto; align-items:center; gap:8px; min-height:48px; padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); font:inherit; text-align:left; cursor:pointer; }
   .ex-soon .stat-note{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -855,15 +776,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   .pay-chip{ display:inline-flex; align-items:center; gap:2px; min-height:32px; padding:0 12px; border-radius:16px; border:1px dashed var(--line); background:transparent; color:var(--text-muted); font-weight:800; font-size:12.5px; cursor:pointer; font-family:inherit; white-space:nowrap; vertical-align:middle; }
   .pay-chip.on{ border:1px solid var(--lime); background:var(--lime-soft); color:var(--lime); }
   .pay-chip:disabled{ opacity:.4; cursor:not-allowed; }
-  .pay-card{ padding:16px; display:flex; flex-direction:column; gap:12px; }
-  .pay-sum{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:14px; color:var(--text-muted); }
-  .pay-sum b{ color:var(--lime); font-size:18px; }
-  .pay-list{ display:flex; flex-direction:column; }
-  .pay-row{ display:flex; align-items:center; gap:10px; padding:10px 2px; border-top:1px solid var(--line); flex-wrap:wrap; }
-  .pay-who{ flex:1 1 140px; min-width:0; display:flex; flex-direction:column; gap:2px; }
-  .pay-who b{ font-size:15px; overflow-wrap:anywhere; } .pay-who span{ font-size:12px; color:var(--text-dim); }
-  .pay-date{ flex:0 0 auto; width:150px; min-height:40px; font-size:14px; padding:6px 10px; }
-  .pay-row .pay-chip{ min-height:40px; }
+
   .note-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; }
   .note-card{ padding:16px; display:flex; flex-direction:column; gap:10px; min-width:0; }
   .note-head{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; font-size:15px; }
@@ -973,7 +886,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
     .sidebar-backdrop{ z-index:460; }          /* 열린 학생 목록이 아래 메뉴바에 가려지지 않게 메뉴바(450)보다 위로 */
     .sidebar .sb-dup{ display:none; }          /* 아래 메뉴바에 이미 있는 버튼은 숨겨서 학생 목록 칸을 넓힌다 */
     .hamburger{ width:44px; height:44px; }
-    .mt-btn{ height:44px; }
+
     .logout-link{ min-height:44px; }
     .student-search{ min-height:44px; }
     .bn-item{ font-size:12px; }
@@ -1019,8 +932,7 @@ try{ if(localStorage.getItem('heroRole')==='student' && !/[?&]login=1/.test(loca
   @media (min-width:861px){ .event-tag .reorder.ph{ display:none; } }
   /* 한국어는 단어 중간에서 줄이 바뀌면 읽기 어렵다 → 띄어쓰기 단위로 줄바꿈 (긴 기호 줄은 overflow-wrap 이 처리) */
   .student-meta .sub, .insight-box, .stat-note, .fb-card, .brief-row, .join-card, .tagline, .card h3, td{ word-break:keep-all; }
-  td{ overflow-wrap:anywhere; }
-  @media (max-width:860px){ .brief-ctrl{ width:100%; } }   /* 휴대폰: 지점 선택과 새로고침을 한 줄에 꽉 차게 */
+  td{ overflow-wrap:anywhere; }   /* 휴대폰: 지점 선택과 새로고침을 한 줄에 꽉 차게 */
   .join-grid{ display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(min(100%, 420px), 1fr)); align-items:start; }
   .join-grid .join-card{ margin-bottom:0; }
 
@@ -1316,7 +1228,6 @@ function jsAttrEsc(v){
 // (예전 toISOString() 은 영국 시간이라 한국 아침 9시 전에는 '어제' 날짜가 나왔다)
 function localYmd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function todayStr(){ return localYmd(new Date()); }
-function daysAgo(n){ const d=new Date(); d.setDate(d.getDate()-n); return localYmd(d); }
 
 let state = {
   selectedId: null,
@@ -1404,6 +1315,27 @@ function copyText(text, okMsg, toast){
   try{ (navigator.clipboard&&navigator.clipboard.writeText ? navigator.clipboard.writeText(text) : Promise.reject()).then(()=>{ if(okMsg) toast(okMsg); }, fallback); }catch(e){ fallback(); }
 }
 
+/* ============ 오류 문구를 한국어로 (Firebase 영어 코드 대신 '무엇을 하면 되는지') ============ */
+function errKo(e){
+  const c=String((e&&e.code)||'').replace(/^firestore\//,'');
+  const M={
+    'unavailable':'인터넷 연결을 확인하고 다시 눌러 주세요',
+    'deadline-exceeded':'인터넷이 느려요. 잠시 뒤 다시 눌러 주세요',
+    'permission-denied':'권한이 없어요 (Firebase 규칙을 확인해 주세요)',
+    'unauthenticated':'로그인이 풀렸어요. 다시 로그인해 주세요',
+    'not-found':'이미 지워졌거나 없는 자료예요. 화면을 새로고침해 주세요',
+    'already-exists':'이미 있는 자료예요',
+    'resource-exhausted':'오늘 사용량이 많아요. 잠시 뒤 다시 시도해 주세요',
+    'failed-precondition':'다른 기기에서 열려 있어 저장하지 못했어요. 새로고침 뒤 다시 해 주세요',
+    'aborted':'동시에 저장되어 취소됐어요. 다시 눌러 주세요',
+    'cancelled':'취소됐어요. 다시 눌러 주세요',
+    'invalid-argument':'적은 내용 중 저장할 수 없는 값이 있어요'
+  };
+  if(M[c]) return M[c];
+  if(typeof navigator!=='undefined' && navigator.onLine===false) return M.unavailable;
+  return '잠시 뒤 다시 시도해 주세요'+(c?' ('+c+')':'');
+}
+
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
@@ -1426,11 +1358,6 @@ const RISK_THRESHOLDS = {
   tight: { caution:1.1, danger:1.2, absCaution:6, absDanger:8, label:'재활 이력 기준(타이트)' },
   loose: { caution:1.2, danger:1.4, absCaution:7, absDanger:9, label:'일반 기준(느슨)' },
 };
-function avgFatigue(list, n){
-  const arr = list.slice(-n);
-  if(!arr.length) return null;
-  return arr.reduce((a,b)=>a+Number(b.score),0)/arr.length;
-}
 function computeFatigueMetrics(student){
   // 학생 체크인 기준. 빨강·주황 → danger, 노랑 → caution, 초록·기준 수립 중 → stable, 미입력 → unknown
   const th={label:'학생 체크인 기준'};
@@ -1516,10 +1443,6 @@ function filterStudentList(){
   const listEl = document.querySelector('.student-list');
   if(!listEl) return;
   listEl.innerHTML = buildStudentCardsHTML(getFilteredStudents());
-}
-function filterByBranchInTeamView(branch){
-  state.sidebarBranchFilter = branch;
-  closeTeamView();
 }
 function renderSidebar(){
   const q = (document.getElementById('searchInput')?.value || '').trim();
@@ -1641,62 +1564,7 @@ function computeTrainingRecommendation(s){
   return levels[combined];
 }
 
-// ② 합격 가능성 예측 → 목표 기록 근접도 (내신·면접 등은 배제, 오직 실기 기록의
-//    목표 대비 % 근접도와 그 추세만 안내. 확률(%)이 아닌 "거리"로 표현한다.)
-function computeGoalProjection(s){
-  const results = [];
-  evList(s).forEach(ev=>{
-    const recs = (s.records[ev]||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
-    const target = s.targets[ev];
-    if(!target || !recs.length) return;
-    const lower = LOWER_IS_BETTER.includes(ev);
-    const last = recs[recs.length-1];
-    const pct = lower ? (target/last.value*100) : (last.value/target*100);
-    const item = {ev, pct: Math.min(pct, 999)};
 
-    if(recs.length>=3){
-      const first = recs[0];
-      const days = (new Date(last.date)-new Date(first.date))/86400000;
-      if(days>=5){
-        const improvement = lower ? (first.value-last.value) : (last.value-first.value);
-        const remaining = lower ? (last.value-target) : (target-last.value);
-        if(remaining<=0){ item.status='achieved'; }
-        else{
-          const perDay = improvement/days;
-          item.status = perDay>0 ? 'projected' : 'stalled';
-          if(perDay>0) item.daysNeeded = Math.ceil(remaining/perDay);
-        }
-      }
-    }
-    if(!item.status) item.status = pct>=100 ? 'achieved' : 'insufficient';
-    results.push(item);
-  });
-  return results;
-}
-
-// ④ 슬럼프 조기 감지 → 정체·하락 신호 (심리 데이터 없이, 기록 추세만으로 판단)
-function detectPlateauOrDecline(s){
-  const flags = [];
-  let anyEligible = false;
-  let maxCount = 0;
-  evList(s).forEach(ev=>{
-    const recs = (s.records[ev]||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
-    maxCount = Math.max(maxCount, recs.length);
-    if(recs.length<6) return;
-    anyEligible = true;
-    const lower = LOWER_IS_BETTER.includes(ev);
-    const recent = recs.slice(-3).map(r=>r.value);
-    const prior = recs.slice(-6,-3).map(r=>r.value);
-    const avgRecent = recent.reduce((a,b)=>a+b,0)/recent.length;
-    const avgPrior = prior.reduce((a,b)=>a+b,0)/prior.length;
-    const changePct = lower ? (avgPrior-avgRecent)/avgPrior*100 : (avgRecent-avgPrior)/avgPrior*100;
-    if(changePct <= -3) flags.push({ev, type:'decline', changePct});
-    else if(Math.abs(changePct) < 1) flags.push({ev, type:'plateau', changePct});
-  });
-  flags.anyEligible = anyEligible;
-  flags.maxCount = maxCount;
-  return flags;
-}
 
 // ⑤ AI Athlete Memory / 시즌 서사 → 최근 2주 변화 요약 (사실 비교 문장, 과장된 서사는 배제)
 function computePeriodSummary(s){
@@ -1737,84 +1605,9 @@ function computeLifestyleSignals(s){
   return signals;
 }
 
-// ⑨ 부위별 통증 패턴 — 반복되는 부위, 강도 추세, 최근 훈련 부하와의 연관 신호
-function computeInjuryPatterns(s){
-  const sorted = s.fatigue.slice().sort((a,b)=>a.date.localeCompare(b.date));
-  const withPain = sorted.filter(f=> f.painAreas && f.painAreas.length);
-  const results = [];
 
-  // 최근 14일 내 부위별 등장 횟수 집계
-  const cutoff = daysAgo(14);
-  const recentWithPain = withPain.filter(f=> f.date>=cutoff);
-  const counts = {};
-  recentWithPain.forEach(f=> f.painAreas.forEach(p=>{ counts[p] = (counts[p]||0)+1; }));
 
-  Object.keys(counts).forEach(part=>{
-    if(counts[part] < 3) return; // 반복 신호로 보기엔 부족
-    const entries = withPain.filter(f=> f.painAreas.includes(part));
-    const severities = entries.map(f=> Number(f.painSeverity)||0);
-    const recentSev = severities.slice(-3);
-    const priorSev = severities.slice(-6,-3);
-    let trend = 'flat';
-    if(recentSev.length && priorSev.length){
-      const ra = recentSev.reduce((a,b)=>a+b,0)/recentSev.length;
-      const pa = priorSev.reduce((a,b)=>a+b,0)/priorSev.length;
-      if(ra - pa >= 1) trend = 'up';
-      else if(pa - ra >= 1) trend = 'down';
-    }
-    const latestSev = severities[severities.length-1] || 0;
-    results.push({ part, count: counts[part], latestSev, trend });
-  });
 
-  return results.sort((a,b)=> b.count - a.count);
-}
-
-// ⑥ 기록 안정성(일관성) — 실전에서 기복 없이 낼 수 있는지, 목표 근접도와는 별개의 정보
-function computeConsistency(s){
-  const results = [];
-  evList(s).forEach(ev=>{
-    const recs = (s.records[ev]||[]).slice(-8);
-    if(recs.length<5) return;
-    const vals = recs.map(r=>r.value);
-    const mean = vals.reduce((a,b)=>a+b,0)/vals.length;
-    if(!mean) return;
-    const variance = vals.reduce((a,b)=>a+(b-mean)**2,0)/vals.length;
-    const cv = Math.sqrt(variance)/Math.abs(mean)*100; // 변동계수(%)
-    results.push({ev, cv});
-  });
-  return results;
-}
-
-// ⑦ 회복 패턴 — 고피로(7점 이상) 이후 평소 수준(5점 미만)으로 돌아오기까지 평균 며칠 걸리는지
-function computeRecoveryPattern(s){
-  const sorted = s.fatigue.slice().sort((a,b)=>a.date.localeCompare(b.date));
-  const episodes = [];
-  let i=0;
-  while(i<sorted.length){
-    if(Number(sorted[i].score)>=7){
-      const start=i;
-      let j=i+1;
-      while(j<sorted.length && Number(sorted[j].score)>=5) j++;
-      if(j<sorted.length){
-        const days = (new Date(sorted[j].date)-new Date(sorted[start].date))/86400000;
-        if(days>0) episodes.push(days);
-      }
-      i=j+1;
-    }else i++;
-  }
-  if(episodes.length<2) return null;
-  return { avgDays: episodes.reduce((a,b)=>a+b,0)/episodes.length, count:episodes.length };
-}
-
-// ⑧ 주간 훈련-회복 밸런스 — 최근 기록 중 고강도일 vs 회복일 비율
-function computeWeeklyBalance(s){
-  const sorted = s.fatigue.slice().sort((a,b)=>a.date.localeCompare(b.date));
-  const last7 = sorted.slice(-7);
-  if(last7.length<4) return null;
-  const high = last7.filter(f=>Number(f.score)>=7).length;
-  const low = last7.filter(f=>Number(f.score)<=4).length;
-  return { high, low, total: last7.length };
-}
 
 /* ---- 오늘 일괄 입력 (전체 학생 대상 빠른 피로도 입력) ---- */
 /* ---- 팀 전체 현황 (전체 학생 총괄 대시보드) ---- */
@@ -1910,10 +1703,11 @@ function renderTeamOverview(){
     <main class="brief2">
       <div class="topbar">
         <div class="heading"><div><h2>오늘 브리핑</h2>
-          <div class="tagline">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})} · 체크인 ${done}/${list.length}명 · ${fetched} 기준</div></div></div>
+          <div class="tagline">${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})} · 체크인 ${done}/${list.length}명${state.ckFetchedAt?' · '+fetched+' 기준':''}</div></div></div>
         <button class="ghost-btn" style="flex:0 0 auto; padding:8px 14px; min-height:44px;" onclick="refreshCheckins()">↻ 새로고침</button>
       </div>
       ${joinBandHTML()}
+      ${state.studentsLoaded && !state.students.length ? `<div class="memo-card"><div class="memo-h"><b>아직 학생이 없어요</b></div><div class="stat-note">학생이 학생 앱에서 가입 신청을 보내면 '학생' 메뉴 위 띠에 떠요. 승인하면 이 브리핑에 바로 보여요. 학생 앱 주소는 이 사이트 주소 끝에 student.html 을 붙이면 돼요.</div></div>` : ''}
       ${tipHTML('c-brief','처음 안내 · 브리핑','빨간 줄 학생부터 보고, 직접 확인했으면 오른쪽 \'확인\'을 눌러요 (이 기기에만 기억). 학생 이름을 누르면 그 학생 화면으로 가요. 오른쪽 위 + 로 일지·수업·메모를 바로 열 수 있어요.')}
       <div class="bt-tabs" role="tablist" aria-label="지점">${tabs.map(([v,l])=>`<button type="button" role="tab" aria-selected="${branch===v}" class="${branch===v?'on':''}" onclick="state.briefBranch='${v}'; state.briefMore={}; state.briefFilter=''; rerender();">${l}</button>`).join('')}</div>
       ${meBarHTML('brief')}
@@ -2007,12 +1801,6 @@ function getMissingTodayNames(branch){
   const b = branch===undefined ? (state.briefBranch||'') : branch;
   return state.students.filter(s=> (b==='' || (b==='__none__'?!s.branch:s.branch===b)) && !statusOf(s)).map(s=>s.name);
 }
-function copyBranchMissing(b){
-  const names=getMissingTodayNames(b), label=b==='__none__'?'지점 미지정':b;
-  const text=names.length?`[${label}] 오늘 체크인 미입력: ${names.join(', ')} (총 ${names.length}명)`:`[${label}] 오늘은 전원 체크인 완료!`;
-  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(()=>showToast('복사했어요! 단톡방에 붙여넣기 하세요')).catch(()=>showToast('복사에 실패했습니다'));
-  else showToast('이 브라우저에서는 자동 복사가 지원되지 않아요');
-}
 function updateMissingListPreview(){
   const el = document.getElementById('missingListPreview');
   if(!el) return;
@@ -2030,26 +1818,6 @@ function copyMissingList(){
   }
 }
 
-function renderTeamRankList(){
-  const el = document.getElementById('teamRankList');
-  const sel = document.getElementById('teamRankEvent');
-  if(!el || !sel || !sel.value){ if(el) el.innerHTML = `<div class="empty-mini">등록된 종목이 없습니다</div>`; return; }
-  const ev = sel.value;
-  const lower = LOWER_IS_BETTER.includes(ev);
-  const ranked = state.students
-    .filter(s=> evList(s).includes(ev) && (s.records[ev]||[]).some(r=>r.by!=='student'||!PERF.rangeWarn(ev,r.value)))
-    .map(s=>{
-      const recs = s.records[ev].filter(r=>r.by!=='student'||!PERF.rangeWarn(ev,r.value)).slice().sort((a,b)=>a.date.localeCompare(b.date));   // 범위 밖 학생 값(단위 실수 등)은 순위에서 뺀다
-      return { name:s.name, value: recs[recs.length-1].value };
-    })
-    .sort((a,b)=> lower ? a.value-b.value : b.value-a.value);
-
-  el.innerHTML = ranked.length ? `
-    <table>
-      <thead><tr><th>순위</th><th>이름</th><th>기록</th></tr></thead>
-      <tbody>${ranked.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td class="mono">${r.value} ${esc(unitText(ev))}</td></tr>`).join('')}</tbody>
-    </table>` : `<div class="empty-mini">이 종목의 기록이 있는 학생이 없습니다</div>`;
-}
 
 /* ---- 수업일지 (코치 전용, 학생 데이터와 무관) ---- */
 function formatLogDate(dateStr){
@@ -2379,7 +2147,7 @@ async function insPersist(next){
   try{
     await db.collection('settings').doc('instructors').set({main:next.main, assistant:next.assistant, updatedAt:Date.now(), updatedBy:currentCoachEmail||''});
     return true;
-  }catch(err){ showToast('강사 명단 저장 실패: '+err.message); return false; }
+  }catch(err){ showToast('강사 명단 저장 실패: '+errKo(err)); return false; }
 }
 async function insAdd(kind){
   const inp=document.getElementById('ins-add-'+kind); if(!inp) return;
@@ -2433,7 +2201,7 @@ function subscribeInstructors(){
     // 다른 선생님이 바꾼 경우: 열려 있는 편집칸이 없을 때만 체크 상태 유지하며 버튼 줄만 새로 그림
     const busy=[...document.querySelectorAll('.ins-panel')].some(p=>!p.hidden);
     if(!busy) insRefreshRows();
-  }, err=>{ if(err.code!=='permission-denied') showToast('강사 명단 불러오기 오류: '+err.message); });
+  }, err=>{ if(err.code!=='permission-denied') showToast('강사 명단 불러오기 오류: '+errKo(err)); });
 }
 let classLogSaving=false;   // '일지 저장'을 두 번 누르면 같은 일지가 두 개 생기던 문제 방지
 async function submitClassLog(e){
@@ -2746,38 +2514,6 @@ function drawCharts(){
   Chart.defaults.font.family = "'Manrope', sans-serif";
   const gridColor = '#2b3242';
 
-  if(state.activeTab==='fatigue'){
-    const fc = document.getElementById('fatigueChart');
-    const sc = document.getElementById('sleepChart');
-    if(fc){
-      try{
-        const m = computeFatigueMetrics(s);
-        const datasets = [{ label:'피로', data:s.fatigue.map(f=>f.score), borderColor:'#ff4b33', backgroundColor:'rgba(255,75,51,0.15)', fill:true, tension:0.35, pointRadius:3 }];
-        if(m.chronic!==null){
-          datasets.push({ label:'평소 기준선', data:s.fatigue.map(()=>m.chronic), borderColor:'#c6ff3d', borderDash:[6,4], pointRadius:0, fill:false });
-        }
-        chartInstances.fatigue = new Chart(fc, {
-          type:'line',
-          data:{ labels:s.fatigue.map(f=>f.date.slice(5)), datasets },
-          options:{ responsive:true, maintainAspectRatio:false,
-            scales:{ y:{min:0,max:10, grid:{color:gridColor}}, x:{grid:{display:false}} },
-            plugins:{legend:{display: m.chronic!==null, labels:{boxWidth:12}}} }
-        });
-      }catch(err){ console.warn('피로도 그래프 오류:', err.message); }
-    }
-    if(sc){
-      try{
-        chartInstances.sleep = new Chart(sc, {
-          type:'line',
-          data:{ labels:s.fatigue.map(f=>f.date.slice(5)),
-            datasets:[{ label:'수면', data:s.fatigue.map(f=>Number(f.sleep)||null), borderColor:'#c6ff3d', backgroundColor:'rgba(198,255,61,0.12)', fill:true, tension:0.35, pointRadius:3 }]},
-          options:{ responsive:true, maintainAspectRatio:false,
-            scales:{ y:{min:0,max:12, grid:{color:gridColor}}, x:{grid:{display:false}} },
-            plugins:{legend:{display:false}} }
-        });
-      }catch(err){ console.warn('수면 그래프 오류:', err.message); }
-    }
-  }
   if(state.activeTab==='records' && state.selectedEventByStudent[s.id]){
     const rc = document.getElementById('recordChart');
     const ev = state.selectedEventByStudent[s.id];
@@ -2928,9 +2664,7 @@ function toggleSidebar(){
 }
 function selectStudent(id){ state.mgmtOpen=false; if(state.schedOpen){ state.schedOpen=false; stopSchedules(); } loadHistory(id); loadPerf(id,false,false,0,true); state.joinOpen=false; state.selectedId=id; state.activeTab=lastStuTab(); pushRecentStu(id); state.classLogOpen=false; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
 function openClassLogView(){ state.mgmtOpen=false; if(state.schedOpen){ state.schedOpen=false; stopSchedules(); } state.joinOpen=false; state.classLogOpen=true; state.teamViewOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
-function closeClassLogView(){ state.classLogOpen=false; rerender(); }
 function openTeamView(){ state.mgmtOpen=false; if(state.schedOpen){ state.schedOpen=false; stopSchedules(); } loadBriefLogs(); loadTodayCheckins(); loadAllPerf(); state.joinOpen=false; state.teamViewOpen=true; state.classLogOpen=false; state.mobileSidebarOpen=false; state.mobileTopbarVisible=false; rerender(); }
-function closeTeamView(){ state.teamViewOpen=false; if(state.selectedId){ loadHistory(state.selectedId); loadPerf(state.selectedId); } rerender(); }
 function lastStuTab(){ try{ const v=localStorage.getItem('heroStuTab'); return ['overview','cal','records','exam'].includes(v)?v:'overview'; }catch(e){ return 'overview'; } }
 function setTab(tab){ state.activeTab=tab; try{ localStorage.setItem('heroStuTab',tab); }catch(e){} rerender(); }
 function selectEvent(sid, ev){ state.selectedEventByStudent[sid]=ev; rerender(); }
@@ -3001,7 +2735,7 @@ async function deleteRecord(sid, ev, idx, date, by, rid){
   if(!r || !(await askSheet({title:'기록을 삭제할까요?', msg:`${r.date} ${ev} ${r.value}${r.by==='student'?' (학생이 입력한 기록)':''}`, ok:'삭제', danger:true}))) return;   // 휴대폰에서 스크롤하다 잘못 눌러도 바로 지워지지 않게
   if(r.by==='student'){   // 학생 기록은 학생 쪽 저장소에서 지운다
     try{ await deletePerfDoc(sid, r.rid); showToast('학생 기록을 삭제했어요'); }
-    catch(err){ showToast('삭제 실패: '+(err.code==='permission-denied'?'학생 기록 삭제 권한이 없어요 (Firebase 규칙 확인)':err.message)); }
+    catch(err){ showToast('삭제 실패: '+(err.code==='permission-denied'?'학생 기록 삭제 권한이 없어요 (Firebase 규칙 확인)':errKo(err))); }
     return;
   }
   s.records[ev].splice(idx,1);
@@ -3023,7 +2757,7 @@ async function removeEvent(sid, ev){
   if(state.selectedEventByStudent[sid]===ev) state.selectedEventByStudent[sid]=null;
   if(stu.length){
     try{ markUserWrite(); for(let i=0;i<stu.length;i+=400){ const b=db.batch(); stu.slice(i,i+400).forEach(r=>b.delete(db.collection('students').doc(sid).collection('perfRecords').doc(r.rid))); await b.commit(); } }
-    catch(err){ showToast('학생 기록 삭제 실패: '+(err.code==='permission-denied'?'권한이 없어요 (Firebase 규칙 확인)':err.message)); return; }
+    catch(err){ showToast('학생 기록 삭제 실패: '+(err.code==='permission-denied'?'권한이 없어요 (Firebase 규칙 확인)':errKo(err))); return; }
     state.perf[sid]=(state.perf[sid]||[]).filter(r=>r.event!==ev);
   }
   if(s.events.includes(ev)){
@@ -3057,7 +2791,7 @@ async function deleteStudent(sid){
     delete state.hist[sid]; delete state.perf[sid]; delete state.perfFull[sid]; delete state.todayCk[sid];
     showToast('삭제했어요');
   }
-  catch(err){ showToast('삭제 실패: '+(err.code==='permission-denied'?'기록을 지울 권한이 없어요 (Firebase 규칙 확인). 학생 정보는 그대로 있어요.':err.message)); }
+  catch(err){ showToast('삭제 실패: '+(err.code==='permission-denied'?'기록을 지울 권한이 없어요 (Firebase 규칙 확인). 학생 정보는 그대로 있어요.':errKo(err))); }
 }
 
 /* ---- Modals ---- */
@@ -3072,49 +2806,8 @@ function openModal(html){
 }
 function closeModal(){ document.getElementById('activeModal')?.remove(); }
 
-function openAddStudentModal(){
-  openModal(`
-    <div class="modal">
-      <h3>학생 등록</h3>
-      <form onsubmit="submitAddStudent(event)">
-        <div class="field"><label>이름</label><input name="name" required placeholder="학생 이름"></div>
-        <div class="field"><label>학년</label><input name="grade" placeholder="예: 고3"></div>
-        <div class="field">
-          <label>지점</label>
-          <select name="branch">
-            <option value="">선택 안함</option>
-            ${BRANCHES.map(b=>`<option value="${b}">${b}</option>`).join('')}
-          </select>
-        </div>
-        <div class="field"><label>목표</label><input name="target" placeholder="예: OO대학 체육교육과"></div>
-        <div class="field">
-          <label>재활이 필요했던 부상 이력</label>
-          <select name="rehabHistory">
-            <option value="false">없음 (느슨한 기준 적용)</option>
-            <option value="true">있음 (타이트한 기준 적용)</option>
-          </select>
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="cancel" onclick="closeModal()">취소</button>
-          <button type="submit" class="confirm">등록</button>
-        </div>
-      </form>
-    </div>`);
-}
 // 입력칸 정리: 앞뒤 빈칸·줄바꿈을 없애고 길이를 자른다 (빈칸만 적은 이름 방지)
 function cleanField(v,max){ return Array.from(String(v||'').replace(/\s+/g,' ').trim()).slice(0,max).join(''); }
-async function submitAddStudent(e){
-  e.preventDefault();
-  const f = new FormData(e.target);
-  if(!cleanField(f.get('name'),20)){ showToast('이름을 적어 주세요'); return; }
-  const ns = { id:uid(), name:cleanField(f.get('name'),20), grade:cleanField(f.get('grade'),10), branch:cleanField(f.get('branch'),20), target:cleanField(f.get('target'),60), rehabHistory:f.get('rehabHistory')==='true', events:[], targets:{}, fatigue:[], records:{} };
-  state.selectedId = ns.id;
-  state.activeTab='overview';
-  closeModal();
-  const ok = await saveStudent(ns);
-  if(ok) showToast('학생이 등록되었습니다');
-  else showToast('등록에 실패했어요. 다시 시도해주세요.');
-}
 
 function openEditStudentModal(sid){
   const s = getStudent(sid);
@@ -3474,7 +3167,7 @@ function subscribeStudents(){
     if(err && err.code==='permission-denied'){
       showAccountProblem('이 계정('+currentCoachEmail+')은 코치로 등록되어 있지 않아요. Firebase 보안 규칙의 코치 이메일 목록에 이 이메일이 있는지 확인해 주세요.');
     }else{
-      showToast('실시간 동기화 오류: '+(err&&err.message||''));
+      showToast('실시간 동기화 오류: '+errKo(err));
     }
   });
 }
@@ -4056,7 +3749,7 @@ async function loadTodayCheckins(force){
     const res=await Promise.all(state.students.map(s=>db.collection('students').doc(s.id).collection('checkins').doc(d).get()
       .then(x=>[s.id, x.exists?cleanCk(x.data(),x.id):null]).catch(()=>[s.id,null])));
     state.todayCk=Object.fromEntries(res); state.ckFetchedAt=Date.now(); state.ckDate=d;
-  }catch(e){ showToast('체크인을 불러오지 못했어요: '+(e&&e.message||'')); return; }
+  }catch(e){ showToast('체크인을 불러오지 못했어요: '+errKo(e)); return; }
   finally{ state.ckLoading=false; }
   applyCheckins(); softRerender();
 }
@@ -4319,7 +4012,7 @@ async function submitExamEdit(){
     if(c && Array.isArray(c.list)) c.list=[...c.list.filter(e=>e.id!==exEdit.id), ex].sort(exSort);
     state.exSoon=null;   // 브리핑 목록도 다시 읽게
     exEdit=null; closeModal(); refreshExCard(); refreshCkCal(); showToast(cancel?'일정을 취소로 바꿨어요':'실기 일정을 저장했어요');
-  }catch(e){ err.textContent='저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'권한이 없어요 (Firebase 규칙에 examSchedules 추가 필요)':(e&&e.message||'인터넷을 확인해 주세요')); btn.disabled=false; btn.textContent='저장'; }
+  }catch(e){ err.textContent='저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'권한이 없어요 (Firebase 규칙에 examSchedules 추가 필요)':errKo(e)); btn.disabled=false; btn.textContent='저장'; }
 }
 /* 실기 일정 일괄 추가: 한 지점(또는 전체) 학생 모두에게 같은 시험·모의시험 날짜를 넣는다
    · 문서 이름 = bk_날짜_종류_학생_학교이름해시 → 다시 눌러도 같은 문서에 저장 (중복 생성 없음)
@@ -4357,7 +4050,7 @@ let bxSeq=0;
 async function bxPreview(){
   const box=document.getElementById('bxPrev'), ok=document.getElementById('bxOk'); if(!box) return;
   const my=++bxSeq; ok.disabled=true;
-  let p=null; try{ p=await bxPlan(); }catch(e){ if(my===bxSeq) box.innerHTML=`<div class="stat-note" style="color:#ff7a66;">확인하지 못했어요 — ${esc(e&&e.code==='permission-denied'?'권한이 없어요':(e&&e.message||''))}</div>`; return; }
+  let p=null; try{ p=await bxPlan(); }catch(e){ if(my===bxSeq) box.innerHTML=`<div class="stat-note" style="color:#ff7a66;">확인하지 못했어요 — ${esc(e&&e.code==='permission-denied'?'권한이 없어요':errKo(e))}</div>`; return; }
   if(my!==bxSeq) return;
   if(!p){ box.innerHTML='<div class="stat-note">이름과 날짜를 넣으면 몇 명에게 들어가는지 보여 줘요</div>'; return; }
   box.innerHTML=`<div class="rf-row"><span>${esc(p.br||'전체 지점')} 학생</span><b>${p.total}명</b></div>
@@ -4387,7 +4080,7 @@ async function submitExamBulk(){
     p.add.forEach(s=>{ delete state.exams[s.id]; }); state.exSoon=null; state.exRange={};
     closeModal(); showToast(`${p.add.length}명에게 실기 일정을 넣었어요${p.skip.length?` (이미 있는 ${p.skip.length}명은 건너뜀)`:''}`);
     if(state.schedOpen) schedRefresh();
-  }catch(e){ err.textContent='저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'권한이 없어요 (Firebase 규칙에 examSchedules 필요)':(e&&e.message||'다시 시도해 주세요')); btn.disabled=false; btn.textContent='다시 시도'; }
+  }catch(e){ err.textContent='저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'권한이 없어요 (Firebase 규칙에 examSchedules 필요)':errKo(e)); btn.disabled=false; btn.textContent='다시 시도'; }
 }
 /* 브리핑: 앞으로 7일 안의 실기 일정 (정보성 — 위험 학생 목록과 따로) */
 state.exSoon=null;
@@ -4481,7 +4174,7 @@ async function computeBaseline(){
     const doc={ latest:r, history:[...prevH, r].slice(-24) };
     await db.collection('settings').doc('checkinBaseline').set(doc);
     b.saved=doc; showToast('기준선을 계산해 저장했어요');
-  }catch(e){ b.err='계산하지 못했어요 — '+(e&&e.code==='permission-denied'?'권한이 없어요':(e&&e.message||'')); }
+  }catch(e){ b.err='계산하지 못했어요 — '+(e&&e.code==='permission-denied'?'권한이 없어요':errKo(e)); }
   finally{ b.busy=false; if(el()) el().innerHTML=baselineHTML(); }
 }
 
@@ -4578,7 +4271,6 @@ function allCoachNames(){ return [...new Set([...(INSTRUCTORS.main||[]), ...(INS
 function coachRole(n){ return (INSTRUCTORS.main||[]).includes(n) ? '메인' : '보조'; }
 function nowHM(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
 function schedEnded(x){ const t=HC.todayStr(); return x.date<t || (x.date===t && String(x.endTime)<=nowHM()); }
-function canManageBranch(){ return true; }   // 코치 계정을 함께 쓰므로 지점별 권한은 두지 않는다
 
 /* ---- 코치별 담당 학생 · 내 이름 ---- */
 function subscribeCoachStudents(){
@@ -4589,7 +4281,7 @@ function subscribeCoachStudents(){
     const clean={}; Object.entries(m).forEach(([k,v])=>{ if(Array.isArray(v)) clean[k]=v.filter(x=>typeof x==='string'); });
     state.coachStudents=clean;
     if(state.schedOpen) schedRefresh(); else softRerender();
-  }, err=>{ if(err.code!=='permission-denied') showToast('담당 학생 불러오기 오류: '+err.message); });
+  }, err=>{ if(err.code!=='permission-denied') showToast('담당 학생 불러오기 오류: '+errKo(err)); });
 }
 function myStudentSet(){ if(!state.me) return null; const a=state.coachStudents[state.me]; return a&&a.length ? new Set(a) : null; }
 function meFilterStudents(list){ const set=myStudentSet(); return set ? list.filter(s=>set.has(s.id)) : list; }
@@ -4634,7 +4326,7 @@ function subscribeSchedules(){
     if(state.schedKey!==key) return;
     state.schedules=snap.docs.map(d=>({ id:d.id, ...d.data() })); state.schedLoading=false; state.schedErr='';
     schedRefresh();
-  }, err=>{ state.schedLoading=false; state.schedErr = err.code==='permission-denied' ? '일정을 읽을 권한이 없어요 (Firebase 규칙에 classSchedules 추가 필요)' : '일정을 불러오지 못했어요: '+err.message; schedRefresh(); });
+  }, err=>{ state.schedLoading=false; state.schedErr = err.code==='permission-denied' ? '일정을 읽을 권한이 없어요 (Firebase 규칙에 classSchedules 추가 필요)' : '일정을 불러오지 못했어요: '+errKo(err); schedRefresh(); });
 }
 function stopSchedules(){ if(unsubscribeSched){ unsubscribeSched(); unsubscribeSched=null; } }
 function openSchedule(){
@@ -4987,7 +4679,7 @@ async function schedCommit(items, x, retry){
     showToast(x ? `일정을 고쳤어요${n>1?' ('+n+'개)':''}` : `일정 ${n}개를 만들었어요`);
     if(!x){ state.schedDate=items[0].date; if(state.schedView==='month') state.schedView='week'; subscribeSchedules(); }
   }catch(e){
-    seErr(`<div class="se-e">저장하지 못했어요 — ${e&&e.code==='permission-denied'?'저장 권한이 없어요 (Firebase 규칙 확인)':esc(e&&e.message||'다시 시도해 주세요')}</div>`);
+    seErr(`<div class="se-e">저장하지 못했어요 — ${e&&e.code==='permission-denied'?'저장 권한이 없어요 (Firebase 규칙 확인)':escerrKo(e)}</div>`);
   }finally{ schedSaving=false; const b=document.getElementById('seOk'); if(b){ b.disabled=false; b.textContent=okText||(x?'저장':'만들기'); } }
 }
 function schedDiff(a,b){
@@ -5039,7 +4731,7 @@ async function submitSchedDelete(id){
     if(x.seriesId && scope!=='one'){ const all=await fetchSeries(x.seriesId); ids=all.filter(o=>scope==='all' || o.date>=x.date).map(o=>o.id); }
     const n=await schedBatchDelete(ids);
     closeModal(); showToast(`일정 ${n}개를 삭제했어요`);
-  }catch(e){ err.textContent='삭제하지 못했어요 — '+(e&&e.code==='permission-denied'?'삭제 권한이 없어요 (Firebase 규칙 확인)':(e&&e.message||'')); btn.disabled=false; btn.textContent='삭제하기'; }
+  }catch(e){ err.textContent='삭제하지 못했어요 — '+(e&&e.code==='permission-denied'?'삭제 권한이 없어요 (Firebase 규칙 확인)':errKo(e)); btn.disabled=false; btn.textContent='삭제하기'; }
 }
 /* ---- 매달 리셋: 그 달 '예정' 수업의 학생을 학생들이 고른 그 달 요일로 다시 채운다 ----
    완료·취소된 수업과 오늘 이전 수업은 그대로 둔다 (지난 기록은 바뀌지 않음) */
@@ -5064,7 +4756,7 @@ async function schedRefillPreview(){
   const from=ym+'-01'>t?ym+'-01':t;
   let list=[];
   try{ const snap=await db.collection('classSchedules').where('date','>=',from).where('date','<=',last).get(); list=snap.docs.map(d=>({id:d.id,...d.data()})); }
-  catch(e){ box.innerHTML=`<div class="stat-note" style="color:#ff7a66;">일정을 불러오지 못했어요 — ${esc(e&&e.code==='permission-denied'?'권한이 없어요':(e&&e.message||''))}</div>`; return; }
+  catch(e){ box.innerHTML=`<div class="stat-note" style="color:#ff7a66;">일정을 불러오지 못했어요 — ${esc(e&&e.code==='permission-denied'?'권한이 없어요':errKo(e))}</div>`; return; }
   if(document.getElementById('rfYM')?.value!==ym || document.getElementById('rfBr')?.value!==br) return;   // 그사이 선택이 바뀜
   const target=list.filter(x=>(x.status||'scheduled')==='scheduled' && (!br || x.branch===br));
   const changes=target.map(x=>({ x, ids:schedSuggest(x.branch, x.date) })).filter(c=>{ const a=[...(c.x.studentIds||[])].sort().join(), b=c.ids.slice().sort().join(); return a!==b; });
@@ -5096,7 +4788,7 @@ async function submitSchedRefill(){
       await b.commit();
     }
     const n=rfPlan.changes.length; rfPlan=null; closeModal(); showToast(`수업 ${n}개의 학생을 다시 맞췄어요`);
-  }catch(e){ err.textContent='저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'권한이 없어요 (Firebase 규칙 확인)':(e&&e.message||'')); btn.disabled=false; btn.textContent='다시 맞추기'; }
+  }catch(e){ err.textContent='저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'권한이 없어요 (Firebase 규칙 확인)':errKo(e)); btn.disabled=false; btn.textContent='다시 맞추기'; }
 }
 function openSchedBulkDelete(){
   const [from,to]=schedRange();
@@ -5124,7 +4816,7 @@ async function submitSchedBulkDelete(){
     btn.textContent=`${ids.length}개 지우는 중…`;
     const n=await schedBatchDelete(ids);
     closeModal(); showToast(`일정 ${n}개를 지웠어요`);
-  }catch(e){ err.textContent='지우지 못했어요 — '+(e&&e.code==='permission-denied'?'삭제 권한이 없어요 (Firebase 규칙 확인)':(e&&e.message||'')); btn.disabled=false; btn.textContent='지우기'; }
+  }catch(e){ err.textContent='지우지 못했어요 — '+(e&&e.code==='permission-denied'?'삭제 권한이 없어요 (Firebase 규칙 확인)':errKo(e)); btn.disabled=false; btn.textContent='지우기'; }
 }
 /* ---- 반복 바꾸기: 이 날부터 요일·끝나는 날을 다시 정한다 (지난 수업은 그대로) ---- */
 async function openSeriesRepeat(id){
@@ -5160,7 +4852,7 @@ async function submitSeriesRepeat(){
     del.forEach(id=>b.delete(db.collection('classSchedules').doc(id)));
     if(add||del.length){ markUserWrite(); await b.commit(); }
     closeModal(); showToast(`반복을 바꿨어요 · 추가 ${add}개, 삭제 ${del.length}개`);
-  }catch(e){ err.innerHTML=`<div class="se-e">적용하지 못했어요 — ${esc(e&&e.message||'')}</div>`; btn.disabled=false; btn.textContent='적용'; }
+  }catch(e){ err.innerHTML=`<div class="se-e">적용하지 못했어요 — ${escerrKo(e)}</div>`; btn.disabled=false; btn.textContent='적용'; }
 }
 async function submitSchedCancel(id){
   const x=state.schedules.find(s=>s.id===id), r=(document.getElementById('scR').value||'').trim().slice(0,100), btn=document.getElementById('scOk');
@@ -5178,7 +4870,7 @@ async function schedPatch(x, patch, what){
     const now=Date.now(), me=currentCoachEmail||'';
     await db.collection('classSchedules').doc(x.id).update({ ...patch, updatedAt:now, updatedBy:me, history:[...(Array.isArray(x.history)?x.history:[]), { at:now, by:me, what }].slice(-20) });
     return true;
-  }catch(e){ showToast('저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'권한이 없어요':(e&&e.message||''))); return false; }
+  }catch(e){ showToast('저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'권한이 없어요':errKo(e))); return false; }
   finally{ schedSaving=false; }
 }
 function openClassLogFromSched(id){
@@ -5238,7 +4930,7 @@ async function rosterSave(){
     catch(e){ if(e && e.code==='not-found') await ref.set({ map:{ [name]: ids }, updatedAt:Date.now() }); else throw e; }
     state.coachStudents=Object.assign({}, state.coachStudents, { [name]: ids });
     state.rosterDraft=null; showToast(`${name} 담당 학생 ${ids.length}명 저장`); openCoachRoster();
-  }catch(e){ const el=document.getElementById('roErr'); if(el) el.textContent='저장하지 못했어요: '+(e&&e.message||''); }
+  }catch(e){ const el=document.getElementById('roErr'); if(el) el.textContent='저장하지 못했어요: '+errKo(e); }
 }
 
 /* ==== 학생관리 페이지 (학생 목록 · 학원비) ====
@@ -5438,7 +5130,7 @@ async function payWrite(s, ym, rec, okMsg, extra){
     if(extra && 'fee' in extra) s.fee=extra.fee;
     showToast(okMsg); return true;
   }catch(e){
-    showToast('저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'저장 권한이 없어요':e&&e.code==='unavailable'?'인터넷 연결을 확인해 주세요':(e&&e.message||'다시 시도해 주세요')));
+    showToast('저장하지 못했어요 — '+(e&&e.code==='permission-denied'?'저장 권한이 없어요':e&&e.code==='unavailable'?'인터넷 연결을 확인해 주세요':errKo(e)));
     return false;
   }finally{ delete state.payBusy[s.id]; payRefreshAll(); }
 }
@@ -5888,7 +5580,8 @@ function softRefreshNotes(){
   if(state.teamViewOpen || (state.selectedId && !state.mgmtOpen && !state.schedOpen && !state.joinOpen && !state.classLogOpen)) rerender();
 }
 function memoLine(sid){ const n=noteOf(sid); return n?`<span class="bi-memo">${ic('memo',14)}<span>${esc(n.text)}</span></span>`:''; }
-function noteAgo(at){ if(!at) return ''; const d=Math.round((Date.now()-at)/86400000); return d<=0?'오늘':d===1?'어제':d+'일 전'; }
+function noteAgo(at){ if(!at || at<Date.UTC(2025,0,1) || at>Date.now()+86400000) return '';   // 이상한 값이면 날짜를 안 보여 줌
+  const d=Math.round((Date.now()-at)/86400000); return d<=0?'오늘':d===1?'어제':d+'일 전'; }
 function memoCardHTML(s){
   const n=noteOf(s.id);
   if(state.notesErr==='rules') return `<div class="memo-card"><div class="memo-h"><b>코치 메모</b></div><div class="stat-note">메모를 쓰려면 Firebase 규칙에 coachNotes 를 추가해야 해요.</div></div>`;
@@ -5910,7 +5603,7 @@ async function editNote(sid){
     if(!text) await ref.delete();
     else await ref.set({ text, by:String(state.me||'').slice(0,20), at:Date.now() });
     showToast(text?'메모를 저장했어요':'메모를 지웠어요');
-  }catch(err){ showToast(err.code==='permission-denied'?'저장 실패: Firebase 규칙에 coachNotes 추가가 필요해요':'저장 실패: '+err.message); }
+  }catch(err){ showToast(err.code==='permission-denied'?'저장 실패: Firebase 규칙에 coachNotes 추가가 필요해요':'저장 실패: '+errKo(err)); }
 }
 
 /* ============ I-1: 4주 추이 (작은 선 그래프 · 숫자 순위나 다른 학생 비교 없음) ============ */
@@ -6018,7 +5711,7 @@ function subscribeJoinRequests(){
   unsubscribeJoin = db.collection('joinRequests').where('status','==','pending').onSnapshot(snap=>{
     state.joinRequests = snap.docs.map(d=>({uid:d.id, ...d.data()}));
     softRerender();
-  }, err=>{ if(err.code!=='permission-denied') showToast('가입 신청 불러오기 오류: '+err.message); });
+  }, err=>{ if(err.code!=='permission-denied') showToast('가입 신청 불러오기 오류: '+errKo(err)); });
 }
 // 학생 사이트의 지점 선택지를 코치 사이트 지점 목록(BRANCHES)과 맞춘다
 function syncPublicBranches(){
@@ -6090,7 +5783,7 @@ async function approveJoinInner(uid, r){
   batch.update(db.collection('joinRequests').doc(uid), {status:'approved', studentId:sid, approvedBy:currentCoachEmail, approvedAt:Date.now()});
   markUserWrite();
   try{ await batch.commit(); showToast(name+' 학생을 승인했어요'); }
-  catch(err){ showToast('승인 실패: '+err.message); }
+  catch(err){ showToast('승인 실패: '+errKo(err)); }
 }
 async function rejectJoin(uid){
   if(joinBusy.has(uid)) return;
@@ -6098,7 +5791,7 @@ async function rejectJoin(uid){
   if(reason===null || !db) return;
   markUserWrite();
   try{ await db.collection('joinRequests').doc(uid).update({status:'rejected', rejectReason:(reason.trim()||'정보를 확인하고 다시 보내 주세요.').slice(0,100)}); showToast('반려했어요'); }
-  catch(err){ showToast('반려 실패: '+err.message); }
+  catch(err){ showToast('반려 실패: '+errKo(err)); }
 }
 function uid_(){ return uid(); }
 
@@ -6110,7 +5803,7 @@ async function saveStudent(s){
   clean.records = coachRecordsForSave(s);   // 학생이 입력한 기록은 학생 쪽 저장소에 따로 있으므로 여기엔 쓰지 않는다
   markUserWrite();
   try{ await db.collection('students').doc(s.id).set(clean); return true; }
-  catch(err){ showToast('저장 실패: '+err.message); return false; }
+  catch(err){ showToast('저장 실패: '+errKo(err)); return false; }
 }
 
 // ---- 수업일지 (코치 전용, 학생과 무관한 별도 컬렉션) ----
@@ -6137,7 +5830,7 @@ function subscribeClassLogs(){
       // 권한 문제는 학생 목록 쪽에서 '코치로 등록되지 않은 계정' 화면으로 한 번에 안내한다 (중복 알림 방지)
       return;
     }else{
-      showToast('수업일지 동기화 오류: '+(err&&err.message||''));
+      showToast('수업일지 동기화 오류: '+errKo(err));
     }
   });
 }
@@ -6145,14 +5838,14 @@ async function saveClassLog(logObj){
   if(!db){ showToast('Firebase 설정이 필요합니다'); return false; }
   markUserWrite();
   try{ await db.collection('classLogs').doc(logObj.id).set(logObj); return true; }
-  catch(err){ showToast('저장 실패: '+err.message); return false; }
+  catch(err){ showToast('저장 실패: '+errKo(err)); return false; }
 }
 async function deleteClassLog(id){
   if(!(await askSheet({title:'이 수업일지를 삭제할까요?', ok:'삭제', danger:true}))) return;
   if(!db) return;
   markUserWrite();
   try{ await db.collection('classLogs').doc(id).delete(); }
-  catch(err){ showToast('삭제 실패: '+err.message); }
+  catch(err){ showToast('삭제 실패: '+errKo(err)); }
 }
 
 /* ============ INIT ============ */

@@ -40,7 +40,7 @@
   .btn:disabled{ opacity:.5; }
   .link{ background:none; border:0; color:var(--muted); font-size:14px; text-decoration:underline; padding:10px 0; min-height:44px; cursor:pointer; }
   .link-row{ display:flex; flex-wrap:wrap; gap:4px 28px; margin-top:12px; }   /* 링크 두 개가 붙어 있으면 잘못 누르기 쉬워서 간격을 둔다 */
-  .offline{ border:1px solid #ffd23f; background:rgba(255,210,63,.10); color:#ffe27a; border-radius:12px; padding:10px 14px; font-size:14px; margin-bottom:12px; }
+  
   .err{ color:#ff6b5a; font-size:14px; min-height:20px; margin-top:12px; }
   .note{ font-size:13px; color:var(--dim); }
   input.code{ width:100%; height:52px; margin-bottom:12px; padding:0 14px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:18px; letter-spacing:4px; text-align:center; }
@@ -164,9 +164,7 @@
   .head{ margin-bottom:8px; }
   .head .date{ font-size:14px; color:var(--dim); }
   .head-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
-  .head-actions.grid4{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }   /* 휴대폰: 2×2 로 반듯하게 (한 개만 아랫줄로 떨어지지 않게) */
-  @media (min-width:480px){ .head-actions.grid4{ grid-template-columns:repeat(4,minmax(0,1fr)); } }
-  .head-actions.grid4 .link{ padding:0 6px; }
+   /* 휴대폰: 2×2 로 반듯하게 (한 개만 아랫줄로 떨어지지 않게) */
   .head-actions .link{ font-size:14px; text-decoration:none; border:1px solid var(--line); border-radius:999px; padding:0 16px; min-height:44px; color:var(--muted); background:var(--surface); }
 
   /* 체크인 폼 */
@@ -191,8 +189,7 @@
   .progress i{ display:block; height:100%; background:var(--lime); }
 
   /* 결과 화면 */
-  .pain-card{ border:1px solid var(--coral); background:var(--coral-soft); border-radius:12px; padding:14px 16px; margin:12px 0 4px; }
-  .pain-card p{ margin:6px 0 0; font-size:14px; }
+
   .row{ padding:14px 0; border-top:1px solid var(--line); }
   .sec-t + .row{ border-top:0; padding-top:4px; }   /* 제목 바로 다음에 오는 첫 줄만 선 없애기 */
   .row-top{ display:flex; justify-content:space-between; align-items:baseline; }
@@ -207,9 +204,7 @@
   .row-sub{ display:flex; justify-content:space-between; gap:12px; font-size:13px; color:var(--muted); }
   .row-sub .tag-better{ color:var(--lime); } .row-sub .tag-worse{ color:var(--coral); }
   .row-ctx{ font-size:13px; color:var(--dim); margin-top:2px; }
-  .advice{ border-top:1px solid var(--line); padding:20px 0; }
-  .advice .tag{ display:inline-block; font-size:12px; color:var(--dim); border:1px solid var(--line); border-radius:999px; padding:1px 10px; margin-bottom:10px; }
-  .advice p{ color:var(--text); margin:0 0 8px; font-size:16px; }
+
   .range{ display:flex; gap:8px; justify-content:flex-end; margin-bottom:8px; }
   .chart-box{ position:relative; height:220px; margin-top:12px; }
 
@@ -228,11 +223,7 @@
   .care{ display:grid; grid-template-columns:44px minmax(0,1fr); gap:10px; padding:10px 0; font-size:15px; line-height:1.55; }
   .care + .care{ border-top:1px solid var(--line); }
   .care b{ color:var(--dim); font-weight:600; font-size:14px; padding-top:1px; }
-  .care-n{ font-weight:700; margin-bottom:4px; }
-  .care-d{ border:1px solid var(--line); border-radius:10px; padding:0 12px; margin-bottom:8px; }
-  .care-d summary{ font-weight:700; padding:12px 0; cursor:pointer; list-style-position:inside; }
-  .care-d[open] summary{ border-bottom:1px solid var(--line); margin-bottom:6px; }
-  .care-d .care-l:last-child{ padding-bottom:10px; }
+
   h2.sec-t{ font-weight:600; margin:0 0 8px; }
   :focus-visible{ outline:2px solid var(--lime); outline-offset:2px; }
   .care-l{ font-size:15px; padding:3px 0; }
@@ -313,11 +304,6 @@
   .week-s b{ color:var(--text); }
 
   /* 자세히 보기 (평소와 비교·그래프) */
-  details.more{ border-top:1px solid var(--line); margin-top:20px; }
-  details.more > summary{ list-style:none; display:flex; justify-content:space-between; align-items:center; gap:10px; min-height:56px; cursor:pointer; font-weight:600; font-size:15.5px; }
-  details.more > summary::-webkit-details-marker{ display:none; }
-  details.more > summary::after{ content:'펼치기 ▾'; font-size:13px; font-weight:500; color:var(--muted); }
-  details.more[open] > summary::after{ content:'접기 ▴'; }
 
   /* 몸관리 화면 */
   .seg{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:4px; margin:14px 0 4px; position:sticky; top:calc(6px + env(safe-area-inset-top)); z-index:5; }
@@ -1108,7 +1094,7 @@ async function sendJoinRequest(){
     const approved=old&&old.exists&&old.data().status==='approved';
     errBox.textContent=e.code==='permission-denied'
       ?(approved?'이미 승인된 신청이에요. 선생님께 "학생 연결을 확인해 주세요"라고 말씀해 주세요.':'반 코드가 맞지 않아요. 선생님께 다시 확인해 보세요.')
-      :e.code==='unavailable'?'인터넷 연결이 불안정해요. 잠시 뒤 다시 눌러 주세요.':'요청 실패: '+(e.code||e.message);
+      :e.code==='unavailable'?'인터넷 연결이 불안정해요. 잠시 뒤 다시 눌러 주세요.':'요청 실패: '+errKo(e);
   }finally{ btn.disabled=false; }
 }
 function summaryHTML(r){
@@ -1130,7 +1116,7 @@ function waitForApproval(){
     if(!d.exists) return;
     stopListening();
     try{ await enterApp({id:d.data().studentId,name:d.data().name}); }
-    catch(e){ $('wait-error').innerHTML='승인은 됐는데 기록을 불러오지 못했어요 ('+esc(e.code||e.message||'')+'). <button class="link" onclick="location.reload()">다시 시도</button>'; }
+    catch(e){ $('wait-error').innerHTML='승인은 됐는데 기록을 불러오지 못했어요 ('+esc(errKo(e))+'). <button class="link" onclick="location.reload()">다시 시도</button>'; }
   },()=>{}));
 }
 async function openProfile(req){
@@ -1273,7 +1259,7 @@ async function openMe(fromPop){
 auth.onAuthStateChanged(async user=>{
   stopListening();
   // 로그인 안 됨 → 첫 화면(코치·학생 공용 로그인)으로. 코치 계정이면 코치 화면으로.
-  if(!user){ myStudent=null; myCheckins=[]; ttList=null; exList=null; exErr=''; exForm=null; exEnabled=true; ttSeg='class'; mealToday=null; mealLoaded=false; mealMonth={}; mealEnabled=true; mealDraft=null; goHome(); return; }
+  if(!user){ myStudent=null; myCheckins=[]; ttList=null; ttAll=false; exList=null; exErr=''; exForm=null; exEnabled=true; ttSeg='class'; mealToday=null; mealLoaded=false; mealMonth={}; mealEnabled=true; mealDraft=null; goHome(); return; }
   if(((user.providerData||[])[0]||{}).providerId!=='google.com'){ goHome(); return; }
   lsSet('heroRole','student');
   $('user-email').textContent=user.email;
@@ -1297,7 +1283,7 @@ auth.onAuthStateChanged(async user=>{
     if(req.exists&&req.data().status==='pending') waitForApproval();
     else await openProfile(req.exists?req.data():null);
   }catch(err){
-    $('load-msg').innerHTML='불러오지 못했어요: '+esc(err.code||'')+'<br><span class="note">'+esc(err.message||'')+'</span><br><button class="link" onclick="location.reload()">다시 시도</button>';
+    $('load-msg').innerHTML='불러오지 못했어요<br><span class="note">'+esc(errKo(err))+'</span><br><button class="link" onclick="location.reload()">다시 시도</button>';
     show('screen-loading');
   }
 });
@@ -1474,7 +1460,7 @@ async function submitCheckin(){
     clearTimeout(slow); saving=false;
     myCheckins=myCheckins.filter(c=>c.date!==date).concat([data]).sort((a,b)=>a.date.localeCompare(b.date));
     showResult();
-  }catch(e){ clearTimeout(slow); saving=false; err.textContent='저장 실패: '+(e.code||e.message)+' · 다시 눌러 주세요.'; btn.disabled=false; btn.textContent='다시 저장하기'; }
+  }catch(e){ clearTimeout(slow); saving=false; err.textContent='저장 실패: '+errKo(e); btn.disabled=false; btn.textContent='다시 저장하기'; }
 }
 
 /* ============ 결과 화면 ============ */
@@ -1616,17 +1602,22 @@ function weekCompareHTML(){   // 지난주와 비교 (자세히 안에)
 }
 
 /* ============ 내 시간표: 선생님이 만든 수업 중 내가 들어간 것만 (classSchedules · studentIds 에 내 학생 ID) ============ */
-let ttList=null, ttErr='', ttWeek='', ttLoading=false;
+let ttList=null, ttErr='', ttWeek='', ttLoading=false, ttAll=false;   // ttAll: 기간 밖 주로 넘기면 전체를 한 번 받는다
 const TT_ST={ scheduled:{label:'예정', c:'#c6ff3d'}, completed:{label:'완료', c:'#7c9dff'}, cancelled:{label:'휴강', c:'#ff9f1c'} };
 const TT_WD=['일','월','화','수','목','금','토'];
 function ttWd(d){ const [y,m,dd]=d.split('-').map(Number); return new Date(y,m-1,dd).getDay(); }
 function ttMonday(d){ return addDays(d, -((ttWd(d)+6)%7)); }
-async function loadTT(force){
+async function loadTT(force, all){
+  if(all) ttAll=true;
   if(!myStudent || (ttLoading && !force)) return;
   ttLoading=true;
   try{
     // 규칙이 '내 학생 ID가 들어 있는 일정'만 허락하므로 같은 조건으로만 묻는다 (다른 학생 일정은 받지 않음)
-    const snap=await db.collection('classSchedules').where('studentIds','array-contains',myStudent.id).get();
+    // 지난 5주 ~ 앞으로 8주만 받는다 (1년 지나도 가볍게). 이 조회에 필요한 색인이 아직 없으면 예전처럼 전체를 받는다
+    const col=db.collection('classSchedules').where('studentIds','array-contains',myStudent.id);
+    let snap;
+    try{ snap=ttAll ? await col.get() : await col.where('date','>=',addDays(todayStr(),-35)).where('date','<=',addDays(todayStr(),56)).get(); }
+    catch(e1){ if(e1 && e1.code==='failed-precondition'){ console.warn('classSchedules 색인 필요 (studentIds 배열 포함 + date 오름차순)', e1.message); snap=await col.get(); } else throw e1; }
     ttList=snap.docs.map(d=>{ const x=d.data()||{}; return { id:d.id, date:String(x.date||''), startTime:String(x.startTime||''), endTime:String(x.endTime||''), type:String(x.type||'수업'), branch:String(x.branch||''),
       forms:Array.isArray(x.forms)?x.forms.filter(v=>typeof v==='string'):[], coaches:Array.isArray(x.coaches)?x.coaches.filter(v=>typeof v==='string'):(x.coachName?[String(x.coachName)]:[]),
       status:['scheduled','completed','cancelled'].includes(x.status)?x.status:'scheduled', cancellationReason:String(x.cancellationReason||''),
@@ -1690,8 +1681,8 @@ function renderTT(){
 $('screen-tt').addEventListener('click',e=>{
   const b=e.target.closest('[data-t]'); if(!b) return;
   const a=b.dataset.t;
-  if(a==='prev'){ ttWeek=addDays(ttWeek,-7); renderTT(); }
-  else if(a==='next'){ ttWeek=addDays(ttWeek,7); renderTT(); }
+  if(a==='prev'){ ttWeek=addDays(ttWeek,-7); renderTT(); if(!ttAll && ttWeek<addDays(todayStr(),-35)) loadTT(true,true); }
+  else if(a==='next'){ ttWeek=addDays(ttWeek,7); renderTT(); if(!ttAll && addDays(ttWeek,6)>addDays(todayStr(),56)) loadTT(true,true); }
   else if(a==='this'){ ttWeek=ttMonday(todayStr()); renderTT(); }
   else if(a==='retry'){ ttErr=''; renderTT(); loadTT(true); }
 });
@@ -2143,6 +2134,27 @@ function ic(k, size, sw){ return '<svg class="ic-svg" width="'+(size||22)+'" hei
 /* 불러오는 동안 보이는 회색 뼈대 (빙글빙글 대신 — 어디에 무엇이 나올지 미리 보여 준다) */
 function skel(rows, label){ rows=rows||3; let h=''; for(let i=0;i<rows;i++) h+='<div class="skel-card"><span class="skel-line" style="width:'+(40+((i*23)%35))+'%"></span><span class="skel-line" style="width:'+(70+((i*17)%25))+'%"></span></div>'; return '<div class="skel-wrap" role="status" aria-live="polite"><span class="sr-only">'+(label||'불러오는 중')+'</span>'+h+'</div>'; }
 
+/* ============ 오류 문구를 한국어로 (Firebase 영어 코드 대신 '무엇을 하면 되는지') ============ */
+function errKo(e){
+  const c=String((e&&e.code)||'').replace(/^firestore\//,'');
+  const M={
+    'unavailable':'인터넷 연결을 확인하고 다시 눌러 주세요',
+    'deadline-exceeded':'인터넷이 느려요. 잠시 뒤 다시 눌러 주세요',
+    'permission-denied':'이 계정으로는 할 수 없어요. 선생님께 알려 주세요',
+    'unauthenticated':'로그인이 풀렸어요. 다시 로그인해 주세요',
+    'not-found':'이미 지워졌거나 없는 자료예요. 화면을 새로고침해 주세요',
+    'already-exists':'이미 있는 자료예요',
+    'resource-exhausted':'오늘 사용량이 많아요. 잠시 뒤 다시 시도해 주세요',
+    'failed-precondition':'다른 기기에서 열려 있어 저장하지 못했어요. 새로고침 뒤 다시 해 주세요',
+    'aborted':'동시에 저장되어 취소됐어요. 다시 눌러 주세요',
+    'cancelled':'취소됐어요. 다시 눌러 주세요',
+    'invalid-argument':'적은 내용 중 저장할 수 없는 값이 있어요'
+  };
+  if(M[c]) return M[c];
+  if(typeof navigator!=='undefined' && navigator.onLine===false) return M.unavailable;
+  return '잠시 뒤 다시 시도해 주세요'+(c?' ('+c+')':'');
+}
+
 /* ============ 앱 확인 창 — confirm()/prompt() 대신. 휴대폰에서 '이 사이트의 대화상자 막기'에 걸리지 않고 글자도 크게 보인다 ============
    askSheet({title, msg, ok, cancel, danger, input:{value,max}, copy:'복사할 글'}) → Promise
    확인: true (input 이 있으면 적은 글), 취소: false (input 이 있으면 null) */
@@ -2176,10 +2188,6 @@ function askSheet(o){
   });
 }
 /* 복사가 안 되는 기기(오래된 iOS 등)에선 글을 보여 주고 길게 눌러 복사하게 한다 */
-function copyText(text, okMsg, toast){
-  const fallback=()=>askSheet({title:'길게 눌러 복사하세요', copy:text});
-  try{ (navigator.clipboard&&navigator.clipboard.writeText ? navigator.clipboard.writeText(text) : Promise.reject()).then(()=>{ if(okMsg) toast(okMsg); }, fallback); }catch(e){ fallback(); }
-}
 function askLogout(){ askSheet({title:'로그아웃할까요?', msg:'다시 들어올 때 구글 로그인이 필요해요.', ok:'로그아웃'}).then(ok=>{ if(ok) logout(); }); }
 
 /* ============ I-4: 오늘 화면 — 체크인 전 '오늘 할 일' 큰 버튼 · 체크인 후 '왜 이 상태인지' ============ */
@@ -2475,7 +2483,7 @@ async function savePerf(){
     if(b2){ b2.disabled=false; b2.textContent='다시 저장하기'; }
     if(!e2) return;
     e2.className='err';
-    e2.textContent=e.code==='permission-denied'?'기록 저장 권한이 아직 없어요. 선생님께 "실기 기록 저장이 안 돼요"라고 말씀해 주세요.':'저장 실패: '+(e.code||e.message)+' · 다시 눌러 주세요.';
+    e2.textContent=e.code==='permission-denied'?'기록 저장 권한이 아직 없어요. 선생님께 "실기 기록 저장이 안 돼요"라고 말씀해 주세요.':'저장 실패: '+errKo(e);
   }
 }
 /* ---- 개인 최고·목표 달성 축하 (나와 선생님만 보는 기록. 순위는 없음) ---- */
@@ -2505,7 +2513,7 @@ async function deletePerf(rid){
   try{
     await db.collection('students').doc(myStudent.id).collection('perfRecords').doc(rid).delete();
     perf.mine=perf.mine.filter(x=>x.rid!==rid); perf.justSaved=null; renderPerf();
-  }catch(e){ $('pf-err').textContent='지우지 못했어요: '+(e.code||e.message); }
+  }catch(e){ $('pf-err').textContent='지우지 못했어요: '+errKo(e); }
 }
 $('screen-perf').addEventListener('click',e=>{
   const el=e.target.closest('[data-p]'); if(!el) return;
@@ -2554,7 +2562,7 @@ async function seedData(){
     }
     if(!n){ msg.textContent='넣을 날짜가 없어요. 이미 기록이 있어요.'; return; }
     await batch.commit(); await enterApp(myStudent);
-  }catch(e){ msg.textContent='실패: '+(e.code||e.message); }
+  }catch(e){ msg.textContent='실패: '+errKo(e); }
 }
 async function clearSeed(){
   const msg=$('dev-msg'); msg.textContent='지우는 중...';
@@ -2564,7 +2572,7 @@ async function clearSeed(){
     myCheckins.filter(c=>c.seed===true).forEach(c=>{ batch.delete(col.doc(c.date)); n++; });
     if(!n){ msg.textContent='지울 테스트 데이터가 없어요.'; return; }
     await batch.commit(); await enterApp(myStudent);
-  }catch(e){ msg.textContent='실패: '+(e.code||e.message); }
+  }catch(e){ msg.textContent='실패: '+errKo(e); }
 }
 </script>
 </body>
